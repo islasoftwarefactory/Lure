@@ -1,6 +1,5 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Size
+from BackEnd.Database.Models.Size import Size
 
 blueprint = Blueprint('read_size', __name__)
 

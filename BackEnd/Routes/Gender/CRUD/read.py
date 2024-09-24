@@ -1,6 +1,5 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Gender
+from BackEnd.Database.Models.Gender import Gender
 
 blueprint = Blueprint('read_gender', __name__)
 

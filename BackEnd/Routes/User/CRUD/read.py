@@ -1,5 +1,6 @@
 from flask import jsonify, Blueprint
-from Database.Models import User
+from BackEnd.Database.Models.User import User
+
 
 blueprint = Blueprint('read_user', __name__)
 

@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint
-from Database.Models import Product
+from BackEnd.Database.Models.Product import Product
 
 blueprint = Blueprint('read_product', __name__)
 

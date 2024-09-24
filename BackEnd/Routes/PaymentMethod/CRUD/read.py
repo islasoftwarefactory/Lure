@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint
-from Database.Models import PaymentMethod
+from BackEnd.Database.Models.PaymentMethod import PaymentMethod
 
 blueprint = Blueprint('read_payment_method', __name__)
 

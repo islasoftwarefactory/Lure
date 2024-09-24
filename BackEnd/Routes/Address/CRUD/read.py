@@ -1,5 +1,5 @@
 from flask import jsonify, Blueprint
-from Database.Models import Address
+from BackEnd.Database.Models.Address import Address
 
 blueprint = Blueprint('read_address', __name__)
 
