@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Gender
+from BackEnd.Database.Models.Gender import Gender
+from ....Database.connection import db
 
 blueprint = Blueprint('update_gender', __name__)
 

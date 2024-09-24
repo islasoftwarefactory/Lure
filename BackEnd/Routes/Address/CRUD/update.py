@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Address
+from BackEnd.Database.Models.Address import Address
+from ....Database.connection import db
+
 
 blueprint = Blueprint('update_address', __name__)
 

@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models import User
+from ....Database.connection import db
+from ....Database.Models import User
+
 
 blueprint = Blueprint('update_user', __name__)
 
