@@ -1,8 +1,8 @@
 from flask import Flask
-from .Database.config import database_uri
-from .Database.connection import connect_to_db, init_db
+from BackEnd.Database.config import database_uri
+from BackEnd.Database.connection import connect_to_db, init_db
 from sqlalchemy.exc import OperationalError
-from .Routes.blueprints import register_blueprints
+from BackEnd.Routes.blueprints import register_blueprints
 
 app = Flask(__name__)
 register_blueprints(app)
