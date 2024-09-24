@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models.Category import Category
-import datetime
+from BackEnd.Database.Models.Category import Category
+from ....Database.connection import db
 
 blueprint = Blueprint('create_category', __name__)
 

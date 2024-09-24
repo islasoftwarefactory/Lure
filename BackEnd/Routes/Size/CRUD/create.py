@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Size
+from BackEnd.Database.Models.Size import Size
+from ....Database.connection import db
 
 blueprint = Blueprint('create_size', __name__)
 

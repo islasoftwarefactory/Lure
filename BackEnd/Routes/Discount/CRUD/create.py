@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models.Discount import Discount
+from BackEnd.Database.Models.Discount import Discount
+from ....Database.connection import db
 
 blueprint = Blueprint('create_discount', __name__)
 

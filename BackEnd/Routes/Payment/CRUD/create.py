@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Payment
+from BackEnd.Database.Models.Payment import Payment
+from ....Database.connection import db
 
 blueprint = Blueprint('create_payment', __name__)
 
