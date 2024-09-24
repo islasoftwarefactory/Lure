@@ -1,3 +1,4 @@
+from .User.CRUD.create import blueprint as create_user_blueprint
 from .User.CRUD.read import blueprint as read_user_blueprint
 from .User.CRUD.update import blueprint as update_user_blueprint
 from .User.CRUD.delete import blueprint as delete_user_blueprint
@@ -43,46 +44,47 @@ from .Size.CRUD.update import blueprint as update_size_blueprint
 from .Size.CRUD.delete import blueprint as delete_size_blueprint
 
 def register_blueprints(app):
-    app.blueprint.register_blueprint(read_user_blueprint, url_prefix="/user")
-    app.blueprint.register_blueprint(update_user_blueprint, url_prefix="/user")
-    app.blueprint.register_blueprint(delete_user_blueprint, url_prefix="/user")
+    app.register_blueprint(create_user_blueprint, url_prefix="/user")
+    app.register_blueprint(read_user_blueprint, url_prefix="/user")
+    app.register_blueprint(update_user_blueprint, url_prefix="/user")
+    app.register_blueprint(delete_user_blueprint, url_prefix="/user")
 
-    app.blueprint.register_blueprint(create_address_blueprint, url_prefix="/address")
-    app.blueprint.register_blueprint(read_address_blueprint, url_prefix="/address")
-    app.blueprint.register_blueprint(update_address_blueprint, url_prefix="/address")
-    app.blueprint.register_blueprint(delete_address_blueprint, url_prefix="/address")
+    app.register_blueprint(create_address_blueprint, url_prefix="/address")
+    app.register_blueprint(read_address_blueprint, url_prefix="/address")
+    app.register_blueprint(update_address_blueprint, url_prefix="/address")
+    app.register_blueprint(delete_address_blueprint, url_prefix="/address")
     
-    app.blueprint.register_blueprint(create_category_blueprint, url_prefix="/category")
-    app.blueprint.register_blueprint(read_category_blueprint, url_prefix="/category")
-    app.blueprint.register_blueprint(update_category_blueprint, url_prefix="/category")
-    app.blueprint.register_blueprint(delete_category_blueprint, url_prefix="/category")
+    app.register_blueprint(create_category_blueprint, url_prefix="/category")
+    app.register_blueprint(read_category_blueprint, url_prefix="/category")
+    app.register_blueprint(update_category_blueprint, url_prefix="/category")
+    app.register_blueprint(delete_category_blueprint, url_prefix="/category")
     
-    app.blueprint.register_blueprint(create_discount_blueprint, url_prefix="/discount")
-    app.blueprint.register_blueprint(read_discount_blueprint, url_prefix="/discount")
-    app.blueprint.register_blueprint(update_discount_blueprint, url_prefix="/discount")
-    app.blueprint.register_blueprint(delete_discount_blueprint, url_prefix="/discount")
+    app.register_blueprint(create_discount_blueprint, url_prefix="/discount")
+    app.register_blueprint(read_discount_blueprint, url_prefix="/discount")
+    app.register_blueprint(update_discount_blueprint, url_prefix="/discount")
+    app.register_blueprint(delete_discount_blueprint, url_prefix="/discount")
     
-    app.blueprint.register_blueprint(create_gender_blueprint, url_prefix="/gender")
-    app.blueprint.register_blueprint(read_gender_blueprint, url_prefix="/gender")
-    app.blueprint.register_blueprint(update_gender_blueprint, url_prefix="/gender")
-    app.blueprint.register_blueprint(delete_gender_blueprint, url_prefix="/gender")
+    app.register_blueprint(create_gender_blueprint, url_prefix="/gender")
+    app.register_blueprint(read_gender_blueprint, url_prefix="/gender")
+    app.register_blueprint(update_gender_blueprint, url_prefix="/gender")
+    app.register_blueprint(delete_gender_blueprint, url_prefix="/gender")
     
-    app.blueprint.register_blueprint(create_payment_blueprint, url_prefix="/payment")
-    app.blueprint.register_blueprint(read_payment_blueprint, url_prefix="/payment")
-    app.blueprint.register_blueprint(update_payment_blueprint, url_prefix="/payment")
-    app.blueprint.register_blueprint(delete_payment_blueprint, url_prefix="/payment")
+    app.register_blueprint(create_payment_blueprint, url_prefix="/payment")
+    app.register_blueprint(read_payment_blueprint, url_prefix="/payment")
+    app.register_blueprint(update_payment_blueprint, url_prefix="/payment")
+    app.register_blueprint(delete_payment_blueprint, url_prefix="/payment")
     
-    app.blueprint.register_blueprint(create_payment_method_blueprint, url_prefix="/payment_method")
-    app.blueprint.register_blueprint(read_payment_method_blueprint, url_prefix="/payment_method")
-    app.blueprint.register_blueprint(update_payment_method_blueprint, url_prefix="/payment_method")
-    app.blueprint.register_blueprint(delete_payment_method_blueprint, url_prefix="/payment_method")
+    app.register_blueprint(create_payment_method_blueprint, url_prefix="/ ")
+    app.register_blueprint(read_payment_method_blueprint, url_prefix="/payment_method")
+    app.register_blueprint(update_payment_method_blueprint, url_prefix="/payment_method")
+    app.register_blueprint(delete_payment_method_blueprint, url_prefix="/payment_method")
     
-    app.blueprint.register_blueprint(create_product_blueprint, url_prefix="/product")
-    app.blueprint.register_blueprint(read_product_blueprint, url_prefix="/product")
-    app.blueprint.register_blueprint(update_product_blueprint, url_prefix="/product")
-    app.blueprint.register_blueprint(delete_product_blueprint, url_prefix="/product")
+    app.register_blueprint(create_product_blueprint, url_prefix="/product")
+    app.register_blueprint(read_product_blueprint, url_prefix="/product")
+    app.register_blueprint(update_product_blueprint, url_prefix="/product")
+    app.register_blueprint(delete_product_blueprint, url_prefix="/product")
     
-    app.blueprint.register_blueprint(create_size_blueprint, url_prefix="/size")
-    app.blueprint.register_blueprint(read_size_blueprint, url_prefix="/size")
-    app.blueprint.register_blueprint(update_size_blueprint, url_prefix="/size")
-    app.blueprint.register_blueprint(delete_size_blueprint, url_prefix="/size")
+    app.register_blueprint(create_size_blueprint, url_prefix="/size")
+    app.register_blueprint(read_size_blueprint, url_prefix="/size")
+    app.register_blueprint(update_size_blueprint, url_prefix="/size")
+    app.register_blueprint(delete_size_blueprint, url_prefix="/size")
