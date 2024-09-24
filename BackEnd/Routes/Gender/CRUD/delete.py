@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Gender
+from BackEnd.Database.Models.Gender import Gender
+from ....Database.connection import db
 
 blueprint = Blueprint('delete_gender', __name__)
 

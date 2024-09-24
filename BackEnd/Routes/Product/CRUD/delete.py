@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models import Product
+from BackEnd.Database.Models.Product import Product
+from ....Database.connection import db
 
 blueprint = Blueprint('delete_product', __name__)
 

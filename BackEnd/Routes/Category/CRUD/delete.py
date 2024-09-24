@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models.Category import Category
+from BackEnd.Database.Models.Category import Category
+from ....Database.connection import db
 
 blueprint = Blueprint('delete_category', __name__)
 

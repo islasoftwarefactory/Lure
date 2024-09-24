@@ -1,6 +1,6 @@
 from flask import jsonify, Blueprint
-from Database.connection import db
-from Database.Models import PaymentMethod
+from BackEnd.Database.Models.PaymentMethod import PaymentMethod
+from ....Database.connection import db
 
 blueprint = Blueprint('delete_payment_method', __name__)
 
