@@ -8,6 +8,7 @@ class Gender(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), nullable=False)
     long_name = db.Column(db.String(50), nullable=False)
+    categories = db.relationship('Category', backref='gender', lazy=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -20,5 +21,6 @@ class Gender(db.Model):
             "name": self.name,
             "long_name": self.long_name,
             "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "updated_at": self.updated_at,
+            "categories": [category.serialize() for category in self.categories]  # Serializar categorias relacionadas
         }
