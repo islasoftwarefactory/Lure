@@ -8,15 +8,15 @@ blueprint = Blueprint('create_size', __name__)
 def create():
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("name")):
+    if not data or not all(field in data for field in ("name", "long_name")):
         return jsonify({"message": "Falta de campos obrigatórios"}), 400
 
-    try:
-        size = Size(
-            name=data["name"],
-            long_name=data.get("long_name")
-        )
+    size = Size(
+        name=data["name"],
+        long_name=data["long_name"]
+    )
 
+    try:
         db.session.add(size)
         db.session.commit()
     except Exception as e:
