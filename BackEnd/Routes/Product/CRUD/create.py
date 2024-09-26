@@ -13,14 +13,14 @@ def create(size_id, category_id, gender_id):
 
     try:
         product = Product(
+            size_id=size_id,
+            category_id=category_id,
+            gender_id=gender_id,
             name=data["name"],
             price=data["price"],
-            size_id=size_id,
             description=data["description"],
-            images_ids=data.get("images_ids"),
             inventory=data["inventory"],
-            category_id=category_id,
-            gender_id=gender_id
+            images_ids=data.get("images_ids"),
         )
 
         db.session.add(product)
