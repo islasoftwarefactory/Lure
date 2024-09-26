@@ -8,14 +8,14 @@ blueprint = Blueprint('create_payment', __name__)
 def create(user_id, payment_method_id):
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("user_id", "total", "checkout_url", "status")):
+    if not data or not all(field in data for field in ("total", "checkout_url", "status")):
         return jsonify({"message": "Falta de campos obrigatórios"}), 400
 
     try:
         payment = Payment(
             user_id=user_id,
-            total=data["total"],
             payment_method_id=payment_method_id,
+            total=data["total"],
             checkout_url=data["checkout_url"],
             status=data["status"]
         )
