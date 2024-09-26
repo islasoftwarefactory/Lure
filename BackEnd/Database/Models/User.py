@@ -8,9 +8,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40), nullable=False)
     email = db.Column(db.String(256), unique=True, nullable=False)
-    photo = db.Column(db.String(256)) # Alterar para api de imagem "URL"
+    photo = db.Column(db.String(256))  # Alterar para API de imagem "URL"
     sso_type = db.Column(db.Enum('Google', 'Apple', name='sso_type_enum'), nullable=False)
-    default_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'))
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -24,7 +23,6 @@ class User(db.Model):
             "email": self.email,
             "photo": self.photo,
             "sso_type": self.sso_type,
-            "default_address_id": self.default_address_id,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
