@@ -74,7 +74,7 @@ def register_blueprints(app):
     app.register_blueprint(update_payment_blueprint, url_prefix="/payment")
     app.register_blueprint(delete_payment_blueprint, url_prefix="/payment")
     
-    app.register_blueprint(create_payment_method_blueprint, url_prefix="/ ")
+    app.register_blueprint(create_payment_method_blueprint, url_prefix="/payment_method")
     app.register_blueprint(read_payment_method_blueprint, url_prefix="/payment_method")
     app.register_blueprint(update_payment_method_blueprint, url_prefix="/payment_method")
     app.register_blueprint(delete_payment_method_blueprint, url_prefix="/payment_method")
