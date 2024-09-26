@@ -7,13 +7,13 @@ class Payment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    cart = db.relationship('Cart', backref='payment', lazy=True)
     total = db.Column(db.Numeric(10, 2), nullable=False)
     payment_method_id = db.Column(db.Integer, db.ForeignKey('payment_methods.id'), nullable=False)
-    checkout_url = db.Column(db.String(100), nullable=False)
+    checkout_url = db.Column(db.String(100), nullable=False) #Subistituri pela API
     status = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
+    cart_id = db.Column(db.Integer, db.ForeignKey('carts.id'), nullable=True)
 
     def __repr__(self):
         return f"<Payment {self.id}, User_id: {self.user_id}, Total: {self.total}>"
