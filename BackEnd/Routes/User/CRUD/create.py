@@ -2,8 +2,6 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.User import User
 from ....Database.connection import db
 
-# Quando usuario efetua o pedido o endereço é salvo, antes disso, nada existe
-
 blueprint = Blueprint('create_user', __name__)
 
 @blueprint.route("/create", methods=["POST"])
@@ -15,7 +13,6 @@ def create():
         email=data["email"],
         photo=data["photo"],
         sso_type=data["sso_type"],
-        # default_address_id=data["default_address_id"]
     )
 
     try:
