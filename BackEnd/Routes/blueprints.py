@@ -43,6 +43,17 @@ from .Size.CRUD.read import blueprint as read_size_blueprint
 from .Size.CRUD.update import blueprint as update_size_blueprint
 from .Size.CRUD.delete import blueprint as delete_size_blueprint
 
+from .Cart.CRUD.create import blueprint as create_cart_blueprint
+from .Cart.CRUD.read import blueprint as read_cart_blueprint
+from .Cart.CRUD.update import blueprint as update_cart_blueprint
+from .Cart.CRUD.delete import blueprint as delete_cart_blueprint
+
+from .ImageCategory.CRUD.create import create_image_category
+from .ImageCategory.CRUD.read import read_image_category
+from .ImageCategory.CRUD.update import update_image_category
+from .ImageCategory.CRUD.delete import delete_image_category
+
+
 def register_blueprints(app):
     app.register_blueprint(create_user_blueprint, url_prefix="/user")
     app.register_blueprint(read_user_blueprint, url_prefix="/user")
@@ -88,3 +99,13 @@ def register_blueprints(app):
     app.register_blueprint(read_size_blueprint, url_prefix="/size")
     app.register_blueprint(update_size_blueprint, url_prefix="/size")
     app.register_blueprint(delete_size_blueprint, url_prefix="/size")
+
+    app.register_blueprint(create_cart_blueprint, url_prefix="/cart")
+    app.register_blueprint(read_cart_blueprint, url_prefix="/cart")
+    app.register_blueprint(update_cart_blueprint, url_prefix="/cart")
+    app.register_blueprint(delete_cart_blueprint, url_prefix="/cart")
+
+    app.register_blueprint(create_image_category, url_prefix="/image_category")
+    app.register_blueprint(read_image_category, url_prefix="/image_category")
+    app.register_blueprint(update_image_category, url_prefix="/image_category")
+    app.register_blueprint(delete_image_category, url_prefix="/image_category")
