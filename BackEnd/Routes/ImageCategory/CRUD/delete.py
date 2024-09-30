@@ -1,16 +1,20 @@
-from flask import Blueprint, jsonify
-from ..Models.ImageCategory import ImageCategory
-from ..connection import db
+from flask import Blueprint, request, jsonify
+from BackEnd.Database.Models.ImageCategory import ImageCategory
+from ....Database.connection import db
 
-blueprint = Blueprint('image_category_delete', __name__)
+blueprint = Blueprint('delete_image_category', __name__)
 
-@blueprint.route('/read/<int:id>', methods=['DELETE'])
+@blueprint.route('/delete/<int:id>', methods=['DELETE'])
 def delete_image_category(id):
-    category = ImageCategory.query.get(id)
-    if not category:
-        return jsonify({'error': 'ImageCategory not found'}), 404
+    try:
+        category = ImageCategory.query.get(id)
+        if not category:
+            return jsonify({'error': 'ImageCategory not found'}), 404
 
-    db.session.delete(category)
-    db.session.commit()
+        db.session.delete(category)
+        db.session.commit()
 
-    return jsonify({'message': 'ImageCategory deleted successfully'}), 200
+        return jsonify({'message': 'ImageCategory deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete image category: {str(e)}'}), 500

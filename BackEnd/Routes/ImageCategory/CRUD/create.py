@@ -1,17 +1,26 @@
 from flask import Blueprint, request, jsonify
-from ..Models.ImageCategory import ImageCategory
-from ..connection import db
+from BackEnd.Database.Models.ImageCategory import ImageCategory
+from ....Database.connection import db
 
-image_category_bp = Blueprint('image_category', __name__)
+blueprint = Blueprint('create_image_category', __name__)
 
-@image_category_bp.route('/image_category', methods=['POST'])
-def create_image_category():
+@blueprint.route('/create', methods=['POST'])
+def create():
     data = request.get_json()
     if not data or 'name' not in data:
         return jsonify({'error': 'Name is required'}), 400
+    try:
+        image_category = ImageCategory(
+            name=data["name"]
+        )
+    
+        db.session.add(image_category)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Falha ao criar o image category: {str(e)}"}), 500
 
-    new_category = ImageCategory(name=data['name'])
-    db.session.add(new_category)
-    db.session.commit()
-
-    return jsonify(new_category.serialize()), 201
+    return jsonify({
+        "data": image_category.serialize(),
+        "message": "Image category criado com sucesso."
+    }), 20
