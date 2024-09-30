@@ -8,7 +8,7 @@ blueprint = Blueprint('update_product', __name__)
 def update(id):
     product = Product.query.get(id)
     if product is None:
-        return jsonify({"error": "Produto não encontrado"}), 404
+        return jsonify({"error": "Product not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o produto: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update product: {str(e)}"}), 500
 
     return jsonify({
         "data": product.serialize(),
-        "message": "Produto atualizado com sucesso."
+        "message": "Product updated successfully."
     }), 200

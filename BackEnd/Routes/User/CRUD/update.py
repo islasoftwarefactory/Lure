@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
+from BackEnd.Database.Models.User import User
 from ....Database.connection import db
-from ....Database.Models import User
-
 
 blueprint = Blueprint('update_user', __name__)
 
@@ -9,7 +8,7 @@ blueprint = Blueprint('update_user', __name__)
 def update(id):
     user = User.query.get(id)
     if user is None:
-        return jsonify({"error": "Usuário não encontrado"}), 404
+        return jsonify({"error": "User not found"}), 404
 
     data = request.get_json()
 
@@ -28,9 +27,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o usuário: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update user: {str(e)}"}), 500
 
     return jsonify({
         "data": user.serialize(),
-        "message": "Usuário atualizado com sucesso."
+        "message": "User updated successfully."
     }), 200

@@ -7,11 +7,11 @@ blueprint = Blueprint('read_size', __name__)
 def read(id):
     size = Size.query.get(id)
     if size is None:
-        return jsonify({"error": "Tamanho não encontrado"}), 404
+        return jsonify({"error": "Size not found"}), 404
 
     return jsonify({
         "data": size.serialize(),
-        "message": "Tamanho retornado com sucesso."
+        "message": "Size retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": sizes_data,
-        "message": "Tamanhos retornados com sucesso."
+        "message": "Sizes retrieved successfully."
     }), 200

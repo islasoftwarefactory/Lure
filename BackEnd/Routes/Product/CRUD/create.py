@@ -9,7 +9,7 @@ def create(size_id, category_id, gender_id):
     data = request.get_json()
 
     if not data or not all(field in data for field in ("name", "price", "description", "inventory")):
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     try:
         product = Product(
@@ -27,9 +27,9 @@ def create(size_id, category_id, gender_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o produto: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create product: {str(e)}"}), 500
 
     return jsonify({
         "data": product.serialize(),
-        "message": "Produto criado com sucesso."
+        "message": "Product created successfully."
     }), 201

@@ -8,13 +8,13 @@ blueprint = Blueprint('delete_cart', __name__)
 def delete(id):
     cart = Cart.query.get(id)
     if cart is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Cart not found"}), 404
 
     try:
         db.session.delete(cart)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar a categoria: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete cart: {str(e)}"}), 500
 
-    return jsonify({"message": "Categoria deletada com sucesso"}), 200
+    return jsonify({"message": "Cart deleted successfully"}), 200

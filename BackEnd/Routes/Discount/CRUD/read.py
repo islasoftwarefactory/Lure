@@ -7,11 +7,11 @@ blueprint = Blueprint('read_discount', __name__)
 def read(id):
     discount = Discount.query.get(id)
     if discount is None:
-        return jsonify({"error": "Desconto não encontrado"}), 404
+        return jsonify({"error": "Discount not found"}), 404
 
     return jsonify({
         "data": discount.serialize(),
-        "message": "Desconto retornado com sucesso."
+        "message": "Discount retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": discounts_data,
-        "message": "Descontos retornados com sucesso."
+        "message": "Discounts retrieved successfully."
     }), 200

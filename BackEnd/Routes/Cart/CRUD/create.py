@@ -9,7 +9,7 @@ def create(user_id, product_id, discount_id):
     data = request.get_json()
 
     if not data or "status" not in data:
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     try:
         cart = Cart(
@@ -23,9 +23,9 @@ def create(user_id, product_id, discount_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o carrinho: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create cart: {str(e)}"}), 500
 
     return jsonify({
         "data": cart.serialize(),
-        "message": "Carrinho criado com sucesso."
+        "message": "Cart created successfully."
     }), 201

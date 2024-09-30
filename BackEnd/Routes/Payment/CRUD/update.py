@@ -8,7 +8,7 @@ blueprint = Blueprint('update_payment', __name__)
 def update(id):
     payment = Payment.query.get(id)
     if payment is None:
-        return jsonify({"error": "Pagamento não encontrado"}), 404
+        return jsonify({"error": "Payment not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o pagamento: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update payment: {str(e)}"}), 500
 
     return jsonify({
         "data": payment.serialize(),
-        "message": "Pagamento atualizado com sucesso."
+        "message": "Payment updated successfully."
     }), 200

@@ -8,7 +8,7 @@ blueprint = Blueprint('update_cart', __name__)
 def update(id):
     cart = Cart.query.get(id)
     if cart is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Cart not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar a categoria: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update cart: {str(e)}"}), 500
 
     return jsonify({
         "data": cart.serialize(),
-        "message": "Categoria atualizada com sucesso."
+        "message": "Cart updated successfully."
     }), 200

@@ -8,13 +8,13 @@ blueprint = Blueprint('delete_category', __name__)
 def delete(id):
     category = Category.query.get(id)
     if category is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Category not found"}), 404
 
     try:
         db.session.delete(category)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar a categoria: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete category: {str(e)}"}), 500
 
-    return jsonify({"message": "Categoria deletada com sucesso"}), 200
+    return jsonify({"message": "Category deleted successfully"}), 200

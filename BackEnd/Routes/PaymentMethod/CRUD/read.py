@@ -7,11 +7,11 @@ blueprint = Blueprint('read_payment_method', __name__)
 def read(id):
     payment_method = PaymentMethod.query.get(id)
     if payment_method is None:
-        return jsonify({"error": "Método de pagamento não encontrado"}), 404
+        return jsonify({"error": "Payment method not found"}), 404
 
     return jsonify({
         "data": payment_method.serialize(),
-        "message": "Método de pagamento retornado com sucesso."
+        "message": "Payment method retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": payment_methods_data,
-        "message": "Métodos de pagamento retornados com sucesso."
+        "message": "Payment methods retrieved successfully."
     }), 200

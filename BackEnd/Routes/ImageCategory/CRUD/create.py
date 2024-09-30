@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.ImageCategory import ImageCategory
 from ....Database.connection import db
 
@@ -18,9 +18,9 @@ def create():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o image category: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create image category: {str(e)}"}), 500
 
     return jsonify({
         "data": image_category.serialize(),
-        "message": "Image category criado com sucesso."
-    }), 20
+        "message": "Image category created successfully."
+    }), 201

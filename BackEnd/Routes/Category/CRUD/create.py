@@ -10,11 +10,11 @@ def create(gender_id):
     data = request.get_json()
 
     if not data or not all(field in data for field in ("name",)):
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     gender = Gender.query.get(gender_id)
     if not gender:
-        return jsonify({"message": "Gender não encontrado"}), 404
+        return jsonify({"message": "Gender not found"}), 404
 
     try:
         category = Category(
@@ -26,9 +26,9 @@ def create(gender_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar a categoria: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create category: {str(e)}"}), 500
 
     return jsonify({
         "data": category.serialize(),
-        "message": "Categoria criada com sucesso."
+        "message": "Category created successfully."
     }), 201

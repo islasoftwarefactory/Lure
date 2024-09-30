@@ -7,19 +7,19 @@ blueprint = Blueprint('read_cart', __name__)
 def read(id):
     cart = Cart.query.get(id)
     if cart is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Cart not found"}), 404
 
     return jsonify({
         "data": cart.serialize(),
-        "message": "Categoria retornada com sucesso."
+        "message": "Cart retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
 def read_all():
-    categories = Cart.query.all()
-    categories_data = [category.serialize() for category in categories]
+    carts = Cart.query.all()
+    carts_data = [cart.serialize() for cart in carts]
 
     return jsonify({
-        "data": categories_data,
-        "message": "Categorias retornadas com sucesso."
+        "data": carts_data,
+        "message": "Carts retrieved successfully."
     }), 200

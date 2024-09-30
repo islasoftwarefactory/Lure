@@ -7,11 +7,11 @@ blueprint = Blueprint('read_category', __name__)
 def read(id):
     category = Category.query.get(id)
     if category is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Category not found"}), 404
 
     return jsonify({
         "data": category.serialize(),
-        "message": "Categoria retornada com sucesso."
+        "message": "Category retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": categories_data,
-        "message": "Categorias retornadas com sucesso."
+        "message": "Categories retrieved successfully."
     }), 200

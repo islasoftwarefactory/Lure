@@ -8,7 +8,7 @@ blueprint = Blueprint('update_payment_method', __name__)
 def update(id):
     payment_method = PaymentMethod.query.get(id)
     if payment_method is None:
-        return jsonify({"error": "Método de pagamento não encontrado"}), 404
+        return jsonify({"error": "Payment method not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o método de pagamento: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update payment method: {str(e)}"}), 500
 
     return jsonify({
         "data": payment_method.serialize(),
-        "message": "Método de pagamento atualizado com sucesso."
+        "message": "Payment method updated successfully."
     }), 200

@@ -7,11 +7,11 @@ blueprint = Blueprint('read_product', __name__)
 def read(id):
     product = Product.query.get(id)
     if product is None:
-        return jsonify({"error": "Produto não encontrado"}), 404
+        return jsonify({"error": "Product not found"}), 404
 
     return jsonify({
         "data": product.serialize(),
-        "message": "Produto retornado com sucesso."
+        "message": "Product retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": products_data,
-        "message": "Produtos retornados com sucesso."
+        "message": "Products retrieved successfully."
     }), 200

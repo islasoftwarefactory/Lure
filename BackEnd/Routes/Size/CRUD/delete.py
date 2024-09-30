@@ -1,6 +1,5 @@
 from flask import jsonify, Blueprint
 from BackEnd.Database.Models.Size import Size
-from ....Database.connection import db
 
 blueprint = Blueprint('delete_size', __name__)
 
@@ -8,13 +7,13 @@ blueprint = Blueprint('delete_size', __name__)
 def delete(id):
     size = Size.query.get(id)
     if size is None:
-        return jsonify({"error": "Tamanho não encontrado"}), 404
+        return jsonify({"error": "Size not found"}), 404
 
     try:
         db.session.delete(size)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar o tamanho: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete size: {str(e)}"}), 500
 
-    return jsonify({"message": "Tamanho deletado com sucesso"}), 200
+    return jsonify({"message": "Size deleted successfully"}), 200

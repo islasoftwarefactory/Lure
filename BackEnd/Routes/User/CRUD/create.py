@@ -20,9 +20,9 @@ def create():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o usuário: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create user: {str(e)}"}), 500
 
     return jsonify({
         "data": user.serialize(),
-        "message": "Usuário criado com sucesso."
+        "message": "User created successfully."
     }), 201

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.ImageCategory import ImageCategory
 from ....Database.connection import db
 

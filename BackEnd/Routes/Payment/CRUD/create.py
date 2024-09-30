@@ -9,7 +9,7 @@ def create(user_id, payment_method_id):
     data = request.get_json()
 
     if not data or not all(field in data for field in ("total", "checkout_url", "status")):
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     try:
         payment = Payment(
@@ -24,10 +24,9 @@ def create(user_id, payment_method_id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o pagamento: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create payment: {str(e)}"}), 500
 
     return jsonify({
         "data": payment.serialize(),
-        "message": "Pagamento criado com sucesso."
+        "message": "Payment created successfully."
     }), 201
- 

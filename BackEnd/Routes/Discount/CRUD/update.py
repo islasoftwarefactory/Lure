@@ -8,7 +8,7 @@ blueprint = Blueprint('update_discount', __name__)
 def update(id):
     discount = Discount.query.get(id)
     if discount is None:
-        return jsonify({"error": "Desconto não encontrado"}), 404
+        return jsonify({"error": "Discount not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o desconto: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update discount: {str(e)}"}), 500
 
     return jsonify({
         "data": discount.serialize(),
-        "message": "Desconto atualizado com sucesso."
+        "message": "Discount updated successfully."
     }), 200

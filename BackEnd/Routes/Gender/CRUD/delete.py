@@ -8,13 +8,13 @@ blueprint = Blueprint('delete_gender', __name__)
 def delete(id):
     gender = Gender.query.get(id)
     if gender is None:
-        return jsonify({"error": "Gênero não encontrado"}), 404
+        return jsonify({"error": "Gender not found"}), 404
 
     try:
         db.session.delete(gender)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar o gênero: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete gender: {str(e)}"}), 500
 
-    return jsonify({"message": "Gênero deletado com sucesso"}), 200
+    return jsonify({"message": "Gender deleted successfully"}), 200

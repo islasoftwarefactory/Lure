@@ -7,11 +7,11 @@ blueprint = Blueprint('read_address', __name__)
 def read(id):
     address = Address.query.get(id)
     if address is None:
-        return jsonify({"error": "Endereço não encontrado"}), 404
+        return jsonify({"error": "Address not found"}), 404
 
     return jsonify({
         "data": address.serialize(),
-        "message": "Endereço retornado com sucesso."
+        "message": "Address retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": addresses_data,
-        "message": "Endereços retornados com sucesso."
+        "message": "Addresses retrieved successfully."
     }), 200

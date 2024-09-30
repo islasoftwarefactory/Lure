@@ -2,14 +2,13 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Address import Address
 from ....Database.connection import db
 
-
 blueprint = Blueprint('update_address', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
 def update(id):
     address = Address.query.get(id)
     if address is None:
-        return jsonify({"error": "Endereço não encontrado"}), 404
+        return jsonify({"error": "Address not found"}), 404
 
     data = request.get_json()
 
@@ -24,9 +23,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o endereço: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update address: {str(e)}"}), 500
 
     return jsonify({
         "data": address.serialize(),
-        "message": "Endereço atualizado com sucesso."
+        "message": "Address updated successfully."
     }), 200

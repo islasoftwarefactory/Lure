@@ -8,13 +8,13 @@ blueprint = Blueprint('delete_discount', __name__)
 def delete(id):
     discount = Discount.query.get(id)
     if discount is None:
-        return jsonify({"error": "Desconto não encontrado"}), 404
+        return jsonify({"error": "Discount not found"}), 404
 
     try:
         db.session.delete(discount)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar o desconto: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete discount: {str(e)}"}), 500
 
-    return jsonify({"message": "Desconto deletado com sucesso"}), 200
+    return jsonify({"message": "Discount deleted successfully"}), 200

@@ -8,7 +8,7 @@ blueprint = Blueprint('update_category', __name__)
 def update(id):
     category = Category.query.get(id)
     if category is None:
-        return jsonify({"error": "Categoria não encontrada"}), 404
+        return jsonify({"error": "Category not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar a categoria: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update category: {str(e)}"}), 500
 
     return jsonify({
         "data": category.serialize(),
-        "message": "Categoria atualizada com sucesso."
+        "message": "Category updated successfully."
     }), 200

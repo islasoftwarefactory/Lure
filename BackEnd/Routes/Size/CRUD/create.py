@@ -9,7 +9,7 @@ def create():
     data = request.get_json()
 
     if not data or not all(field in data for field in ("name", "long_name")):
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     size = Size(
         name=data["name"],
@@ -21,9 +21,9 @@ def create():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o tamanho: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create size: {str(e)}"}), 500
 
     return jsonify({
         "data": size.serialize(),
-        "message": "Tamanho criado com sucesso."
+        "message": "Size created successfully."
     }), 201

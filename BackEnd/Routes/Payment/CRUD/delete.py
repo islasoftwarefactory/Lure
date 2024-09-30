@@ -8,13 +8,13 @@ blueprint = Blueprint('delete_payment', __name__)
 def delete(id):
     payment = Payment.query.get(id)
     if payment is None:
-        return jsonify({"error": "Pagamento não encontrado"}), 404
+        return jsonify({"error": "Payment not found"}), 404
 
     try:
         db.session.delete(payment)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao deletar o pagamento: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to delete payment: {str(e)}"}), 500
 
-    return jsonify({"message": "Pagamento deletado com sucesso"}), 200
+    return jsonify({"message": "Payment deleted successfully"}), 200

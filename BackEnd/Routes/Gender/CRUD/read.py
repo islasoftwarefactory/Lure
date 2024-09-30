@@ -7,11 +7,11 @@ blueprint = Blueprint('read_gender', __name__)
 def read(id):
     gender = Gender.query.get(id)
     if gender is None:
-        return jsonify({"error": "Gênero não encontrado"}), 404
+        return jsonify({"error": "Gender not found"}), 404
 
     return jsonify({
         "data": gender.serialize(),
-        "message": "Gênero retornado com sucesso."
+        "message": "Gender retrieved successfully."
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
@@ -21,5 +21,5 @@ def read_all():
 
     return jsonify({
         "data": genders_data,
-        "message": "Gêneros retornados com sucesso."
+        "message": "Genders retrieved successfully."
     }), 200

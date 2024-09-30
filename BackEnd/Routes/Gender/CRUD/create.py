@@ -9,7 +9,7 @@ def create():
     data = request.get_json()
 
     if not data or not all(field in data for field in ("name", "long_name")):
-        return jsonify({"message": "Falta de campos obrigatórios"}), 400
+        return jsonify({"message": "Missing required fields"}), 400
 
     try:
         gender = Gender(
@@ -21,9 +21,9 @@ def create():
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao criar o gênero: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to create gender: {str(e)}"}), 500
 
     return jsonify({
         "data": gender.serialize(),
-        "message": "Gênero criado com sucesso."
+        "message": "Gender created successfully."
     }), 201

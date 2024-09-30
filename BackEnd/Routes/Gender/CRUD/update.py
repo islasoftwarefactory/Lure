@@ -8,7 +8,7 @@ blueprint = Blueprint('update_gender', __name__)
 def update(id):
     gender = Gender.query.get(id)
     if gender is None:
-        return jsonify({"error": "Gênero não encontrado"}), 404
+        return jsonify({"error": "Gender not found"}), 404
 
     data = request.get_json()
 
@@ -20,9 +20,9 @@ def update(id):
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Falha ao atualizar o gênero: {str(e)}"}), 500
+        return jsonify({"error": f"Failed to update gender: {str(e)}"}), 500
 
     return jsonify({
         "data": gender.serialize(),
-        "message": "Gênero atualizado com sucesso."
+        "message": "Gender updated successfully."
     }), 200
