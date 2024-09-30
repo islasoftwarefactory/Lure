@@ -48,10 +48,10 @@ from .Cart.CRUD.read import blueprint as read_cart_blueprint
 from .Cart.CRUD.update import blueprint as update_cart_blueprint
 from .Cart.CRUD.delete import blueprint as delete_cart_blueprint
 
-from .ImageCategory.CRUD.create import create_image_category
-from .ImageCategory.CRUD.read import read_image_category
-from .ImageCategory.CRUD.update import update_image_category
-from .ImageCategory.CRUD.delete import delete_image_category
+from .ImageCategory.CRUD.create import blueprint as create_image_category
+from .ImageCategory.CRUD.read import blueprint as read_image_category
+from .ImageCategory.CRUD.update import blueprint as update_image_category
+from .ImageCategory.CRUD.delete import blueprint as delete_image_category
 
 
 def register_blueprints(app):
