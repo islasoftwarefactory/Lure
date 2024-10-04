@@ -69,16 +69,23 @@ export function HomePage() {
   const [showSizes, setShowSizes] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [sizes, setSizes] = useState<string[]>(['S', 'M', 'L']);
+  const [sizeError, setSizeError] = useState('');
   const navigate = useNavigate();
 
   const incrementQuantity = () => setQuantity(prev => prev + 1);
   const decrementQuantity = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
-  const addToCart = () => {
+  const validateSize = () => {
     if (!selectedSize) {
-      alert('Please select a size');
-      return;
+      setSizeError('Please select a size');
+      return false;
     }
+    setSizeError('');
+    return true;
+  };
+
+  const addToCart = () => {
+    if (!validateSize()) return;
 
     const newItem: CartItem = {
       id: `hoodie-${selectedSize}-${Date.now()}`,
@@ -91,18 +98,16 @@ export function HomePage() {
 
     setCartItems(prevItems => [...prevItems, newItem]);
     setIsModalOpen(false);
-    setIsCartOpen(true); // Abre o carrinho automaticamente
+    setIsCartOpen(true);
     
     // Reset modal state
     setSelectedSize('');
     setQuantity(1);
+    setSizeError('');
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize) {
-      alert('Please select a size');
-      return;
-    }
+    if (!validateSize()) return;
 
     const item: CartItem = {
       id: `hoodie-${selectedSize}-${Date.now()}`,
@@ -176,7 +181,7 @@ export function HomePage() {
           <div className="mt-3 relative">
             <button 
               onClick={() => setShowSizes(!showSizes)}
-              className="w-full bg-white text-black px-3 py-2 text-sm rounded border border-black hover:bg-gray-100"
+              className={`w-full bg-[#f2f2f2] text-black px-3 py-2 text-sm rounded border ${sizeError ? 'border-red-500' : 'border-black'} hover:bg-gray-100 transition duration-300 ease-in-out hover:shadow-md`}
             >
               {selectedSize ? `Size: ${selectedSize}` : 'Select Size'}
             </button>
@@ -188,32 +193,34 @@ export function HomePage() {
                     onClick={() => {
                       setSelectedSize(size);
                       setShowSizes(false);
+                      setSizeError('');
                     }}
-                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100"
+                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition duration-300 ease-in-out"
                   >
                     {size}
                   </button>
                 ))}
               </div>
             )}
+            {sizeError && <p className="text-red-500 text-xs mt-1">{sizeError}</p>}
           </div>
 
           <div className="mt-3 flex items-center justify-center space-x-4">
-            <button onClick={decrementQuantity} className="px-2 py-1 bg-gray-200 rounded text-lg font-bold">-</button>
+            <button onClick={decrementQuantity} className="px-2 py-1 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300 transition duration-300 ease-in-out">-</button>
             <span className="text-lg font-bold">{quantity}</span>
-            <button onClick={incrementQuantity} className="px-2 py-1 bg-gray-200 rounded text-lg font-bold">+</button>
+            <button onClick={incrementQuantity} className="px-2 py-1 bg-gray-200 rounded text-lg font-bold hover:bg-gray-300 transition duration-300 ease-in-out">+</button>
           </div>
 
           <div className="mt-3 space-y-2">
             <button 
               onClick={handleBuyNow}
-              className="w-full bg-black text-white px-3 py-2 text-sm rounded hover:bg-gray-800"
+              className="w-full bg-black text-white px-3 py-2 text-sm rounded hover:bg-gray-800 transition duration-300 ease-in-out hover:shadow-md"
             >
               Buy Now
             </button>
             <button 
               onClick={addToCart}
-              className="w-full bg-white text-black px-3 py-2 text-sm rounded border border-black hover:bg-gray-100"
+              className="w-full bg-[#e5e7eb] text-black px-3 py-2 text-sm rounded border border-black hover:bg-gray-200 transition duration-300 ease-in-out hover:shadow-md"
             >
               Add to Cart
             </button>
@@ -228,7 +235,7 @@ export function HomePage() {
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2"
+          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
         >
           <Link to="/instagram" className="text-black">
             <img src={InstagramIcon} alt="Instagram" className="w-6 h-6" />
@@ -237,7 +244,7 @@ export function HomePage() {
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2"
+          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
         >
           <Link to="/tiktok" className="text-black">
             <img src={TikTokIcon} alt="TikTok" className="w-6 h-6" />
@@ -246,7 +253,7 @@ export function HomePage() {
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2"
+          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
         >
           <Link to="/pinterest" className="text-black">
             <img src={PinterestIcon} alt="Pinterest" className="w-6 h-6" />

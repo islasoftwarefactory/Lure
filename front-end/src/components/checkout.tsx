@@ -27,24 +27,39 @@ export function CheckoutComponent() {
   const [address, setAddress] = useState('')
   const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCheckoutStep('shipping')
-  }
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!email.trim()) newErrors.email = 'Email is required';
+    if (!firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!address.trim()) newErrors.address = 'Address is required';
+    if (!city.trim()) newErrors.city = 'City is required';
+    if (!state.trim()) newErrors.state = 'State is required';
+    if (!postalCode.trim()) newErrors.postalCode = 'Postal code is required';
 
-  const handleContinueToPayment = () => {
-    navigate('/order-confirmation')
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmitInitial = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (validateForm()) {
+      console.log('Form is valid, proceeding to payment');
+      setCheckoutStep('shipping');
+    } else {
+      console.log('Form is invalid');
+    }
+  };
 
   const fullAddress = `${address}, ${city}, ${state} ${postalCode}, ${country}`
 
-  const handleSubmitInitial = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCheckoutStep('shipping')
-  }
-
-  const fullAddressInitial = `${address}, ${city}, ${state} ${postalCode}, ${country}`
+  const handleContinueToPayment = () => {
+    // Implement logic to continue to payment
+    console.log('Continuing to payment');
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
@@ -80,8 +95,9 @@ export function CheckoutComponent() {
                           placeholder="Your email address"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
-                          required
+                          className={errors.email ? 'border-red-500' : ''}
                         />
+                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                       </div>
                     </CardContent>
                   </Card>
@@ -102,26 +118,71 @@ export function CheckoutComponent() {
                       </Select>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
-                        <Input placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+                        <div>
+                          <Input 
+                            placeholder="First name" 
+                            value={firstName} 
+                            onChange={(e) => setFirstName(e.target.value)}
+                            className={errors.firstName ? 'border-red-500' : ''}
+                          />
+                          {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+                        </div>
+                        <div>
+                          <Input 
+                            placeholder="Last name" 
+                            value={lastName} 
+                            onChange={(e) => setLastName(e.target.value)}
+                            className={errors.lastName ? 'border-red-500' : ''}
+                          />
+                          {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
+                        </div>
                       </div>
 
-                      <Input placeholder="Postal code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} required />
-                      <Input placeholder="Address" value={address} onChange={(e) => setAddress(e.target.value)} required />
+                      <div>
+                        <Input 
+                          placeholder="Postal code" 
+                          value={postalCode} 
+                          onChange={(e) => setPostalCode(e.target.value)}
+                          className={errors.postalCode ? 'border-red-500' : ''}
+                        />
+                        {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>}
+                      </div>
+
+                      <div>
+                        <Input 
+                          placeholder="Address" 
+                          value={address} 
+                          onChange={(e) => setAddress(e.target.value)}
+                          className={errors.address ? 'border-red-500' : ''}
+                        />
+                        {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+                      </div>
+
                       <Input placeholder="Apartment, suite, etc. (optional)" />
 
                       <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} required />
-                        <Select value={state} onValueChange={setState}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="State" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="SP">São Paulo</SelectItem>
-                            <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                            {/* Add more states as needed */}
-                          </SelectContent>
-                        </Select>
+                        <div>
+                          <Input 
+                            placeholder="City" 
+                            value={city} 
+                            onChange={(e) => setCity(e.target.value)}
+                            className={errors.city ? 'border-red-500' : ''}
+                          />
+                          {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
+                        </div>
+                        <div>
+                          <Select value={state} onValueChange={setState}>
+                            <SelectTrigger className={errors.state ? 'border-red-500' : ''}>
+                              <SelectValue placeholder="State" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="SP">São Paulo</SelectItem>
+                              <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                              {/* Add more states as needed */}
+                            </SelectContent>
+                          </Select>
+                          {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
+                        </div>
                       </div>
 
                       <Input placeholder="Phone (optional)" />
