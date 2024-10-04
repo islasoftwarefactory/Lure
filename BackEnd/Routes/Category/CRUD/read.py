@@ -1,10 +1,12 @@
 from flask import jsonify, Blueprint
 from BackEnd.Database.Models.Category import Category
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('read_category', __name__)
 
 @blueprint.route("/read/<int:id>", methods=["GET"])
-def read(id):
+@token_required
+def read(current_user_id, id):
     category = Category.query.get(id)
     if category is None:
         return jsonify({"error": "Category not found"}), 404
@@ -15,7 +17,8 @@ def read(id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
-def read_all():
+@token_required
+def read_all(current_user_id):
     categories = Category.query.all()
     categories_data = [category.serialize() for category in categories]
 

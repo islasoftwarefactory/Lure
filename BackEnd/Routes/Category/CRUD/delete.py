@@ -1,11 +1,13 @@
 from flask import jsonify, Blueprint
 from BackEnd.Database.Models.Category import Category
-from ....Database.connection import db
+from BackEnd.Database.connection import db
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('delete_category', __name__)
 
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
+@token_required
+def delete(current_user_id, id):
     category = Category.query.get(id)
     if category is None:
         return jsonify({"error": "Category not found"}), 404
@@ -17,4 +19,6 @@ def delete(id):
         db.session.rollback()
         return jsonify({"error": f"Failed to delete category: {str(e)}"}), 500
 
-    return jsonify({"message": "Category deleted successfully"}), 200
+    return jsonify({
+        "message": "Category deleted successfully."
+    }), 200

@@ -1,25 +1,26 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Category import Category
-from ....Database.connection import db
-from ....validators.category_validators import validate_category_creation
+from BackEnd.Database.connection import db
+from BackEnd.validators.category_validators import validate_category_update
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('update_category', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user_id, id):
     category = Category.query.get(id)
     if category is None:
         return jsonify({"error": "Category not found"}), 404
 
     data = request.get_json()
 
-    validation_errors = validate_category_creation(data)
+    validation_errors = validate_category_update(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    for field in ("name", "gender_id"):
-        if field in data:
-            setattr(category, field, data[field])
+    if "name" in data:
+        category.name = data["name"]
 
     try:
         db.session.commit()

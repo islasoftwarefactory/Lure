@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.User import User
 from BackEnd.Database.connection import db
 from BackEnd.validators.user_validators import validate_user_creation
+from ...utils.jwt_utils import generate_token
 
 blueprint = Blueprint('create_user', __name__)
 

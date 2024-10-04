@@ -1,11 +1,13 @@
 from flask import jsonify, Blueprint
 from BackEnd.Database.Models.Discount import Discount
-from ....Database.connection import db
+from BackEnd.Database.connection import db
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('delete_discount', __name__)
 
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
+@token_required
+def delete(current_user_id, id):
     discount = Discount.query.get(id)
     if discount is None:
         return jsonify({"error": "Discount not found"}), 404
@@ -17,4 +19,6 @@ def delete(id):
         db.session.rollback()
         return jsonify({"error": f"Failed to delete discount: {str(e)}"}), 500
 
-    return jsonify({"message": "Discount deleted successfully"}), 200
+    return jsonify({
+        "message": "Discount deleted successfully."
+    }), 200

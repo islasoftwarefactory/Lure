@@ -1,25 +1,26 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.PaymentMethod import PaymentMethod
-from ....Database.connection import db
-from ....validators.payment_method_validators import validate_payment_method_creation
+from BackEnd.Database.connection import db
+from BackEnd.validators.payment_method_validators import validate_payment_method_update
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('update_payment_method', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user_id, id):
     payment_method = PaymentMethod.query.get(id)
     if payment_method is None:
         return jsonify({"error": "Payment method not found"}), 404
 
     data = request.get_json()
 
-    validation_errors = validate_payment_method_creation(data)
+    validation_errors = validate_payment_method_update(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    for field in ("name", "long_name"):
-        if field in data:
-            setattr(payment_method, field, data[field])
+    if "name" in data:
+        payment_method.name = data["name"]
 
     try:
         db.session.commit()

@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.User import User
 from BackEnd.Database.connection import db
 from BackEnd.validators.user_validators import validate_user_update
+from ...utils.jwt_utils import generate_token
 
 blueprint = Blueprint('update_user', __name__)
 
@@ -36,3 +37,9 @@ def update(id):
         "data": user.serialize(),
         "message": "User updated successfully."
     }), 200
+
+@app.route('/refresh-token', methods=['POST'])
+@token_required
+def refresh_token(current_user_id):
+    new_token = generate_token(current_user_id)
+    return jsonify({'token': new_token}), 200

@@ -2,10 +2,12 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Product import Product
 from ....Database.connection import db
 from ....validators.product_validators import validate_product_creation
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('update_product', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
+@token_required
 def update(id):
     product = Product.query.get(id)
     if product is None:

@@ -1,23 +1,25 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Discount import Discount
-from ....Database.connection import db
-from ....validators.discount_validators import validate_discount_creation
+from BackEnd.Database.connection import db
+from BackEnd.validators.discount_validators import validate_discount_update
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('update_discount', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user_id, id):
     discount = Discount.query.get(id)
     if discount is None:
         return jsonify({"error": "Discount not found"}), 404
 
     data = request.get_json()
 
-    validation_errors = validate_discount_creation(data)
+    validation_errors = validate_discount_update(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    for field in ("name", "description", "value", "allowed_product_id"):
+    for field in ("name", "description", "discount_percent", "start_date", "end_date"):
         if field in data:
             setattr(discount, field, data[field])
 

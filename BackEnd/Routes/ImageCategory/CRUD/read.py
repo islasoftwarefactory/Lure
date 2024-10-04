@@ -1,23 +1,28 @@
 from flask import jsonify, Blueprint
 from BackEnd.Database.Models.ImageCategory import ImageCategory
-from ....Database.connection import db
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('read_image_category', __name__)
 
-@blueprint.route('/read/<int:id>', methods=['GET'])
-def read_image_category(id):
-    try:
-        category = ImageCategory.query.get(id)
-        if category:
-            return jsonify(category.serialize()), 200
-        return jsonify({'error': 'ImageCategory not found'}), 404
-    except Exception as e:
-        return jsonify({'error': f'Failed to retrieve image category: {str(e)}'}), 500
+@blueprint.route("/read/<int:id>", methods=["GET"])
+@token_required
+def read(current_user_id, id):
+    image_category = ImageCategory.query.get(id)
+    if image_category is None:
+        return jsonify({"error": "Image category not found"}), 404
 
-@blueprint.route('/read', methods=['GET'])
-def read_all_image_categories():
-    try:
-        categories = ImageCategory.query.all()
-        return jsonify([category.serialize() for category in categories]), 200
-    except Exception as e:
-        return jsonify({'error': f'Failed to retrieve image categories: {str(e)}'}), 500
+    return jsonify({
+        "data": image_category.serialize(),
+        "message": "Image category retrieved successfully."
+    }), 200
+
+@blueprint.route("/read/all", methods=["GET"])
+@token_required
+def read_all(current_user_id):
+    image_categories = ImageCategory.query.all()
+    image_categories_data = [cat.serialize() for cat in image_categories]
+
+    return jsonify({
+        "data": image_categories_data,
+        "message": "Image categories retrieved successfully."
+    }), 200

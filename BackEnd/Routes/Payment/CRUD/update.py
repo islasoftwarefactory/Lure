@@ -1,23 +1,25 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Payment import Payment
-from ....Database.connection import db
-from ....validators.payment_validators import validate_payment_creation
+from BackEnd.Database.connection import db
+from BackEnd.validators.payment_validators import validate_payment_update
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('update_payment', __name__)
 
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user_id, id):
     payment = Payment.query.get(id)
     if payment is None:
         return jsonify({"error": "Payment not found"}), 404
 
     data = request.get_json()
 
-    validation_errors = validate_payment_creation(data)
+    validation_errors = validate_payment_update(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    for field in ("user_id", "total", "payment_method_id", "checkout_url", "status"):
+    for field in ("amount", "payment_date", "payment_method_id", "order_id"):
         if field in data:
             setattr(payment, field, data[field])
 

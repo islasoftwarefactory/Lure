@@ -1,23 +1,23 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.ImageCategory import ImageCategory
-from ....Database.connection import db
-from ....validators.image_category_validators import validate_image_category_creation
+from BackEnd.Database.connection import db
+from BackEnd.validators.image_category_validators import validate_image_category_creation
+from ...utils.decorators import token_required
 
 blueprint = Blueprint('create_image_category', __name__)
 
-@blueprint.route('/create', methods=['POST'])
-def create():
+@blueprint.route("/create", methods=["POST"])
+@token_required
+def create(current_user_id):
     data = request.get_json()
-    
+
     validation_errors = validate_image_category_creation(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
+    image_category = ImageCategory(name=data["name"])
+
     try:
-        image_category = ImageCategory(
-            name=data["name"]
-        )
-    
         db.session.add(image_category)
         db.session.commit()
     except Exception as e:
