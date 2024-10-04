@@ -4,7 +4,7 @@ import applePayLogo from '../assets/icons/payments/apple-pay.svg?url';
 
 export function Footer() {
   return (
-    <footer className="bg-gray-100 py-8 px-4">
+    <footer className="bg-[#f3f4f6] py-8 px-4"> {/* Alterada apenas esta linha */}
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
         <div className="md:justify-self-center">
           <h3 className="text-lg font-semibold mb-4">Legal</h3>
@@ -30,4 +30,4 @@ export function Footer() {
       </div>
     </footer>
   );
-} 
+}

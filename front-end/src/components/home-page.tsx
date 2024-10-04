@@ -6,6 +6,7 @@ import { useState, ReactNode, useEffect } from 'react'
 import TikTokIcon from '../assets/icons/home/TikTok.svg'
 import PinterestIcon from '../assets/icons/home/Pinterest.svg'
 import InstagramIcon from '../assets/icons/home/Instagram.svg'
+import ContactIcon from '../assets/icons/home/Contact.svg'
 import { SideCart } from "./SideCart.tsx"
 import hoodieImage from '../assets/icons/pieces/hoodie.png'
 import { AnnouncementBar } from './AnnouncementBar'
@@ -232,6 +233,15 @@ export function HomePage() {
 
       {/* Ícones de redes sociais */}
       <div className="p-4 h-[60px] flex justify-end space-x-4">
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
+        >
+          <Link to="/contact" className="text-black">
+            <img src={ContactIcon} alt="Contact" className="w-6 h-6" />
+          </Link>
+        </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

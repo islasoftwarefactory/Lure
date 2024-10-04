@@ -12,6 +12,7 @@ import ApplePayIcon from '../assets/icons/payments/apple-pay.svg'
 import { AnnouncementBar } from './AnnouncementBar'
 import { ShippingConfirmation } from './ShippingConfirmation'
 import { Header } from './Header'
+import { SideCart } from './SideCart'
 
 export function CheckoutComponent() {
   const location = useLocation();
@@ -241,6 +242,16 @@ export function CheckoutComponent() {
           </div>
         </div>
       </div>
+
+      <SideCart 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        items={cartItems}
+        setItems={(newItems) => {
+          setCartItems(newItems);
+          // Se necessário, atualize o estado local ou faça outras operações
+        }}
+      />
     </div>
   )
 }

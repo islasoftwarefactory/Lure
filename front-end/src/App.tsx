@@ -7,6 +7,7 @@ import { HomePage } from "./components/home-page";
 import { AccountPage } from "./components/account-page";
 import { CheckoutComponent } from "./components/checkout";
 import FormWithValidation from "./components/FormWithValidation";
+import { ContactPage } from './components/ContactPage'; // Adicione esta linha
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/account/login" element={<AccountPage />} />
           <Route path="/form" element={<FormWithValidation />} />
           <Route path="/" element={<Navigate to="/homepage" replace />} />
+          <Route path="/contact" element={<ContactPage />} /> {/* Adicione esta linha */}
         </Routes>
       </AuthProvider>
     </Router>

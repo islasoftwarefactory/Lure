@@ -10,13 +10,24 @@ import { SideCart } from './SideCart'
 import PinterestIcon from '../assets/icons/home/Pinterest.svg?url'
 import TikTokIcon from '../assets/icons/home/TikTok.svg?url'
 import InstagramIcon from '../assets/icons/home/Instagram.svg?url'  // Adicione esta linha
+import ContactIcon from '../assets/icons/home/Contact.svg?url'
 import { AnnouncementBar } from '@/components/AnnouncementBar'
 import { Footer } from './Footer'
+
+type CartItem = {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  size: string;
+};
 
 const SocialMediaIcons = () => {
   return (
     <div className="flex space-x-4">
       {[
+        { icon: ContactIcon, alt: "Contact" },
         { icon: PinterestIcon, alt: "Pinterest" },
         { icon: TikTokIcon, alt: "TikTok" },
         { icon: InstagramIcon, alt: "Instagram" },
@@ -47,20 +58,23 @@ export const ExpandedInterfaceWithAnnouncementBar: React.FC = () => {
     <div className="relative">
       <AnnouncementBar />
       <header className="p-4">
-        <div className="flex justify-end space-x-4">
-          <button
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-            aria-label="Profile"
-          >
-            <img src={UserIcon} alt="Profile" className="w-6 h-6" />
-          </button>
-          <button
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
-            aria-label="Shopping Cart"
-            onClick={() => setIsCartOpen(true)}
-          >
-            <img src={ShoppingCartIcon} alt="Shopping Cart" className="w-6 h-6" />
-          </button>
+        <div className="flex justify-between items-center"> {/* Modificado para justify-between */}
+          <SocialMediaIcons /> {/* Adicionado aqui */}
+          <div className="flex space-x-4">
+            <button
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+              aria-label="Profile"
+            >
+              <img src={UserIcon} alt="Profile" className="w-6 h-6" />
+            </button>
+            <button
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+              aria-label="Shopping Cart"
+              onClick={() => setIsCartOpen(true)}
+            >
+              <img src={ShoppingCartIcon} alt="Shopping Cart" className="w-6 h-6" />
+            </button>
+          </div>
         </div>
       </header>
 
