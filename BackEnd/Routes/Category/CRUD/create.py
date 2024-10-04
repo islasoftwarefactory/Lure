@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Category import Category
 from BackEnd.Database.Models.Gender import Gender
 from ....Database.connection import db
+from ....validators.category_validators import validate_category_creation
 
 blueprint = Blueprint('create_category', __name__)
 
@@ -9,8 +10,9 @@ blueprint = Blueprint('create_category', __name__)
 def create(gender_id):
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("name",)):
-        return jsonify({"message": "Missing required fields"}), 400
+    validation_errors = validate_category_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     gender = Gender.query.get(gender_id)
     if not gender:

@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Payment import Payment
 from ....Database.connection import db
+from ....validators.payment_validators import validate_payment_creation
 
 blueprint = Blueprint('create_payment', __name__)
 
@@ -8,8 +9,9 @@ blueprint = Blueprint('create_payment', __name__)
 def create(user_id, payment_method_id):
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("total", "checkout_url", "status")):
-        return jsonify({"message": "Missing required fields"}), 400
+    validation_errors = validate_payment_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     try:
         payment = Payment(

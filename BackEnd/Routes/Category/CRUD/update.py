@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Category import Category
 from ....Database.connection import db
+from ....validators.category_validators import validate_category_creation
 
 blueprint = Blueprint('update_category', __name__)
 
@@ -11,6 +12,10 @@ def update(id):
         return jsonify({"error": "Category not found"}), 404
 
     data = request.get_json()
+
+    validation_errors = validate_category_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     for field in ("name", "gender_id"):
         if field in data:

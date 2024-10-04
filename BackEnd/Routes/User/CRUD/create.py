@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.User import User
-from ....Database.connection import db
+from BackEnd.Database.connection import db
+from BackEnd.validators.user_validators import validate_user_creation
 
 blueprint = Blueprint('create_user', __name__)
 
@@ -8,10 +9,14 @@ blueprint = Blueprint('create_user', __name__)
 def create():
     data = request.get_json()
 
+    validation_errors = validate_user_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
+
     user = User(
         name=data["name"],
         email=data["email"],
-        photo=data["photo"],
+        photo=data.get("photo"),
         sso_type=data["sso_type"],
     )
 

@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Discount import Discount
 from ....Database.connection import db
+from ....validators.discount_validators import validate_discount_creation
 
 blueprint = Blueprint('update_discount', __name__)
 
@@ -11,6 +12,10 @@ def update(id):
         return jsonify({"error": "Discount not found"}), 404
 
     data = request.get_json()
+
+    validation_errors = validate_discount_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     for field in ("name", "description", "value", "allowed_product_id"):
         if field in data:

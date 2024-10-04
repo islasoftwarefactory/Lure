@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.PaymentMethod import PaymentMethod
 from ....Database.connection import db
+from ....validators.payment_method_validators import validate_payment_method_creation
 
 blueprint = Blueprint('update_payment_method', __name__)
 
@@ -11,6 +12,10 @@ def update(id):
         return jsonify({"error": "Payment method not found"}), 404
 
     data = request.get_json()
+
+    validation_errors = validate_payment_method_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     for field in ("name", "long_name"):
         if field in data:

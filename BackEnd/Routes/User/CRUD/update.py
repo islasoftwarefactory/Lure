@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.User import User
-from ....Database.connection import db
+from BackEnd.Database.connection import db
+from BackEnd.validators.user_validators import validate_user_update
 
 blueprint = Blueprint('update_user', __name__)
 
@@ -12,6 +13,10 @@ def update(id):
 
     data = request.get_json()
 
+    validation_errors = validate_user_update(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
+
     if "name" in data:
         user.name = data["name"]
     if "email" in data:
@@ -20,8 +25,6 @@ def update(id):
         user.photo = data["photo"]
     if "sso_type" in data:
         user.sso_type = data["sso_type"]
-    if "default_address_id" in data:
-        user.default_address_id = data["default_address_id"]
 
     try:
         db.session.commit()

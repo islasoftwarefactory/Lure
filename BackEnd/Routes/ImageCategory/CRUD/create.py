@@ -1,14 +1,18 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.ImageCategory import ImageCategory
 from ....Database.connection import db
+from ....validators.image_category_validators import validate_image_category_creation
 
 blueprint = Blueprint('create_image_category', __name__)
 
 @blueprint.route('/create', methods=['POST'])
 def create():
     data = request.get_json()
-    if not data or 'name' not in data:
-        return jsonify({'error': 'Name is required'}), 400
+    
+    validation_errors = validate_image_category_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
+
     try:
         image_category = ImageCategory(
             name=data["name"]

@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from BackEnd.Database.Models.Product import Product
 from ....Database.connection import db
+from ....validators.product_validators import validate_product_creation
 
 blueprint = Blueprint('update_product', __name__)
 
@@ -11,6 +12,10 @@ def update(id):
         return jsonify({"error": "Product not found"}), 404
 
     data = request.get_json()
+
+    validation_errors = validate_product_creation(data)
+    if validation_errors:
+        return jsonify({"errors": validation_errors}), 400
 
     for field in ("name", "price", "size_id", "description", "images_ids", "inventory", "category_id", "gender_id"):
         if field in data:
