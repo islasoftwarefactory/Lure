@@ -33,7 +33,7 @@ export const AnnouncementBar: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-black text-[#f2f2f2] py-2 overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 z-40 bg-black text-[#f2f2f2] py-2 overflow-hidden">
       <div
         ref={containerRef}
         className="whitespace-nowrap"

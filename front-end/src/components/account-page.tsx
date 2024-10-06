@@ -9,6 +9,7 @@ import { SideCart } from './SideCart'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Header } from './Header'
 import { CartItem } from '../types/CartItem'
+import { SocialIcons } from './SocialIcons'
 
 export function AccountPageComponent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -65,6 +66,11 @@ export function AccountPageComponent() {
           </div>
         </div>
       </footer>
+
+      {/* Adicione o componente SocialIcons aqui */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <SocialIcons />
+      </div>
 
       <SideCart 
         isOpen={isCartOpen} 

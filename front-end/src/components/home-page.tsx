@@ -13,6 +13,7 @@ import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header'
+import { SocialIcons } from './SocialIcons'
 
 // Definição de tipos para as props do Modal
 interface ModalProps {
@@ -146,6 +147,12 @@ export function HomePage() {
     }
   }, []);
 
+  // Modifique a função de seleção de tamanho
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size);
+    setSizeError('');
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
       <AnnouncementBar />
@@ -179,30 +186,23 @@ export function HomePage() {
           <h2 className="text-xl font-bold mt-3">Flower Lured</h2>
           <p className="text-base text-gray-600 mt-1">Regular price $90</p>
           
-          <div className="mt-3 relative">
-            <button 
-              onClick={() => setShowSizes(!showSizes)}
-              className={`w-full bg-[#f2f2f2] text-black px-3 py-2 text-sm rounded border ${sizeError ? 'border-red-500' : 'border-black'} hover:bg-gray-100 transition duration-300 ease-in-out hover:shadow-md`}
-            >
-              {selectedSize ? `Size: ${selectedSize}` : 'Select Size'}
-            </button>
-            {showSizes && sizes && sizes.length > 0 && (
-              <div className="absolute top-full left-0 w-full bg-white border border-black mt-1 rounded">
-                {sizes.map(size => (
-                  <button
-                    key={size}
-                    onClick={() => {
-                      setSelectedSize(size);
-                      setShowSizes(false);
-                      setSizeError('');
-                    }}
-                    className="block w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition duration-300 ease-in-out"
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="mt-3">
+            <p className="text-sm font-semibold mb-2">Select Size:</p>
+            <div className="flex flex-wrap gap-2">
+              {sizes.map(size => (
+                <button
+                  key={size}
+                  onClick={() => handleSizeSelect(size)}
+                  className={`px-3 py-1 text-sm rounded-md transition duration-300 ease-in-out ${
+                    selectedSize === size
+                      ? 'bg-black text-white'
+                      : 'bg-gray-200 text-black hover:bg-gray-300'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
             {sizeError && <p className="text-red-500 text-xs mt-1">{sizeError}</p>}
           </div>
 
@@ -231,44 +231,9 @@ export function HomePage() {
 
       <Footer />
 
-      {/* Ícones de redes sociais */}
-      <div className="p-4 h-[60px] flex justify-end space-x-4">
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
-        >
-          <Link to="/contact" className="text-black">
-            <img src={ContactIcon} alt="Contact" className="w-6 h-6" />
-          </Link>
-        </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
-        >
-          <Link to="/instagram" className="text-black">
-            <img src={InstagramIcon} alt="Instagram" className="w-6 h-6" />
-          </Link>
-        </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
-        >
-          <Link to="/tiktok" className="text-black">
-            <img src={TikTokIcon} alt="TikTok" className="w-6 h-6" />
-          </Link>
-        </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="bg-gray-200 rounded-full p-2 transition duration-300 ease-in-out hover:shadow-md"
-        >
-          <Link to="/pinterest" className="text-black">
-            <img src={PinterestIcon} alt="Pinterest" className="w-6 h-6" />
-          </Link>
-        </motion.div>
+      {/* Adicione o componente SocialIcons aqui */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <SocialIcons />
       </div>
 
       <SideCart 

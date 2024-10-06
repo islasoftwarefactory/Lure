@@ -4,6 +4,7 @@ import { AnnouncementBar } from './AnnouncementBar';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { SideCart } from './SideCart';
+import { SocialIcons } from './SocialIcons';
 
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -142,14 +143,18 @@ export const ContactPage: React.FC = () => {
         </motion.div>
       </main>
 
+      <Footer />
+
+      <div className="fixed bottom-4 right-4 z-50">
+        <SocialIcons />
+      </div>
+
       <SideCart 
         isOpen={isCartOpen} 
         onClose={() => setIsCartOpen(false)} 
         items={cartItems}
         setItems={setCartItems}
       />
-
-      <Footer />
     </div>
   );
 };

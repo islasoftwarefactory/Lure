@@ -9,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import GooglePayIcon from '../assets/icons/payments/google-pay.svg'
 import ApplePayIcon from '../assets/icons/payments/apple-pay.svg'
-import { AnnouncementBar } from './AnnouncementBar'
 import { ShippingConfirmation } from './ShippingConfirmation'
-import { Header } from './Header'
 import { SideCart } from './SideCart'
+import { SocialIcons } from './SocialIcons'
+import { AnnouncementBar } from './AnnouncementBar'
+import { Header } from './Header'
 
 export function CheckoutComponent() {
   const location = useLocation();
@@ -63,13 +64,12 @@ export function CheckoutComponent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
+    <div className="min-h-screen flex flex-col">
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
-      
-      <div className="container mx-auto p-4 md:p-6 flex-grow">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
+      <main className="flex-grow pt-[calc(2rem+80px)] bg-[#f2f2f2]">
+        <div className="container mx-auto p-4 md:p-6">
+          <div className="grid md:grid-cols-2 gap-6">
             {checkoutStep === 'initial' ? (
               <>
                 <h1 className="text-2xl font-bold mb-6">Express checkout</h1>
@@ -202,9 +202,7 @@ export function CheckoutComponent() {
                 onContinue={handleContinueToPayment}
               />
             )}
-          </div>
 
-          <div>
             <Card className="bg-white">
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
@@ -241,6 +239,10 @@ export function CheckoutComponent() {
             </Card>
           </div>
         </div>
+      </main>
+
+      <div className="fixed bottom-4 right-4 z-50">
+        <SocialIcons />
       </div>
 
       <SideCart 
@@ -248,8 +250,7 @@ export function CheckoutComponent() {
         onClose={() => setIsCartOpen(false)} 
         items={cartItems}
         setItems={(newItems) => {
-          setCartItems(newItems);
-          // Se necessário, atualize o estado local ou faça outras operações
+          // Handle cart item updates
         }}
       />
     </div>

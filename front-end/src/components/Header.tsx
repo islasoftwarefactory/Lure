@@ -11,14 +11,14 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   return (
-    <header className="p-4 h-[80px] flex justify-center bg-[#f2f2f2]">
+    <header className="fixed top-8 left-0 right-0 z-50 p-4 h-[80px] flex justify-center">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="flex items-center justify-between w-3/4 py-4 px-6 rounded-full bg-white h-full"
       >
-            <div className="w-16 flex items-center justify-center">
+        <div className="w-16 flex items-center justify-center">
           <LogoSVG className="h-12 w-12" />
         </div>
         <Link to="/" className="text-5xl font-bold no-underline text-black">ʟᴜʀᴇ</Link>
