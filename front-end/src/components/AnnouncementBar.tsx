@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React from 'react';
+import { useAnnouncementContext } from '../contexts/AnnouncementContext';
 
-const messages = [
+// Array de mensagens para o banner de anúncios
+const anunciosMensagens = [
   "𝗙𝗿𝗲𝗲 𝘀𝗵𝗶𝗽𝗽𝗶𝗻𝗴 𝗼𝗻 𝗼𝗿𝗱𝗲𝗿𝘀 𝗼𝘃𝗲𝗿 $𝟮𝟬𝟬",
   "𝗡𝗲𝘄 𝘀𝘂𝗺𝗺𝗲𝗿 𝗰𝗼𝗹𝗹𝗲𝗰𝘁𝗶𝗼𝗻 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲",
   "𝟮𝟬% 𝗼𝗳𝗳 𝗼𝗻 𝘀𝗲𝗹𝗲𝗰𝘁𝗲𝗱 𝗶𝘁𝗲𝗺𝘀",
@@ -9,43 +11,62 @@ const messages = [
   "𝟮𝟬% 𝗼𝗳𝗳 𝗼𝗻 𝘀𝗲𝗹𝗲𝗰𝘁𝗲𝗱 𝗶𝘁𝗲𝗺𝘀"
 ];
 
+const estilosAnuncioBar = {
+  container: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 40,
+    backgroundColor: '#000000',
+    color: '#f2f2f2',
+    padding: '8px 0',
+    overflow: 'hidden',
+  } as React.CSSProperties,
+  conteudo: {
+    whiteSpace: 'nowrap',
+    display: 'inline-block',
+  } as React.CSSProperties,
+};
+
 export const AnnouncementBar: React.FC = () => {
-  const [position, setPosition] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { posicao, containerRef, conteudoRef } = useAnnouncementContext();
 
-  useEffect(() => {
-    const animate = () => {
-      setPosition((prevPosition) => {
-        const newPosition = prevPosition + 0.5;
-        if (containerRef.current) {
-          const containerWidth = containerRef.current.offsetWidth;
-          const contentWidth = containerRef.current.scrollWidth;
-          // Reinicia quando o conteúdo sair completamente da tela
-          return newPosition > contentWidth ? -containerWidth : newPosition;
-        }
-        return newPosition;
-      });
-      requestAnimationFrame(animate);
-    };
-
-    const animationFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animationFrame);
-  }, []);
+  const renderizarMensagens = () => {
+    return anunciosMensagens.map((mensagem, indice) => (
+      <React.Fragment key={indice}>
+        <span style={{ margin: '0 24px', fontSize: '10px', fontWeight: 'bold' }}>
+          {mensagem}
+        </span>
+        <span
+          style={{
+            width: '4px', // Aumentado de 1px para 4px
+            height: '4px', // Aumentado de 1px para 4px
+            backgroundColor: '#f2f2f2',
+            borderRadius: '50%',
+            display: 'inline-block',
+            margin: 'auto 24px',
+            verticalAlign: 'middle',
+          }}
+        />
+      </React.Fragment>
+    ));
+  };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-black text-[#f2f2f2] py-2 overflow-hidden">
+    <div style={estilosAnuncioBar.container} ref={containerRef}>
       <div
-        ref={containerRef}
-        className="whitespace-nowrap"
-        style={{ transform: `translateX(${position}px)` }}
+        ref={conteudoRef}
+        style={{
+          ...estilosAnuncioBar.conteudo,
+          transform: `translateX(${posicao}px)`,
+        }}
       >
-        {messages.concat(messages).map((message, index) => (
-          <React.Fragment key={index}>
-            <span className="mx-6 text-[10px]">{message}</span>
-            <span className="w-1 h-1 bg-[#f2f2f2] rounded-full inline-block my-auto mx-6"></span>
-          </React.Fragment>
-        ))}
+        {renderizarMensagens()}
+        {renderizarMensagens()}
       </div>
     </div>
   );
 };
+
+export default AnnouncementBar;

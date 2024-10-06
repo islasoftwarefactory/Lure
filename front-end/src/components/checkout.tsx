@@ -14,6 +14,7 @@ import { SideCart } from './SideCart'
 import { SocialIcons } from './SocialIcons'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Header } from './Header'
+import { Footer } from './Footer'
 
 export function CheckoutComponent() {
   const location = useLocation();
@@ -240,6 +241,8 @@ export function CheckoutComponent() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       <div className="fixed bottom-4 right-4 z-50">
         <SocialIcons />

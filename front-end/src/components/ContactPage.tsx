@@ -6,6 +6,15 @@ import { Header } from './Header';
 import { SideCart } from './SideCart';
 import { SocialIcons } from './SocialIcons';
 
+// Adicione esta definição de tipo
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  // Adicione outras propriedades conforme necessário
+}
+
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,7 +79,7 @@ export const ContactPage: React.FC = () => {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center justify-center px-4 py-12">
+      <main className="flex-grow flex items-center justify-center px-4 py-12 mt-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

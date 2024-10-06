@@ -158,26 +158,41 @@ export function HomePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center px-4">
-        <div className="w-1/2 flex justify-center items-center">
-          <motion.div
-            className="w-64 h-64 rounded-3xl overflow-hidden cursor-pointer"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => setIsModalOpen(true)}
-          >
-            <img
-              src={hoodieImage}
-              alt="Hoodie"
-              className="w-full h-full object-cover"
-            />
-          </motion.div>
-        </div>
-        <div className="w-1/2">
-          {/* Adicione aqui o conteúdo do lado direito, se necessário */}
+      <main className="flex-grow flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-6xl flex flex-col md:flex-row items-center justify-center">
+          <div className="w-full md:w-1/2 flex justify-center items-center mb-8 md:mb-0">
+            <motion.div
+              className="w-64 h-64 rounded-3xl overflow-hidden cursor-pointer"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              onClick={() => setIsModalOpen(true)}
+            >
+              <img
+                src={hoodieImage}
+                alt="Hoodie"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </div>
+          <div className="w-full md:w-1/2">
+            {/* Adicione aqui o conteúdo do lado direito, se necessário */}
+          </div>
         </div>
       </main>
+
+      <Footer />
+
+      <div className="fixed bottom-4 right-4 z-50">
+        <SocialIcons />
+      </div>
+
+      <SideCart 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        items={cartItems}
+        setItems={setCartItems}
+      />
 
       {/* Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -228,20 +243,6 @@ export function HomePage() {
           </div>
         </div>
       </Modal>
-
-      <Footer />
-
-      {/* Adicione o componente SocialIcons aqui */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <SocialIcons />
-      </div>
-
-      <SideCart 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        items={cartItems}
-        setItems={setCartItems}
-      />
     </div>
   )
 }
