@@ -1,9 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import UserIcon from '../assets/icons/home/UserIcon.svg';
-import ShoppingCartIcon from '../assets/icons/home/ShoppingCartIcon.svg';
-import LogoSVG from '../assets/icons/home/Logo.svg?react'
+import { User, ShoppingCart } from 'lucide-react'; // Importando os ícones da biblioteca lucide-react
+import Logo from '../assets/icons/home/Logo.svg?react';
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -19,18 +18,18 @@ export const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
         className="flex items-center justify-between w-3/4 py-4 px-6 rounded-full bg-white h-full"
       >
         <div className="w-16 flex items-center justify-center">
-          <LogoSVG className="h-12 w-12" />
+          <Logo className="h-12 w-12" />
         </div>
         <Link to="/" className="text-5xl font-bold no-underline text-black">ʟᴜʀᴇ</Link>
         <div className="w-16 flex justify-end space-x-3">
           <Link to="/account/login" className="text-black">
-            <img src={UserIcon} alt="Profile" className="w-7 h-7 cursor-pointer" />
+            <User size={28} className="cursor-pointer" /> {/* Usando o ícone User da biblioteca lucide-react */}
           </Link>
           <button
             className="text-black"
             onClick={onCartClick}
           >
-            <img src={ShoppingCartIcon} alt="Shopping Cart" className="w-7 h-7 cursor-pointer" />
+            <ShoppingCart size={28} className="cursor-pointer" /> {/* Usando o ícone ShoppingCart da biblioteca lucide-react */}
           </button>
         </div>
       </motion.div>

@@ -1,12 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
 import { useState, ReactNode, useEffect } from 'react'
-import TikTokIcon from '../assets/icons/home/TikTok.svg'
-import PinterestIcon from '../assets/icons/home/Pinterest.svg'
-import InstagramIcon from '../assets/icons/home/Instagram.svg'
-import ContactIcon from '../assets/icons/home/Contact.svg'
 import { SideCart } from "./SideCart.tsx"
 import hoodieImage from '../assets/icons/pieces/hoodie.png'
 import { AnnouncementBar } from './AnnouncementBar'

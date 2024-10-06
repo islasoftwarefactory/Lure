@@ -30,7 +30,7 @@ const estilosAnuncioBar = {
 };
 
 export const AnnouncementBar: React.FC = () => {
-  const { posicao, containerRef, conteudoRef } = useAnnouncementContext();
+  const { posicao, containerRef, conteudoRef, setSlowMotion } = useAnnouncementContext();
 
   const renderizarMensagens = () => {
     return anunciosMensagens.map((mensagem, indice) => (
@@ -40,8 +40,8 @@ export const AnnouncementBar: React.FC = () => {
         </span>
         <span
           style={{
-            width: '4px', // Aumentado de 1px para 4px
-            height: '4px', // Aumentado de 1px para 4px
+            width: '4px',
+            height: '4px',
             backgroundColor: '#f2f2f2',
             borderRadius: '50%',
             display: 'inline-block',
@@ -54,7 +54,12 @@ export const AnnouncementBar: React.FC = () => {
   };
 
   return (
-    <div style={estilosAnuncioBar.container} ref={containerRef}>
+    <div 
+      style={estilosAnuncioBar.container} 
+      ref={containerRef}
+      onMouseEnter={() => setSlowMotion(true)}
+      onMouseLeave={() => setSlowMotion(false)}
+    >
       <div
         ref={conteudoRef}
         style={{
