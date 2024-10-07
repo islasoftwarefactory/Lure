@@ -10,7 +10,7 @@ import { AccountPage } from "./components/account-page";
 import { CheckoutComponent } from "./components/checkout";
 import FormWithValidation from "./components/FormWithValidation";
 import { ContactPage } from './components/ContactPage';
-
+import { LoginComponent } from './components/LoginComponent';
 export default function App() {
   return (
     <Router>
@@ -25,6 +25,7 @@ export default function App() {
             <Route path="/form" element={<FormWithValidation />} />
             <Route path="/" element={<Navigate to="/homepage" replace />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/login" element={<LoginComponent />} />
           </Routes>
         </AnnouncementProvider>
       </AuthProvider>
