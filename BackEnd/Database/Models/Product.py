@@ -5,27 +5,16 @@ import pytz
 class Product(db.Model):
     __tablename__ = "products"
 
-    # Unique Primary Key Autoincrement
     id = db.Column(db.Integer, primary_key=True)
-    # Name of the product
     name = db.Column(db.String(35), nullable=False)
-    # Price of the product 
     price = db.Column(db.Numeric(10, 2), nullable=False)
-    # Foreign key relationship for size
     size_id = db.Column(db.Integer, db.ForeignKey('sizes.id'), nullable=False)
-    # Description of the product
     description = db.Column(db.String(120), nullable=False)
-    # JSON for image IDs
     images_ids = db.Column(db.JSON)
-    # Inventory amount
     inventory = db.Column(db.Integer, nullable=False)
-    # Foreign key relationship for category
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
-    # Foreign key relationship for gender
     gender_id = db.Column(db.Integer, db.ForeignKey('genders.id'), nullable=False)
-    # Timestamp for record creation
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
-    # Timestamp for record update
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
     def __repr__(self):
