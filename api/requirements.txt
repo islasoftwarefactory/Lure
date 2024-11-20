@@ -1,0 +1,10 @@
+python-dotenv
+flask
+pytz
+mysql-connector-python
+SQLAlchemy
+gunicorn
+flask-migrate
+flask-cors
+flask-jwt-extended
+flask-sqlalchemy

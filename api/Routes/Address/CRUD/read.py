@@ -1,0 +1,25 @@
+from flask import jsonify, Blueprint
+from api.Database.Models.Address import Address
+
+blueprint = Blueprint('read_address', __name__)
+
+@blueprint.route("/read/<int:id>", methods=["GET"])
+def read(id):
+    address = Address.query.get(id)
+    if address is None:
+        return jsonify({"error": "Address not found"}), 404
+
+    return jsonify({
+        "data": address.serialize(),
+        "message": "Address retrieved successfully."
+    }), 200
+
+@blueprint.route("/read/all", methods=["GET"])
+def read_all():
+    addresses = Address.query.all()
+    addresses_data = [address.serialize() for address in addresses]
+
+    return jsonify({
+        "data": addresses_data,
+        "message": "Addresses retrieved successfully."
+    }), 200
