@@ -1,1 +1,0 @@
-docker run -it --rm -v $(pwd):/app -w /app node:lts sh -c "$1"
