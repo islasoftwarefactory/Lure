@@ -7,8 +7,11 @@ class ImageCategory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(40), nullable=False)
+    url = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
+
+    product = db.relationship('Product', backref='image', lazy=True)
 
     def __repr__(self):
         return f"<ImageCategory {self.id}, Name: {self.name}>"
@@ -17,6 +20,7 @@ class ImageCategory(db.Model):
         return {
             "id": self.id,
             "name": self.name,
+            "url": self.url,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
