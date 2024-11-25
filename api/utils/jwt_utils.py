@@ -23,7 +23,9 @@ def verify_token(token):
     """
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
-        return payload['sub']
+        user_id = payload['sub']
+        # Aceita tanto IDs numéricos (usuários logados) quanto strings (anônimos)
+        return user_id
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
