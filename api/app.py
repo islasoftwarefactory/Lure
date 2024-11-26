@@ -4,13 +4,17 @@ from api.Database.connection import connect_to_db, init_db, db
 from sqlalchemy.exc import OperationalError
 from api.Routes.blueprints import register_blueprints
 from flask_migrate import Migrate
-from api.utils.jwt_utils import verify_token
+from api.utils.jwt_utils import verify_token, generate_token
+from flask_cors import CORS
 
 from os import getenv
 from datetime import datetime
 
 
 application = Flask(__name__)
+CORS(application, 
+     resources={r"/*": {"origins": "*"}}, 
+     supports_credentials=True)
 register_blueprints(application)
 
 application.config["SQLALCHEMY_DATABASE_URI"] = database_uri()
@@ -34,38 +38,37 @@ with application.app_context():
 
 @application.before_request
 def verify_jwt():
-    if request.endpoint not in ["login", "health"]:
-        token = request.headers.get("Authorization")
-        if not token:
-            return jsonify({"message": "Token ausente!"}), 401
+    # Lista de endpoints que não precisam de autenticação
+    public_endpoints = [
+        'health',  # /health
+        'anonymous_auth.get_anonymous_token',  # /auth/anonymous-token
+        'static'   # arquivos estáticos
+    ]
+    
+    # Se o endpoint atual está na lista de públicos, permite o acesso
+    if request.endpoint in public_endpoints:
+        return None
+        
+    # Verifica o token para outras rotas
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"message": "Token ausente!"}), 401
 
-        user_id = verify_token(
-            token.split()[1] if token.startswith("Bearer ") else token
-        )
-        if not user_id:
-            return jsonify({"message": "Token inválido ou expirado!"}), 401
+    user_id = verify_token(
+        token.split()[1] if token.startswith("Bearer ") else token
+    )
+    if not user_id:
+        return jsonify({"message": "Token inválido ou expirado!"}), 401
 
-        g.current_user_id = user_id
+    g.current_user_id = user_id
 
 
 @application.route('/health')
 def health():
-    try:
-        # Testa a conexão com o banco de dados
-        db.session.execute('SELECT 1')
-        db.session.commit()
-        return jsonify({
-            "status": "saudável",
-            "banco_de_dados": "conectado",
-            "timestamp": datetime.utcnow().isoformat()
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "status": "não saudável",
-            "banco_de_dados": "desconectado",
-            "erro": str(e),
-            "timestamp": datetime.utcnow().isoformat()
-        }), 500
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat()
+    }), 200
 
 
 if __name__ == "__main__":
