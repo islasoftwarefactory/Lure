@@ -12,4 +12,17 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    watch: {
+      usePolling: true,
+      interval: 100
+    },
+    hmr: {
+      protocol: 'ws',
+      host: '0.0.0.0',
+    },
+    host: true,
+    strictPort: true,
+    port: 5173
+  }
 });
