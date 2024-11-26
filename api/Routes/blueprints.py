@@ -53,12 +53,15 @@ from .ImageCategory.CRUD.read import blueprint as read_image_category
 from .ImageCategory.CRUD.update import blueprint as update_image_category
 from .ImageCategory.CRUD.delete import blueprint as delete_image_category
 
+from .Auth.anonymous_token import blueprint as anonymous_token_blueprint
+
 
 def register_blueprints(app):
     app.register_blueprint(create_user_blueprint, url_prefix="/user")
     app.register_blueprint(read_user_blueprint, url_prefix="/user")
     app.register_blueprint(update_user_blueprint, url_prefix="/user")
     app.register_blueprint(delete_user_blueprint, url_prefix="/user")
+    app.register_blueprint(anonymous_token_blueprint, url_prefix="/auth")
 
     app.register_blueprint(create_address_blueprint, url_prefix="/address")
     app.register_blueprint(read_address_blueprint, url_prefix="/address")
