@@ -1,13 +1,17 @@
 from datetime import datetime, timedelta
-from os import getenv
-
+from dotenv import load_dotenv
 import jwt
+import os
+from pathlib import Path
 
-JWT_SECRET_KEY = getenv('JWT_SECRET_KEY')
-JWT_EXPIRATION_MINUTES = int(getenv('JWT_EXPIRATION_MINUTES', 30))
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(env_path)
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev_secret_key")  # valor default para desenvolvimento
+JWT_EXPIRATION_MINUTES = int(os.getenv("JWT_EXPIRATION_MINUTES", "30"))  # valor default de 30 minutos
 
 def generate_token(user_id):
-    """
+    """a
     Gera um token JWT para o usuário.
     """
     payload = {
