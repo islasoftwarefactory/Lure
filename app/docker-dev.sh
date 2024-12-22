@@ -4,4 +4,4 @@ docker run \
     -v $(pwd):/app \
     -w /app \
     node:lts \
-    sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    sh -c "npm install && npm run dev -- --host 0.0.0.0 --watch --force"

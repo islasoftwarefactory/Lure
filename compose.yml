@@ -13,6 +13,19 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    volumes:
+      - ./api:/api
+      - /api/__pycache__
+    environment:
+      - NODE_ENV=development
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
 
   app:
     container_name: app-srvr
@@ -25,14 +38,22 @@ services:
       - 8081:5173
     networks:
       - lure-net
+    volumes:
+      - ./app:/home/vite
+      - /home/vite/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
 
   mysql:
     container_name: mysql-srvr
     image: mysql:lts
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
       timeout: 20s
       retries: 10
+      start_period: 30s
     env_file:
       - ./.env
     ports:
