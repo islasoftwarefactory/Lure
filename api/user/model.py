@@ -1,6 +1,7 @@
 from ..connection import db
 from datetime import datetime
 import pytz
+from typing import Dict, Optional
 
 class User(db.Model):
     __tablename__ = "users"
@@ -26,3 +27,45 @@ class User(db.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+
+def create_user(user_data: Dict) -> Optional[User]:
+    """Creates a new user"""
+    current_app.logger.info("Starting user creation")
+    try:
+        user = User(
+            name=user_data["name"],
+            email=user_data["email"],
+            photo=user_data.get("photo"),
+            sso_type=user_data["sso_type"]
+        )
+        db.session.add(user)
+        db.session.commit()
+        current_app.logger.info(f"User created successfully: {user.email}")
+        return user
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating user: {str(e)}")
+        raise
+
+def get_user(user_id: int) -> Optional[User]:
+    """Retrieves a user by ID"""
+    return User.query.get(user_id)
+
+def update_user(user_id: int, user_data: Dict) -> Optional[User]:
+    """Updates an existing user"""
+    user = get_user(user_id)
+    if user:
+        for key, value in user_data.items():
+            setattr(user, key, value)
+        db.session.commit()
+        return user
+    return None
+
+def delete_user(user_id: int) -> Optional[User]:
+    """Deletes a user"""
+    user = get_user(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        return user
+    return None

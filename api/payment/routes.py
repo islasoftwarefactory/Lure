@@ -1,33 +1,23 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Payment import Payment
+from api.payment.model import Payment, create_payment, get_payment, update_payment, delete_payment
 from api.Database.connection import db
-from api.validators.payment_validators import validate_payment_creation, validate_payment_update
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('payment', __name__)
 
 # Create
-@blueprint.route("/create/<int:user_id>/<int:payment_method_id>", methods=["POST"])
-def create(user_id, payment_method_id):
+@blueprint.route("/create", methods=["POST"])
+@token_required
+def create(current_user_id):
     data = request.get_json()
 
-    validation_errors = validate_payment_creation(data)
-    if validation_errors:
-        return jsonify({"errors": validation_errors}), 400
+    if not data or not all(field in data for field in 
+                          ["cart_id", "payment_method", "payment_status", "payment_amount"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        payment = Payment(
-            user_id=user_id,
-            payment_method_id=payment_method_id,
-            total=data["total"],
-            checkout_url=data["checkout_url"],
-            status=data["status"]
-        )
-
-        db.session.add(payment)
-        db.session.commit()
+        payment = create_payment(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create payment: {str(e)}"}), 500
 
     return jsonify({
@@ -36,4 +26,58 @@ def create(user_id, payment_method_id):
     }), 201
 
 # Read
-@blueprint.route("/read/ 
+@blueprint.route("/read/<int:id>", methods=["GET"])
+@token_required
+def read(current_user_id, id):
+    payment = get_payment(id)
+    if payment is None:
+        return jsonify({"error": "Payment not found"}), 404
+
+    return jsonify({
+        "data": payment.serialize(),
+        "message": "Payment retrieved successfully."
+    }), 200
+
+@blueprint.route("/read/all", methods=["GET"])
+@token_required
+def read_all(current_user_id):
+    payments = Payment.query.all()
+    payments_data = [payment.serialize() for payment in payments]
+
+    return jsonify({
+        "data": payments_data,
+        "message": "Payments retrieved successfully."
+    }), 200
+
+# Update
+@blueprint.route("/update/<int:id>", methods=["PUT"])
+@token_required
+def update(current_user_id, id):
+    data = request.get_json()
+
+    if not data or not all(field in data for field in 
+                          ["cart_id", "payment_method", "payment_status", "payment_amount"]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        payment = update_payment(id, data)
+    except Exception as e:
+        return jsonify({"error": f"Failed to update payment: {str(e)}"}), 500
+
+    return jsonify({
+        "data": payment.serialize(),
+        "message": "Payment updated successfully."
+    }), 200
+
+# Delete
+@blueprint.route("/delete/<int:id>", methods=["DELETE"])
+@token_required
+def delete(current_user_id, id):
+    try:
+        delete_payment(id)
+    except Exception as e:
+        return jsonify({"error": f"Failed to delete payment: {str(e)}"}), 500
+
+    return jsonify({
+        "message": "Payment deleted successfully."
+    }), 200 

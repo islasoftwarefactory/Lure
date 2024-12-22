@@ -1,36 +1,23 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Product import Product
+from api.product.model import Product, create_product, get_product, update_product, delete_product
 from api.Database.connection import db
-from api.validators.product_validators import validate_product_creation
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('product', __name__)
 
 # Create
-@blueprint.route("/create/<int:size_id>/<int:category_id>/<int:gender_id>", methods=["POST"])
-def create(size_id, category_id, gender_id):
+@blueprint.route("/create", methods=["POST"])
+@token_required
+def create(current_user_id):
     data = request.get_json()
 
-    validation_errors = validate_product_creation(data)
-    if validation_errors:
-        return jsonify({"errors": validation_errors}), 400
+    if not data or not all(field in data for field in 
+                          ["name", "price", "size_id", "description", "inventory", "category_id", "gender_id"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        product = Product(
-            size_id=size_id,
-            category_id=category_id,
-            gender_id=gender_id,
-            name=data["name"],
-            price=data["price"],
-            description=data["description"],
-            inventory=data["inventory"],
-            images_ids=data.get("images_ids"),
-        )
-
-        db.session.add(product)
-        db.session.commit()
+        product = create_product(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create product: {str(e)}"}), 500
 
     return jsonify({
@@ -42,7 +29,7 @@ def create(size_id, category_id, gender_id):
 @blueprint.route("/read/<int:id>", methods=["GET"])
 @token_required
 def read(current_user_id, id):
-    product = Product.query.get(id)
+    product = get_product(id)
     if product is None:
         return jsonify({"error": "Product not found"}), 404
 
@@ -66,24 +53,13 @@ def read_all(current_user_id):
 @blueprint.route("/update/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user_id, id):
-    product = Product.query.get(id)
-    if product is None:
-        return jsonify({"error": "Product not found"}), 404
-
     data = request.get_json()
 
-    validation_errors = validate_product_creation(data)
-    if validation_errors:
-        return jsonify({"errors": validation_errors}), 400
-
-    for field in ("name", "price", "size_id", "description", "images_ids", "inventory", "category_id", "gender_id"):
-        if field in data:
-            setattr(product, field, data[field])
-
     try:
-        db.session.commit()
+        product = update_product(id, data)
+        if product is None:
+            return jsonify({"error": "Product not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update product: {str(e)}"}), 500
 
     return jsonify({
@@ -93,16 +69,15 @@ def update(current_user_id, id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
-    product = Product.query.get(id)
-    if product is None:
-        return jsonify({"error": "Product not found"}), 404
-
+@token_required
+def delete(current_user_id, id):
     try:
-        db.session.delete(product)
-        db.session.commit()
+        product = delete_product(id)
+        if product is None:
+            return jsonify({"error": "Product not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete product: {str(e)}"}), 500
 
-    return jsonify({"message": "Product deleted successfully"}), 200 
+    return jsonify({
+        "message": "Product deleted successfully."
+    }), 200 

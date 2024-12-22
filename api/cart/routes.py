@@ -1,29 +1,22 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Cart import Cart
+from api.cart.model import Cart, create_cart, get_cart, update_cart, delete_cart
 from api.Database.connection import db
+from api.utils.decorators import token_required
 
 blueprint = Blueprint('cart', __name__)
 
 # Create
-@blueprint.route("/create/<int:user_id>/<int:product_id>/<int:discount_id>", methods=["POST"])
-def create(user_id, product_id, discount_id):
+@blueprint.route("/create", methods=["POST"])
+@token_required
+def create(current_user_id):
     data = request.get_json()
 
-    if not data or "status" not in data:
-        return jsonify({"message": "Missing required fields"}), 400
+    if not data or not all(field in data for field in ["user_id", "product_id", "status"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        cart = Cart(
-            status=data["status"],
-            user_id=user_id,
-            product_id=product_id,
-            discount_id=discount_id
-        )
-
-        db.session.add(cart)
-        db.session.commit()
+        cart = create_cart(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create cart: {str(e)}"}), 500
 
     return jsonify({
@@ -33,8 +26,9 @@ def create(user_id, product_id, discount_id):
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
-def read(id):
-    cart = Cart.query.get(id)
+@token_required
+def read(current_user_id, id):
+    cart = get_cart(id)
     if cart is None:
         return jsonify({"error": "Cart not found"}), 404
 
@@ -44,7 +38,8 @@ def read(id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
-def read_all():
+@token_required
+def read_all(current_user_id):
     carts = Cart.query.all()
     carts_data = [cart.serialize() for cart in carts]
 
@@ -55,21 +50,15 @@ def read_all():
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
-    cart = Cart.query.get(id)
-    if cart is None:
-        return jsonify({"error": "Cart not found"}), 404
-
+@token_required
+def update(current_user_id, id):
     data = request.get_json()
 
-    for field in ("name", "gender_id"):
-        if field in data:
-            setattr(cart, field, data[field])
-
     try:
-        db.session.commit()
+        cart = update_cart(id, data)
+        if cart is None:
+            return jsonify({"error": "Cart not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update cart: {str(e)}"}), 500
 
     return jsonify({
@@ -79,16 +68,15 @@ def update(id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
-    cart = Cart.query.get(id)
-    if cart is None:
-        return jsonify({"error": "Cart not found"}), 404
-
+@token_required
+def delete(current_user_id, id):
     try:
-        db.session.delete(cart)
-        db.session.commit()
+        cart = delete_cart(id)
+        if cart is None:
+            return jsonify({"error": "Cart not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete cart: {str(e)}"}), 500
 
-    return jsonify({"message": "Cart deleted successfully"}), 200 
+    return jsonify({
+        "message": "Cart deleted successfully."
+    }), 200

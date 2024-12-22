@@ -1,27 +1,22 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Size import Size
+from api.size.model import Size, create_size, get_size, update_size, delete_size
 from api.Database.connection import db
+from api.utils.decorators import token_required
 
 blueprint = Blueprint('size', __name__)
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-def create():
+@token_required
+def create(current_user_id):
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("name", "long_name")):
-        return jsonify({"message": "Missing required fields"}), 400
-
-    size = Size(
-        name=data["name"],
-        long_name=data["long_name"]
-    )
+    if not data or not all(field in data for field in ["name", "long_name"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        db.session.add(size)
-        db.session.commit()
+        size = create_size(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create size: {str(e)}"}), 500
 
     return jsonify({
@@ -31,8 +26,9 @@ def create():
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
-def read(id):
-    size = Size.query.get(id)
+@token_required
+def read(current_user_id, id):
+    size = get_size(id)
     if size is None:
         return jsonify({"error": "Size not found"}), 404
 
@@ -42,7 +38,8 @@ def read(id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
-def read_all():
+@token_required
+def read_all(current_user_id):
     sizes = Size.query.all()
     sizes_data = [size.serialize() for size in sizes]
 
@@ -53,22 +50,15 @@ def read_all():
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
-    size = Size.query.get(id)
-    if size is None:
-        return jsonify({"error": "Size not found"}), 404
-
+@token_required
+def update(current_user_id, id):
     data = request.get_json()
 
-    if "name" in data:
-        size.name = data["name"]
-    if "long_name" in data:
-        size.long_name = data["long_name"]
-
     try:
-        db.session.commit()
+        size = update_size(id, data)
+        if size is None:
+            return jsonify({"error": "Size not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update size: {str(e)}"}), 500
 
     return jsonify({
@@ -78,16 +68,15 @@ def update(id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
-    size = Size.query.get(id)
-    if size is None:
-        return jsonify({"error": "Size not found"}), 404
-
+@token_required
+def delete(current_user_id, id):
     try:
-        db.session.delete(size)
-        db.session.commit()
+        size = delete_size(id)
+        if size is None:
+            return jsonify({"error": "Size not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete size: {str(e)}"}), 500
 
-    return jsonify({"message": "Size deleted successfully"}), 200 
+    return jsonify({
+        "message": "Size deleted successfully."
+    }), 200

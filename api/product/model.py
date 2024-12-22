@@ -1,6 +1,7 @@
 from ..connection import db
 from datetime import datetime
 import pytz
+from typing import Dict, Optional
 
 class Product(db.Model):
     __tablename__ = "products"
@@ -34,3 +35,49 @@ class Product(db.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+
+def create_product(product_data: Dict) -> Optional[Product]:
+    """Creates a new product"""
+    current_app.logger.info("Starting product creation")
+    try:
+        product = Product(
+            name=product_data["name"],
+            price=product_data["price"],
+            size_id=product_data["size_id"],
+            description=product_data["description"],
+            inventory=product_data["inventory"],
+            category_id=product_data["category_id"],
+            gender_id=product_data["gender_id"],
+            image_category_id=product_data.get("image_category_id")
+        )
+        db.session.add(product)
+        db.session.commit()
+        current_app.logger.info(f"Product created successfully: {product.name}")
+        return product
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating product: {str(e)}")
+        raise
+
+def get_product(product_id: int) -> Optional[Product]:
+    """Retrieves a product by ID"""
+    return Product.query.get(product_id)
+
+def update_product(product_id: int, product_data: Dict) -> Optional[Product]:
+    """Updates an existing product"""
+    product = get_product(product_id)
+    if product:
+        for key, value in product_data.items():
+            setattr(product, key, value)
+        db.session.commit()
+        return product
+    return None
+
+def delete_product(product_id: int) -> Optional[Product]:
+    """Deletes a product"""
+    product = get_product(product_id)
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return product
+    return None

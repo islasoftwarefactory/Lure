@@ -1,34 +1,23 @@
 from flask import request, jsonify, Blueprint
-from api.address.model import Address
+from api.address.model import Address, create_address, get_address, update_address, delete_address
 from api.Database.connection import db
+from api.utils.decorators import token_required
 
 blueprint = Blueprint('address', __name__)
 
 # Create
-@blueprint.route("/create/<int:user_id>", methods=["POST"])
-def create(user_id):
+@blueprint.route("/create", methods=["POST"])
+@token_required
+def create(current_user_id):
     data = request.get_json()
 
-    if not data or not all(field in data for field in ("street", "number", "city", "state", "neighborhood", "zip_code")):
-        return jsonify({"message": "Missing required fields"}), 400
+    if not data or not all(field in data for field in 
+                          ["street", "number", "city", "state", "neighborhood", "zip_code"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        address = Address(
-            user_id=user_id,
-            observation=data.get("observation"),
-            street=data["street"],
-            number=data["number"],
-            city=data["city"],
-            state=data["state"],
-            zip_code=data["zip_code"],
-            neighborhood=data["neighborhood"],
-            complement=data.get("complement")
-        )
-
-        db.session.add(address)
-        db.session.commit()
+        address = create_address(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create address: {str(e)}"}), 500
 
     return jsonify({
@@ -38,8 +27,9 @@ def create(user_id):
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
-def read(id):
-    address = Address.query.get(id)
+@token_required
+def read(current_user_id, id):
+    address = get_address(id)
     if address is None:
         return jsonify({"error": "Address not found"}), 404
 
@@ -49,7 +39,8 @@ def read(id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
-def read_all():
+@token_required
+def read_all(current_user_id):
     addresses = Address.query.all()
     addresses_data = [address.serialize() for address in addresses]
 
@@ -60,24 +51,15 @@ def read_all():
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
-    address = Address.query.get(id)
-    if address is None:
-        return jsonify({"error": "Address not found"}), 404
-
+@token_required
+def update(current_user_id, id):
     data = request.get_json()
 
-    for field in ("street", "number", "city", "state", "zip_code", "neighborhood"):
-        if field in data:
-            setattr(address, field, data[field])
-
-    address.observation = data.get("observation", address.observation)
-    address.complement = data.get("complement", address.complement)
-
     try:
-        db.session.commit()
+        address = update_address(id, data)
+        if address is None:
+            return jsonify({"error": "Address not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update address: {str(e)}"}), 500
 
     return jsonify({
@@ -87,16 +69,15 @@ def update(id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-def delete(id):
-    address = Address.query.get(id)
-    if address is None:
-        return jsonify({"error": "Address not found"}), 404
-
+@token_required
+def delete(current_user_id, id):
     try:
-        db.session.delete(address)
-        db.session.commit()
+        address = delete_address(id)
+        if address is None:
+            return jsonify({"error": "Address not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete address: {str(e)}"}), 500
 
-    return jsonify({"message": "Address deleted successfully"}), 200 
+    return jsonify({
+        "message": "Address deleted successfully."
+    }), 200 

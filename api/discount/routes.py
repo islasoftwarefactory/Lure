@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Discount import Discount
+from api.discount.model import Discount, create_discount, get_discount, update_discount, delete_discount
 from api.Database.connection import db
-from api.validators.discount_validators import validate_discount_creation, validate_discount_update
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('discount', __name__)
@@ -12,23 +11,12 @@ blueprint = Blueprint('discount', __name__)
 def create(current_user_id):
     data = request.get_json()
 
-    validation_errors = validate_discount_creation(data)
-    if validation_errors:
-        return jsonify({"errors": validation_errors}), 400
-
-    discount = Discount(
-        name=data["name"],
-        description=data["description"],
-        discount_percent=data["discount_percent"],
-        start_date=data["start_date"],
-        end_date=data["end_date"]
-    )
+    if not data or not all(field in data for field in ["name", "description", "value", "allowed_product_id"]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        db.session.add(discount)
-        db.session.commit()
+        discount = create_discount(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create discount: {str(e)}"}), 500
 
     return jsonify({
@@ -40,7 +28,7 @@ def create(current_user_id):
 @blueprint.route("/read/<int:id>", methods=["GET"])
 @token_required
 def read(current_user_id, id):
-    discount = Discount.query.get(id)
+    discount = get_discount(id)
     if discount is None:
         return jsonify({"error": "Discount not found"}), 404
 
@@ -64,24 +52,13 @@ def read_all(current_user_id):
 @blueprint.route("/update/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user_id, id):
-    discount = Discount.query.get(id)
-    if discount is None:
-        return jsonify({"error": "Discount not found"}), 404
-
     data = request.get_json()
 
-    validation_errors = validate_discount_update(data)
-    if validation_errors:
-        return jsonify({"errors": validation_errors}), 400
-
-    for field in ("name", "description", "discount_percent", "start_date", "end_date"):
-        if field in data:
-            setattr(discount, field, data[field])
-
     try:
-        db.session.commit()
+        discount = update_discount(id, data)
+        if discount is None:
+            return jsonify({"error": "Discount not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update discount: {str(e)}"}), 500
 
     return jsonify({
@@ -93,15 +70,11 @@ def update(current_user_id, id):
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user_id, id):
-    discount = Discount.query.get(id)
-    if discount is None:
-        return jsonify({"error": "Discount not found"}), 404
-
     try:
-        db.session.delete(discount)
-        db.session.commit()
+        discount = delete_discount(id)
+        if discount is None:
+            return jsonify({"error": "Discount not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete discount: {str(e)}"}), 500
 
     return jsonify({

@@ -1,6 +1,8 @@
 from ..connection import db
 from datetime import datetime
 import pytz
+from typing import Dict, List
+from flask import current_app
 
 class Payment(db.Model):
     __tablename__ = "payments"
@@ -29,3 +31,40 @@ class Payment(db.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
+
+def create_payment(payment_data):
+    """Creates a new payment"""
+    current_app.logger.info("Starting payment creation")
+    try:
+        payment = Payment(**payment_data)
+        db.session.add(payment)
+        db.session.commit()
+        current_app.logger.info(f"Payment created successfully")
+        return payment
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error creating payment: {str(e)}")
+        raise
+
+def get_payment(payment_id):
+    """Retrieves a payment by ID"""
+    return Payment.query.get(payment_id)
+
+def update_payment(payment_id, payment_data):
+    """Updates an existing payment"""
+    payment = get_payment(payment_id)
+    if payment:
+        for key, value in payment_data.items():
+            setattr(payment, key, value)
+        db.session.commit()
+        return payment
+    return None
+
+def delete_payment(payment_id):
+    """Deletes a payment"""
+    payment = get_payment(payment_id)
+    if payment:
+        db.session.delete(payment)
+        db.session.commit()
+        return payment
+    return None

@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
-from api.Database.Models.Category import Category
+from api.category.model import Category, create_category, get_category, update_category, delete_category
 from api.Database.connection import db
-from api.validators.category_validators import validate_category_creation, validate_category_update
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('category', __name__)
@@ -16,13 +15,9 @@ def create(current_user_id):
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    category = Category(name=data["name"])
-
     try:
-        db.session.add(category)
-        db.session.commit()
+        category = create_category(data)
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to create category: {str(e)}"}), 500
 
     return jsonify({
@@ -34,7 +29,7 @@ def create(current_user_id):
 @blueprint.route("/read/<int:id>", methods=["GET"])
 @token_required
 def read(current_user_id, id):
-    category = Category.query.get(id)
+    category = get_category(id)
     if category is None:
         return jsonify({"error": "Category not found"}), 404
 
@@ -58,23 +53,17 @@ def read_all(current_user_id):
 @blueprint.route("/update/<int:id>", methods=["PUT"])
 @token_required
 def update(current_user_id, id):
-    category = Category.query.get(id)
-    if category is None:
-        return jsonify({"error": "Category not found"}), 404
-
     data = request.get_json()
 
     validation_errors = validate_category_update(data)
     if validation_errors:
         return jsonify({"errors": validation_errors}), 400
 
-    if "name" in data:
-        category.name = data["name"]
-
     try:
-        db.session.commit()
+        category = update_category(id, data)
+        if category is None:
+            return jsonify({"error": "Category not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to update category: {str(e)}"}), 500
 
     return jsonify({
@@ -86,15 +75,11 @@ def update(current_user_id, id):
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user_id, id):
-    category = Category.query.get(id)
-    if category is None:
-        return jsonify({"error": "Category not found"}), 404
-
     try:
-        db.session.delete(category)
-        db.session.commit()
+        category = delete_category(id)
+        if category is None:
+            return jsonify({"error": "Category not found"}), 404
     except Exception as e:
-        db.session.rollback()
         return jsonify({"error": f"Failed to delete category: {str(e)}"}), 500
 
     return jsonify({
