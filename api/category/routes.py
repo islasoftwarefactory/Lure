@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.category.model import Category, create_category, get_category, update_category, delete_category
-from api.Database.connection import db
-from api.utils.decorators import token_required
+from api.utils.jwt.decorators import token_required
 
 blueprint = Blueprint('category', __name__)
 

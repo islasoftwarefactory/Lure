@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.image_category.model import ImageCategory, create_image_category, get_image_category, update_image_category, delete_image_category
-from api.Database.connection import db
-from api.utils.decorators import token_required
+from api.utils.jwt.decorators import token_required
 
 blueprint = Blueprint('image_category', __name__)
 

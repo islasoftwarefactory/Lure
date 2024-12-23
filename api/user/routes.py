@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.user.model import User, create_user, get_user, update_user, delete_user
-from api.Database.connection import db
-from api.utils.decorators import token_required
+from api.utils.jwt.decorators import token_required
 from api.utils.jwt_utils import generate_token
 
 blueprint = Blueprint('user', __name__)

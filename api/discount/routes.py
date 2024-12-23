@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.discount.model import Discount, create_discount, get_discount, update_discount, delete_discount
-from api.Database.connection import db
-from api.utils.decorators import token_required
+from api.utils.jwt.decorators import token_required
 
 blueprint = Blueprint('discount', __name__)
 

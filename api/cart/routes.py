@@ -1,7 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.cart.model import Cart, create_cart, get_cart, update_cart, delete_cart
-from api.Database.connection import db
-from api.utils.decorators import token_required
+from api.utils.jwt.decorators import token_required
 
 blueprint = Blueprint('cart', __name__)
 

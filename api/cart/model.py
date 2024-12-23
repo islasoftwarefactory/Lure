@@ -1,7 +1,8 @@
-from ..connection import db
+from api.utils.db.connection import db  # Add this import
 from datetime import datetime
 import pytz
 from typing import Dict, Optional
+from flask import current_app
 
 class Cart(db.Model):
     __tablename__ = "carts"
@@ -54,7 +55,59 @@ def get_cart(cart_id: int) -> Optional[Cart]:
     return Cart.query.get(cart_id)
 
 def update_cart(cart_id: int, cart_data: Dict) -> Optional[Cart]:
-    """Updates an existing cart"""
-    cart = get_cart(cart_id)
-    if cart:
-        for field in ["
+    """Updates an existing cart
+    
+    Args:
+        cart_id (int): ID do carrinho a ser atualizado
+        cart_data (Dict): Dicionário contendo os campos a serem atualizados
+        
+    Returns:
+        Optional[Cart]: Carrinho atualizado ou None se não encontrado
+    """
+    current_app.logger.info(f"Attempting to update cart ID: {cart_id}")
+    try:
+        cart = get_cart(cart_id)
+        if not cart:
+            current_app.logger.warning(f"Cart ID {cart_id} not found")
+            return None
+
+        updatable_fields = ["user_id", "product_id", "discount_id", "status"]
+        
+        for field in updatable_fields:
+            if field in cart_data:
+                setattr(cart, field, cart_data[field])
+        
+        db.session.commit()
+        current_app.logger.info(f"Cart {cart_id} updated successfully")
+        return cart
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating cart {cart_id}: {str(e)}")
+        raise
+
+def delete_cart(cart_id: int) -> bool:
+    """Deletes a cart by ID
+    
+    Args:
+        cart_id (int): ID do carrinho a ser deletado
+        
+    Returns:
+        bool: True se o carrinho foi deletado com sucesso, False se não encontrado
+    """
+    current_app.logger.info(f"Attempting to delete cart ID: {cart_id}")
+    try:
+        cart = get_cart(cart_id)
+        if not cart:
+            current_app.logger.warning(f"Cart ID {cart_id} not found")
+            return False
+            
+        db.session.delete(cart)
+        db.session.commit()
+        current_app.logger.info(f"Cart {cart_id} deleted successfully")
+        return True
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error deleting cart {cart_id}: {str(e)}")
+        raise

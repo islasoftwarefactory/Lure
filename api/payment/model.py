@@ -1,4 +1,4 @@
-from ..connection import db
+from api.utils.db.connection import db  # Add this import
 from datetime import datetime
 import pytz
 from typing import Dict, List

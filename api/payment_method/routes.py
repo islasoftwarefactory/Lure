@@ -1,6 +1,5 @@
 from flask import request, jsonify, Blueprint
 from api.payment_method.model import PaymentMethod, create_payment_method, get_payment_method, update_payment_method, delete_payment_method
-from api.Database.connection import db
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('payment_method', __name__)

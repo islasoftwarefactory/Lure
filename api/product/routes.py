@@ -1,6 +1,5 @@
 from flask import request, jsonify, Blueprint
 from api.product.model import Product, create_product, get_product, update_product, delete_product
-from api.Database.connection import db
 from api.utils.decorators import token_required
 
 blueprint = Blueprint('product', __name__)

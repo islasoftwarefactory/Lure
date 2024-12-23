@@ -1,10 +1,10 @@
 from flask import Flask, request, jsonify, g
-from api.Database.config import database_uri
-from api.Database.connection import connect_to_db, init_db, db
+from api.utils.db.config import database_uri
+from api.utils.db.connection import connect_to_db, init_db, db
 from sqlalchemy.exc import OperationalError
-from api.Routes.blueprints import register_blueprints
+from api.blueprints import register_blueprints
 from flask_migrate import Migrate
-from api.utils.jwt_utils import verify_token, generate_token
+from api.utils.jwt.jwt_utils import verify_token, generate_token
 from flask_cors import CORS
 
 from os import getenv
