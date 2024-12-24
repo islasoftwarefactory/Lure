@@ -1,0 +1,24 @@
+FROM python:3.12
+
+WORKDIR /
+
+RUN apt-get update && apt-get install -y \
+  default-libmysqlclient-dev \
+  pkg-config \
+  build-essential \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /api/
+RUN pip install --no-cache-dir -r /api/requirements.txt
+
+COPY entrypoint.sh /api/
+RUN chmod +x /api/entrypoint.sh
+
+COPY . /api/
+
+RUN find /api -type d -exec touch {}/__init__.py \;
+
+ENV PYTHONPATH=/:/api
+
+WORKDIR /api
+ENTRYPOINT ["/api/entrypoint.sh"]
