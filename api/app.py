@@ -6,6 +6,7 @@ from api.blueprints import register_blueprints
 from flask_migrate import Migrate
 from api.utils.jwt.jwt_utils import verify_token, generate_token
 from flask_cors import CORS
+from api.utils.db.create_tables import create_tables
 
 from os import getenv
 from datetime import datetime
@@ -21,19 +22,41 @@ application.config["SQLALCHEMY_DATABASE_URI"] = database_uri()
 application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 application.config["JWT_SECRET_KEY"] = getenv("JWT_SECRET_KEY")
 
-migrate = Migrate(application, db)
 init_db(application)
+migrate = Migrate(application, db)
 
 try:
     connect_to_db(application)
     print("Connected successfully")
+    
+    with application.app_context():
+        # Desabilita temporariamente o rastreamento de modificações
+        application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        
+        # Inicializa as migrações primeiro
+        migrate = Migrate(application, db)
+        
+        # Espera um momento para garantir que não há operações pendentes
+        db.session.commit()
+        
+        try:
+            # Tenta criar as tabelas
+            create_tables()
+            print("Tables created successfully")
+        except Exception as e:
+            print(f"Error creating tables: {str(e)}")
+            db.session.rollback()
+            raise
+        
+        # Reativa o rastreamento de modificações se necessário
+        application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        
 except OperationalError as e:
     print("Connection failed: OperationalError")
+    raise
 except Exception as e:
     print("Error:", e)
-
-with application.app_context():
-    db.create_all()
+    raise
 
 
 @application.before_request
