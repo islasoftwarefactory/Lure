@@ -14,16 +14,13 @@ from api.utils.db.connection import db
 from sqlalchemy import inspect
 
 def create_tables():
+    """Creates all database tables for registered models"""
     try:
-        inspector = inspect(db.engine)
-        existing_tables = inspector.get_table_names()
-        
-        # Para cada modelo definido
-        for table in db.Model.metadata.tables.values():
-            if table.name not in existing_tables:
-                table.create(db.engine)
-                print(f"Table {table.name} created")
-            else:
-                print(f"Table {table.name} already exists")
+        # Força o carregamento de todos os modelos
+        models = [User, Address, Cart, Category, Discount, Gender, 
+                 ImageCategory, Payment, PaymentMethod, Product, Size]
+        db.create_all()
+        print("Tables created successfully")
     except Exception as e:
-        print(f"Error creating tables: {e}")
+        print(f"Error creating tables: {str(e)}")
+        raise  # Re-lança o erro para debug
