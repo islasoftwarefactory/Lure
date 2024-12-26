@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
 	darkMode: ["class"],
 	content: [
 	  "./src/**/*.{js,jsx,ts,tsx}",
@@ -7,7 +7,7 @@ module.exports = {
 	theme: {
 	  extend: {
 	    animation: {
-	      'marquee-ltr': 'marquee-ltr 30s linear infinite', // Mudado para ltr (left to right)
+	      'marquee-ltr': 'marquee-ltr 30s linear infinite',
 	    },
 	    keyframes: {
 	      'marquee-ltr': {

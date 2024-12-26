@@ -17,12 +17,13 @@ export default defineConfig({
       usePolling: true,
       interval: 100
     },
-    hmr: {
-      protocol: 'ws',
-      host: '0.0.0.0',
-    },
-    host: true,
+    host: '0.0.0.0',
+    port: 5173,
     strictPort: true,
-    port: 5173
+    hmr: {
+      host: 'localhost',
+      port: 5173,
+      clientPort: 8081
+    }
   }
 });
