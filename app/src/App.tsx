@@ -11,6 +11,8 @@ import { CheckoutComponent } from "./components/checkout";
 import FormWithValidation from "./components/FormWithValidation";
 import { ContactPage } from './components/ContactPage';
 import { LoginComponent } from './components/LoginComponent';
+import { ProductPage } from './components/ProductPage';
+
 export default function App() {
   return (
     <Router>
@@ -26,6 +28,7 @@ export default function App() {
             <Route path="/" element={<Navigate to="/homepage" replace />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/login" element={<LoginComponent />} />
+            <Route path="/product/:id" element={<ProductPage />} />
           </Routes>
         </AnnouncementProvider>
       </AuthProvider>

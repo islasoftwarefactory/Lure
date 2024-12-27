@@ -52,6 +52,10 @@ export function HomePage() {
   const isLoading = false;
   const currentProduct = null;
 
+  const handleProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
       <AnnouncementBar />
@@ -65,18 +69,21 @@ export function HomePage() {
             imageUrl={hoodieImage}
             isLimitedEdition={true}
             colorVariant="#000000"
+            onClick={() => handleProductClick('hoodie-preto')}
           />
           <ProductCard
             title="Hoodie Branco"
             subtitle="Clássico"
             imageUrl={hoodieImage}
             colorVariant="#FFFFFF"
+            onClick={() => handleProductClick('hoodie-branco')}
           />
           <ProductCard
             title="Hoodie Vermelho"
             subtitle="Nova Coleção"
             imageUrl={hoodieImage}
             colorVariant="#FF0000"
+            onClick={() => handleProductClick('hoodie-vermelho')}
           />
         </div>
       </main>

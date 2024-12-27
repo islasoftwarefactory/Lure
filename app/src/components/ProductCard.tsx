@@ -6,6 +6,7 @@ interface ProductCardProps {
   imageUrl: string
   isLimitedEdition?: boolean
   colorVariant?: string
+  onClick?: () => void
 }
 
 export default function ProductCard({
@@ -13,10 +14,14 @@ export default function ProductCard({
   subtitle = "Product Subtitle",
   imageUrl = "/placeholder.svg?height=400&width=400",
   isLimitedEdition = false,
-  colorVariant
+  colorVariant,
+  onClick
 }: ProductCardProps) {
   return (
-    <div className="w-[280px] p-4 bg-transparent">
+    <div 
+      className="w-[280px] p-4 bg-transparent cursor-pointer" 
+      onClick={onClick}
+    >
       <div className="overflow-hidden bg-white rounded-2xl shadow-lg">
         <div className="relative">
           {isLimitedEdition && (
