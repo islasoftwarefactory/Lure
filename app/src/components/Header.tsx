@@ -11,10 +11,10 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ 
   onCartClick, 
-  iconsPosition = 100 // Agora em pixels, ajuste este valor
+  iconsPosition = 100
 }) => {
   return (  
-    <header className="fixed top-12 left-0 right-0 z-50 p-4 h-[100px] flex justify-center">
+    <header className="fixed top-8 left-0 right-0 z-30 p-4 h-[100px] flex justify-center">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
