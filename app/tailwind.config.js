@@ -50,6 +50,9 @@ export default {
 	        foreground: "hsl(var(--card-foreground))",
 	      },
 	    },
+	    fontFamily: {
+	      aleo: ['Aleo', 'HelveticaNeue', 'Helvetica Neue', 'sans-serif'],
+	    },
 	  },
 	},
 	plugins: [],
