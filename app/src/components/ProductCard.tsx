@@ -26,12 +26,14 @@ export default function ProductCard({
               LIMITED EDITION
             </Badge>
           )}
-          <div className="aspect-square bg-white flex items-center justify-center p-6">
-            <img
-              src={imageUrl}
-              alt={title}
-              className="w-full h-full object-contain rounded-lg"
-            />
+          <div className="aspect-square bg-white p-4">
+            <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center p-6">
+              <img
+                src={imageUrl}
+                alt={title}
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
         </div>
         <div className="p-4">

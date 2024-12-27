@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, ReactNode } from 'react'
 import { SideCart } from "./SideCart.tsx"
-import hoodieImage from '../assets/icons/pieces/hoodie.png'
+import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
 import { useNavigate } from 'react-router-dom';
