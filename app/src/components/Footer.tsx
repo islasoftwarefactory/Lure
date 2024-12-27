@@ -80,18 +80,32 @@ export function Footer() {
           */}
         </div>
 
-
-
-        {/* Divider Line */}
-        <div 
-          className="border-t-2 border-gray-300" 
-          style={{ 
-            width: 'calc(100% + 400px)',
-            marginLeft: '-200px',
-            marginTop: '150px',
-            marginBottom: '48px'
-          }}
-        ></div>
+        {/* Divider Line with Lure text */}
+        <div className="relative" style={{ 
+          width: 'calc(100% + 400px)',
+          marginLeft: '-200px',
+          marginTop: '150px',
+          marginBottom: '48px'
+        }}>
+          <span className="absolute -top-14 left-0 text-[#231f20] font-semibold text-4xl">
+            𝐋𝐔𝐑𝐄
+          </span>
+          <div className="border-t-2 border-gray-300 w-full"></div>
+          <span className="absolute top-4 left-0 text-[#79808a] font-semibold text-sm">
+            2024 Lure® All rights reserved.
+          </span>
+          <div className="absolute top-4 right-0 space-x-4 text-[#79808a] font-semibold text-sm">
+            <a href="#" className="hover:text-gray-900">Manage Cookies</a>
+            <span>|</span>
+            <a href="#" className="hover:text-gray-900">Privacy</a>
+            <span>|</span>
+            <a href="#" className="hover:text-gray-900">Terms</a>
+            <span>|</span>
+            <a href="#" className="hover:text-gray-900">Payment</a>
+            <span>|</span>
+            <a href="#" className="hover:text-gray-900">Accessibility</a>
+          </div>
+        </div>
       </div>
     </footer>
   );
