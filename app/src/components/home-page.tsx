@@ -57,7 +57,7 @@ export function HomePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center justify-center px-4 py-8 pt-[180px] font-aleo">
+      <main className="flex-grow flex items-center justify-center px-4 py-8 pt-[180px] pb-96 font-aleo">
         <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <ProductCard
             title="Hoodie Preto"
