@@ -21,7 +21,7 @@ export default function ProductCard({
         <div className="relative">
           {isLimitedEdition && (
             <Badge
-              className="absolute right-3 top-3 bg-blue-500 text-white hover:bg-blue-500/90 z-10"
+              className="absolute right-3 top-3 bg-blue-500 text-white hover:bg-blue-500/90 z-10 font-aleo text-base"
             >
               LIMITED EDITION
             </Badge>
@@ -37,8 +37,8 @@ export default function ProductCard({
           </div>
         </div>
         <div className="p-4">
-          <h3 className="font-medium text-lg">{title}</h3>
-          <p className="text-sm text-gray-500">{subtitle}</p>
+          <h3 className="font-medium text-2xl font-aleo">{title}</h3>
+          <p className="text-base text-gray-500 font-aleo mt-1">{subtitle}</p>
           {colorVariant && (
             <div className="mt-2">
               <div
