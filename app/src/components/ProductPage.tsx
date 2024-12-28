@@ -5,11 +5,16 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
 import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export function ProductPage() {
   const { id } = useParams();
   const [selectedSize, setSelectedSize] = useState('M');
+  const historyRef = useRef<HTMLDivElement>(null);
+
+  const scrollToHistory = () => {
+    historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-[#f2f2f2]">
@@ -98,6 +103,25 @@ export function ProductPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Barra de Navegação */}
+        <div className="flex justify-center mt-8">
+          <div className="bg-[#e4e4e4] rounded-[20px] p-[2px]">
+            <div className="bg-[#e4e4e4] rounded-[18px] px-4 py-2">
+              <button
+                onClick={scrollToHistory}
+                className="bg-white text-black px-6 py-2 rounded-[15px] font-medium hover:bg-gray-100 transition-colors font-aleo shadow-md"
+              >
+                Product History
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Seção de História do Produto */}
+        <div ref={historyRef} className="mt-16">
+          {/* Conteúdo da história do produto será adicionado aqui */}
         </div>
       </main>
 
