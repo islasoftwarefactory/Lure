@@ -64,9 +64,12 @@ def verify_jwt():
     # Lista de endpoints que não precisam de autenticação
     public_endpoints = [
         'health',  # /health
-        'anonymous_auth.get_anonymous_token',  # /auth/anonymous-token
+        'user.get_anonymous_token',  # /user/anonymous-token
+        'user.create',  # /user/create
         'static'   # arquivos estáticos
     ]
+    
+    print(f"Current endpoint: {request.endpoint}")  # Adicione esta linha para debug
     
     # Se o endpoint atual está na lista de públicos, permite o acesso
     if request.endpoint in public_endpoints:

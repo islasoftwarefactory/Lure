@@ -6,14 +6,52 @@ import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
 import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
 import { useState, useRef } from 'react';
+import { Plus } from 'lucide-react';
+
+interface AccordionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & { isExpanded: boolean; onToggle: () => void }) => {
+  return (
+    <div className="w-full max-w-3xl bg-white rounded-[20px] overflow-hidden shadow-lg border border-black/10">
+      <div
+        onClick={onToggle}
+        className="p-6 flex justify-between items-center cursor-pointer"
+      >
+        <span className="text-xl font-extrabold font-aleo">{title}</span>
+        <Plus
+          className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-45' : ''}`}
+          size={24}
+        />
+      </div>
+      <div 
+        className={`grid transition-all duration-300 ease-in-out ${
+          isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="px-6 pb-6 border-t border-gray-100">
+            {children}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export function ProductPage() {
   const { id } = useParams();
   const [selectedSize, setSelectedSize] = useState('M');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
+  const shippingRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
 
-  const scrollToHistory = () => {
-    historyRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth' });
+    setExpandedSection(section);
   };
 
   return (
@@ -106,22 +144,71 @@ export function ProductPage() {
         </div>
 
         {/* Barra de Navegação */}
-        <div className="flex justify-center mt-8">
-          <div className="bg-[#e4e4e4] rounded-[20px] p-[2px]">
-            <div className="bg-[#e4e4e4] rounded-[18px] px-4 py-2">
+        <div className="flex justify-center mt-6">
+          <div className="bg-[#e4e4e4] rounded-[15px] p-[2px]">
+            <div className="bg-[#e4e4e4] rounded-[13px] px-3 py-1.5 flex gap-3">
               <button
-                onClick={scrollToHistory}
-                className="bg-white text-black px-6 py-2 rounded-[15px] font-medium hover:bg-gray-100 transition-colors font-aleo shadow-md"
+                onClick={() => scrollToSection(historyRef, 'history')}
+                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
               >
-                Product History
+                History
+              </button>
+              <button
+                onClick={() => scrollToSection(shippingRef, 'shipping')}
+                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
+              >
+                Shipping
+              </button>
+              <button
+                onClick={() => scrollToSection(faqRef, 'faq')}
+                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
+              >
+                FAQ
               </button>
             </div>
           </div>
         </div>
 
-        {/* Seção de História do Produto */}
-        <div ref={historyRef} className="mt-16">
-          {/* Conteúdo da história do produto será adicionado aqui */}
+        {/* Seções Expansíveis */}
+        <div className="mt-16 space-y-4 flex flex-col items-center">
+          <div ref={historyRef}>
+            <Accordion 
+              title="History" 
+              isExpanded={expandedSection === 'history'}
+              onToggle={() => setExpandedSection(expandedSection === 'history' ? null : 'history')}
+            >
+              <p className="text-gray-700">
+                Matte fingerprint-resistant PET backplate, Polycarbonate frame, TPU bumpers and camera ring, 
+                Microfiber interior, Fortified corner bumpers, Anodized aluminum buttons
+              </p>
+            </Accordion>
+          </div>
+
+          <div ref={shippingRef}>
+            <Accordion 
+              title="Shipping"
+              isExpanded={expandedSection === 'shipping'}
+              onToggle={() => setExpandedSection(expandedSection === 'shipping' ? null : 'shipping')}
+            >
+              <p className="text-gray-700">
+                15ft drop protection, Raised edges to protect screen and camera, Height above screen at bottom: 1.11mm,
+                Height above screen sides/top: 1.85mm, Bumper thickness: 3.3mm, Precise Camera Control button cutout
+              </p>
+            </Accordion>
+          </div>
+
+          <div ref={faqRef}>
+            <Accordion 
+              title="FAQ"
+              isExpanded={expandedSection === 'faq'}
+              onToggle={() => setExpandedSection(expandedSection === 'faq' ? null : 'faq')}
+            >
+              <p className="text-gray-700">
+                Nickel-plated Neodymium magnets, 800-1100gf magnetic force with Apple-certified accessories,
+                Alignment magnet for orientation-specific accessories, 5G compatible
+              </p>
+            </Accordion>
+          </div>
         </div>
       </main>
 
