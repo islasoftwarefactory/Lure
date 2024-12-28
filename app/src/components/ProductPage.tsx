@@ -28,7 +28,7 @@ export function ProductPage() {
           </div>
 
           {/* Bloco de informações */}
-          <div className="w-[600px] h-[500px] bg-white rounded-[30px] shadow-lg p-8 ml-[150px]">
+          <div className="w-[600px] h-[500px] bg-white rounded-[30px] shadow-lg p-8 ml-[250px]">
             <div>
               <div className="flex justify-between items-center">
                 <h1 className="text-4xl font-extrabold font-aleo">The Flower</h1>
@@ -57,17 +57,19 @@ export function ProductPage() {
                 <h2 className="text-lg font-extrabold mb-3">Size</h2>
                 <div className="flex gap-2">
                   {['S', 'M', 'L', 'XL'].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`w-12 h-10 rounded-xl border ${
-                        selectedSize === size
-                          ? 'bg-black text-white border-black'
-                          : 'bg-white text-black border-gray-300'
-                      } flex items-center justify-center font-medium transition-colors`}
-                    >
-                      {size}
-                    </button>
+                    <div key={size} className="relative">
+                      <div className="absolute inset-0 bg-[#f2f2f2] rounded-full" />
+                      <button
+                        onClick={() => setSelectedSize(size)}
+                        className={`relative w-12 h-12 rounded-full border ${
+                          selectedSize === size
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-black border-gray-300'
+                        } flex items-center justify-center font-medium transition-colors`}
+                      >
+                        {size}
+                      </button>
+                    </div>
                   ))}
                 </div>
               </div>
