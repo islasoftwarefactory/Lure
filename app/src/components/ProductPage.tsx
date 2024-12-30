@@ -13,6 +13,14 @@ import { CartItem, addToCartAndShow } from '../utils/cartUtils';
 import { useCart } from '../context/CartContext';
 import { SideCart } from "./SideCart";
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+}
+
 interface AccordionProps {
   title: string;
   children: React.ReactNode;
@@ -53,6 +61,13 @@ export function ProductPage() {
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [product] = useState<Product>({
+    id: id || 'default-id',
+    name: 'The Flower',
+    price: 199.99,
+    description: 'Beautiful flower hoodie',
+    image: hoodieImage
+  });
   const historyRef = useRef<HTMLDivElement>(null);
   const shippingRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
@@ -88,12 +103,12 @@ export function ProductPage() {
 
   const handleAddToCart = () => {
     const newItem: CartItem = {
-      id: id || 'default-id',
-      name: 'The Flower',
-      price: 199.99,
+      id: product.id,
+      name: product.name,
+      price: product.price,
       size: selectedSize,
       quantity: quantity,
-      image: hoodieImage
+      image: product.image
     };
 
     addToCartAndShow(newItem, setCartItems, setIsCartOpen);

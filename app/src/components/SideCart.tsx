@@ -139,6 +139,22 @@ export const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setI
                   ))
                 )}
               </div>
+
+              {/* Subtotal e Botão de Checkout */}
+              {items.length > 0 && (
+                <div className="px-8 py-6 bg-[#f3f3f3] mt-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="font-aleo text-black text-2xl font-extrabold pl-3">Subtotal</span>
+                    <span className="font-aleo text-black text-2xl font-bold">${calculateTotal().toFixed(2)}</span>
+                  </div>
+                  <button 
+                    onClick={handleCheckout}
+                    className="w-full py-4 bg-black text-white font-extrabold text-lg hover:bg-gray-900 transition-colors rounded-full"
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         </>
