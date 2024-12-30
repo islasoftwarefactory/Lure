@@ -1,18 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // Assume we have an AuthContext
+import { useAuth } from '../context/AuthContext';
 import { Overlay } from './common/Overlay';
 import { Trash2 } from 'lucide-react';
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  size: string;
-  quantity: number;
-  image: string;
-}
+import { CartItem, removeFromCart, updateCartItemQuantity } from '../utils/cartUtils';
 
 interface SideCartProps {
   isOpen: boolean;
@@ -21,7 +13,7 @@ interface SideCartProps {
   setItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
-export const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems }) => {
+const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems }) => {
   const cartRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth(); // Get the login status from AuthContext
@@ -40,17 +32,17 @@ export const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setI
   }, [isOpen, onClose]);
 
   const removeItem = (id: string) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+    const updatedCart = removeFromCart(id, '');
+    setItems(updatedCart);
   };
 
   const updateQuantity = (id: string, change: number) => {
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.id === id
-          ? { ...item, quantity: Math.max(1, item.quantity + change) }
-          : item
-      )
-    );
+    const item = items.find(item => item.id === id);
+    if (item) {
+      const newQuantity = Math.max(1, item.quantity + change);
+      const updatedCart = updateCartItemQuantity(id, item.size, newQuantity);
+      setItems(updatedCart);
+    }
   };
 
   const calculateTotal = () => {
@@ -182,3 +174,5 @@ export const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setI
     </AnimatePresence>
   );
 };
+
+export { SideCart };

@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface CartItem {
   id: string;
   name: string;
@@ -7,40 +9,37 @@ export interface CartItem {
   image: string;
 }
 
-export const addToCart = (newItem: CartItem): void => {
-  // Recupera o carrinho atual do localStorage
-  const currentCart = JSON.parse(localStorage.getItem('cart') || '[]');
+export const getCart = (): CartItem[] => {
+  return JSON.parse(localStorage.getItem('cart') || '[]');
+};
+
+export const addToCart = (newItem: CartItem): CartItem[] => {
+  const currentCart = getCart();
   
-  // Verifica se o item já existe no carrinho com o mesmo tamanho
   const existingItemIndex = currentCart.findIndex(
     (item: CartItem) => item.id === newItem.id && item.size === newItem.size
   );
 
   if (existingItemIndex >= 0) {
-    // Se existir, atualiza a quantidade
     currentCart[existingItemIndex].quantity += newItem.quantity;
   } else {
-    // Se não existir, adiciona o novo item
     currentCart.push(newItem);
   }
 
-  // Salva o carrinho atualizado
   localStorage.setItem('cart', JSON.stringify(currentCart));
+  return getCart();
 };
 
-export const getCart = (): CartItem[] => {
-  return JSON.parse(localStorage.getItem('cart') || '[]');
-};
-
-export const removeFromCart = (id: string, size: string): void => {
+export const removeFromCart = (id: string, size: string): CartItem[] => {
   const currentCart = getCart();
   const updatedCart = currentCart.filter(
     (item) => !(item.id === id && item.size === size)
   );
   localStorage.setItem('cart', JSON.stringify(updatedCart));
+  return getCart();
 };
 
-export const updateCartItemQuantity = (id: string, size: string, quantity: number): void => {
+export const updateCartItemQuantity = (id: string, size: string, quantity: number): CartItem[] => {
   const currentCart = getCart();
   const updatedCart = currentCart.map((item) =>
     item.id === id && item.size === size
@@ -48,10 +47,12 @@ export const updateCartItemQuantity = (id: string, size: string, quantity: numbe
       : item
   );
   localStorage.setItem('cart', JSON.stringify(updatedCart));
+  return getCart();
 };
 
-export const clearCart = (): void => {
+export const clearCart = (): CartItem[] => {
   localStorage.setItem('cart', '[]');
+  return getCart();
 };
 
 export const addToCartAndShow = (
@@ -59,13 +60,7 @@ export const addToCartAndShow = (
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>,
   setIsCartOpen: (isOpen: boolean) => void
 ): void => {
-  // Adiciona o item ao carrinho
-  addToCart(newItem);
-  
-  // Atualiza o estado dos itens do carrinho
-  const updatedCart = getCart();
+  const updatedCart = addToCart(newItem);
   setCartItems(updatedCart);
-  
-  // Abre o carrinho
   setIsCartOpen(true);
 }; 
