@@ -50,9 +50,25 @@ export function ProductPage() {
   const faqRef = useRef<HTMLDivElement>(null);
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth' });
-    setExpandedSection(section);
-  };
+    if (ref.current) {
+      // 1. Primeiro expande a seção
+      setExpandedSection(section);
+      
+      // 2. Aguarda a expansão e ajusta o scroll 
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const headerOffset = 120;
+          const elementPosition = ref.current?.getBoundingClientRect().top || 0;
+          const offsetPosition = window.scrollY + elementPosition - headerOffset;
+   
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }, 300); // Tempo suficiente para a animação de expansão
+      });
+    }
+   };
 
   return (
     <div className="min-h-screen bg-[#f2f2f2]">
@@ -71,7 +87,7 @@ export function ProductPage() {
           </div>
 
           {/* Bloco de informações */}
-          <div className="w-[600px] h-[500px] bg-white rounded-[30px] shadow-lg p-8 ml-[250px]">
+          <div className="w-[600px] h-[550px] bg-white rounded-[30px] shadow-lg p-8 ml-[250px]">
             <div>
               <div className="flex justify-between items-center">
                 <h1 className="text-4xl font-extrabold font-aleo">The Flower</h1>
@@ -170,43 +186,89 @@ export function ProductPage() {
         </div>
 
         {/* Seções Expansíveis */}
-        <div className="mt-16 space-y-4 flex flex-col items-center">
-          <div ref={historyRef}>
+        <div className="mt-16 space-y-12 flex flex-col items-center pb-16">
+          <div ref={historyRef} className="w-full max-w-3xl">
             <Accordion 
               title="History" 
               isExpanded={expandedSection === 'history'}
               onToggle={() => setExpandedSection(expandedSection === 'history' ? null : 'history')}
             >
-              <p className="text-gray-700">
-                Matte fingerprint-resistant PET backplate, Polycarbonate frame, TPU bumpers and camera ring, 
-                Microfiber interior, Fortified corner bumpers, Anodized aluminum buttons
-              </p>
+              <div className="grid grid-cols-3 gap-8">
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Matte fingerprint-resistant PET backplate</li>
+                    <li>Polycarbonate frame</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>TPU bumpers and camera ring</li>
+                    <li>Microfiber interior</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Fortified corner bumpers</li>
+                    <li>Anodized aluminum buttons</li>
+                  </ul>
+                </div>
+              </div>
             </Accordion>
           </div>
 
-          <div ref={shippingRef}>
+          <div ref={shippingRef} className="w-full max-w-3xl">
             <Accordion 
               title="Shipping"
               isExpanded={expandedSection === 'shipping'}
               onToggle={() => setExpandedSection(expandedSection === 'shipping' ? null : 'shipping')}
             >
-              <p className="text-gray-700">
-                15ft drop protection, Raised edges to protect screen and camera, Height above screen at bottom: 1.11mm,
-                Height above screen sides/top: 1.85mm, Bumper thickness: 3.3mm, Precise Camera Control button cutout
-              </p>
+              <div className="grid grid-cols-3 gap-8">
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>15ft drop protection</li>
+                    <li>Raised edges to protect screen and camera</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Height above screen at bottom: 1.11mm</li>
+                    <li>Height above screen sides/top: 1.85mm</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Bumper thickness: 3.3mm</li>
+                    <li>Precise Camera Control button cutout</li>
+                  </ul>
+                </div>
+              </div>
             </Accordion>
           </div>
 
-          <div ref={faqRef}>
+          <div ref={faqRef} className="w-full max-w-3xl">
             <Accordion 
               title="FAQ"
               isExpanded={expandedSection === 'faq'}
               onToggle={() => setExpandedSection(expandedSection === 'faq' ? null : 'faq')}
             >
-              <p className="text-gray-700">
-                Nickel-plated Neodymium magnets, 800-1100gf magnetic force with Apple-certified accessories,
-                Alignment magnet for orientation-specific accessories, 5G compatible
-              </p>
+              <div className="grid grid-cols-3 gap-8">
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Nickel-plated Neodymium magnets</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>800-1100gf magnetic force with Apple-certified accessories</li>
+                  </ul>
+                </div>
+                <div>
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                    <li>Alignment magnet for orientation-specific accessories</li>
+                    <li>5G compatible</li>
+                  </ul>
+                </div>
+              </div>
             </Accordion>
           </div>
         </div>
