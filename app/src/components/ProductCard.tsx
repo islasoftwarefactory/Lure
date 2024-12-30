@@ -19,10 +19,10 @@ export default function ProductCard({
 }: ProductCardProps) {
   return (
     <div 
-      className="w-[280px] p-4 bg-transparent cursor-pointer" 
+      className="w-[380px] p-2 bg-transparent cursor-pointer" 
       onClick={onClick}
     >
-      <div className="overflow-hidden bg-white rounded-2xl shadow-lg">
+      <div className="overflow-hidden bg-white rounded-[30px] shadow-lg">
         <div className="relative">
           {isLimitedEdition && (
             <Badge
@@ -31,8 +31,8 @@ export default function ProductCard({
               LIMITED EDITION
             </Badge>
           )}
-          <div className="aspect-square bg-white p-4">
-            <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center p-6">
+          <div className="aspect-square bg-white p-8">
+            <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center p-8">
               <img
                 src={imageUrl}
                 alt={title}
@@ -41,13 +41,13 @@ export default function ProductCard({
             </div>
           </div>
         </div>
-        <div className="p-4">
+        <div className="p-6">
           <h3 className="font-medium text-2xl font-aleo">{title}</h3>
-          <p className="text-base text-gray-500 font-aleo mt-1">{subtitle}</p>
+          <p className="text-base text-gray-500 font-aleo mt-2">{subtitle}</p>
           {colorVariant && (
-            <div className="mt-2">
+            <div className="mt-4">
               <div
-                className="w-3 h-3 rounded-full"
+                className="w-4 h-4 rounded-full"
                 style={{ backgroundColor: colorVariant }}
               />
             </div>
