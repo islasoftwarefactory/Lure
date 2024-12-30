@@ -1,12 +1,14 @@
 'use client'
 
-import { useParams } from 'react-router-dom';
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
 import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
 import { useState, useRef } from 'react';
 import { Plus } from 'lucide-react';
+import ProductCard from "@/components/ProductCard";
 
 interface AccordionProps {
   title: string;
@@ -43,11 +45,16 @@ const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & {
 
 export function ProductPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [selectedSize, setSelectedSize] = useState('M');
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const shippingRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
+
+  const handleProductClick = (productId: string) => {
+    navigate(`/product/${productId}`);
+  };
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {
     if (ref.current) {
@@ -181,6 +188,37 @@ export function ProductPage() {
               >
                 FAQ
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* You May Also Like Section */}
+        <div className="mt-32 pb-16">
+          <div className="relative">
+            <h2 className="text-7xl font-extrabold text-center mb-8 tracking-[0.15em] absolute w-full top-[-38px] left-1/2 -translate-x-1/2" style={{ maxWidth: '900px' }}>You May Also Like</h2>
+            <div className="flex justify-center items-center gap-0 -mx-8 pt-12">
+              <ProductCard
+                title="Hoodie Preto"
+                subtitle="Edição Limitada"
+                imageUrl={hoodieImage}
+                isLimitedEdition={true}
+                colorVariant="#000000"
+                onClick={() => handleProductClick('hoodie-preto')}
+              />
+              <ProductCard
+                title="Hoodie Branco"
+                subtitle="Clássico"
+                imageUrl={hoodieImage}
+                colorVariant="#FFFFFF"
+                onClick={() => handleProductClick('hoodie-branco')}
+              />
+              <ProductCard
+                title="Hoodie Vermelho"
+                subtitle="Nova Coleção"
+                imageUrl={hoodieImage}
+                colorVariant="#FF0000"
+                onClick={() => handleProductClick('hoodie-vermelho')}
+              />
             </div>
           </div>
         </div>
