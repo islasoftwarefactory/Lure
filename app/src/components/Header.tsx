@@ -25,7 +25,9 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center justify-between w-[98%] py-6 px-12 rounded-[40px] bg-white h-full shadow-xl border border-black/10"
         >
           <div className="w-16 flex items-center justify-center pl-4">
-            <Logo className="h-12 w-12" />
+            <Link to="/homepage">
+              <Logo className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity" />
+            </Link>
           </div>
           
           <div style={{ minWidth: `${iconsPosition}px` }}></div>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Assume we have an AuthContext
 import { Overlay } from './common/Overlay';
+import { Trash2 } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -113,26 +114,45 @@ export const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setI
                   </div>
                 ) : (
                   items.map((item) => (
-                    <div key={item.id} className="mb-2 pb-2">
-                      <div className="flex mb-1">
-                        <div className="w-1/2 pr-1">
-                          <img src={item.image} alt={item.name} className="w-full h-auto object-cover" />
+                    <div key={item.id} className="mx-8 mb-4">
+                      <div className="bg-white p-4 rounded-xl h-[160px] flex">
+                        <div className="w-[120px] h-[120px] bg-[#f2f2f2] rounded-lg flex items-center justify-center">
+                          <img 
+                            src={item.image} 
+                            alt={item.name} 
+                            className="w-[100px] h-[100px] object-contain"
+                          />
                         </div>
-                        <div className="w-1/2 pl-1">
-                          <h3 className="font-bold text-xs">{item.name}</h3>
-                          <p className="text-xs"><span className="font-bold">Size:</span> {item.size}</p>
-                          <p className="text-xs"><span className="font-bold">Price:</span> ${item.price.toFixed(2)}</p>
-                          <div className="flex items-center mt-1">
-                            <button onClick={() => updateQuantity(item.id, -1)} className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">-</button>
-                            <span className="mx-2 text-xs">{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.id, 1)} className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded text-xs">+</button>
+
+                        <div className="flex-1 pl-4 flex flex-col justify-between">
+                          <div>
+                            <h3 className="font-aleo font-bold text-base mb-2">{item.name}</h3>
+                            <p className="font-aleo font-bold text-base mb-1">${item.price.toFixed(2)}</p>
+                            <p className="font-aleo font-bold text-sm text-black">Size: {item.size}</p>
                           </div>
-                          <button 
-                            onClick={() => removeItem(item.id)} 
-                            className="w-full mt-1 bg-black text-white px-1 py-1 rounded text-xs"
-                          >
-                            Remove
-                          </button>
+
+                          <div className="flex items-center space-x-4">
+                            <button 
+                              onClick={() => updateQuantity(item.id, -1)} 
+                              className="w-8 h-8 flex items-center justify-center bg-[#f2f2f2] rounded-full text-black font-bold hover:bg-gray-200 transition-colors"
+                            >
+                              -
+                            </button>
+                            <span className="font-aleo font-bold text-base w-4 text-center">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.id, 1)} 
+                              className="w-8 h-8 flex items-center justify-center bg-[#f2f2f2] rounded-full text-black font-bold hover:bg-gray-200 transition-colors"
+                            >
+                              +
+                            </button>
+                            <button 
+                              onClick={() => removeItem(item.id)} 
+                              className="ml-auto text-gray-500 hover:text-black transition-colors"
+                              aria-label="Remove item"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
