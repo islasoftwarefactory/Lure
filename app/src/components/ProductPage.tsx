@@ -9,6 +9,9 @@ import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
 import { useState, useRef } from 'react';
 import { Plus } from 'lucide-react';
 import ProductCard from "@/components/ProductCard";
+import { CartItem, addToCartAndShow } from '../utils/cartUtils';
+import { useCart } from '../context/CartContext';
+import { SideCart } from "./SideCart";
 
 interface AccordionProps {
   title: string;
@@ -46,7 +49,9 @@ const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & {
 export function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
   const [selectedSize, setSelectedSize] = useState('M');
+  const [quantity, setQuantity] = useState(1);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const shippingRef = useRef<HTMLDivElement>(null);
@@ -77,10 +82,27 @@ export function ProductPage() {
     }
    };
 
+  const handleQuantityChange = (change: number) => {
+    setQuantity(prev => Math.max(1, prev + change));
+  };
+
+  const handleAddToCart = () => {
+    const newItem: CartItem = {
+      id: id || 'default-id',
+      name: 'The Flower',
+      price: 199.99,
+      size: selectedSize,
+      quantity: quantity,
+      image: hoodieImage
+    };
+
+    addToCartAndShow(newItem, setCartItems, setIsCartOpen);
+  };
+
   return (
     <div className="min-h-screen bg-[#f2f2f2]">
       <AnnouncementBar />
-      <Header />
+      <Header onCartClick={() => setIsCartOpen(true)} />
       
       <main className="container mx-auto px-4 py-8 pt-[120px]">
         <div className="flex justify-start items-center pl-[px]">
@@ -144,9 +166,19 @@ export function ProductPage() {
               <div className="mt-8">
                 <h2 className="text-lg font-extrabold mb-3">Quantity</h2>
                 <div className="flex items-center border-2 border-black rounded-full w-[120px]">
-                  <button className="w-10 h-10 flex items-center justify-center text-black">-</button>
-                  <span className="flex-1 text-center">1</span>
-                  <button className="w-10 h-10 flex items-center justify-center text-black">+</button>
+                  <button 
+                    onClick={() => handleQuantityChange(-1)}
+                    className="w-10 h-10 flex items-center justify-center text-black"
+                  >
+                    -
+                  </button>
+                  <span className="flex-1 text-center">{quantity}</span>
+                  <button 
+                    onClick={() => handleQuantityChange(1)}
+                    className="w-10 h-10 flex items-center justify-center text-black"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
 
@@ -158,7 +190,10 @@ export function ProductPage() {
                 </button>
 
                 {/* Botão Adicionar ao Carrinho */}
-                <button className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors">
+                <button 
+                  onClick={handleAddToCart}
+                  className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                >
                   <span>ADD TO CART</span>
                 </button>
               </div>
@@ -193,7 +228,7 @@ export function ProductPage() {
         </div>
 
         {/* You May Also Like Section */}
-        <div className="mt-32 pb-16">
+        <div className="mt-48 pb-16">
           <div className="relative">
             <h2 className="text-7xl font-extrabold text-center mb-8 tracking-[0.15em] absolute w-full top-[-38px] left-1/2 -translate-x-1/2" style={{ maxWidth: '900px' }}>You May Also Like</h2>
             <div className="flex justify-center items-center gap-0 -mx-8 pt-12">
@@ -313,6 +348,13 @@ export function ProductPage() {
       </main>
 
       <Footer />
+
+      <SideCart 
+        isOpen={isCartOpen} 
+        onClose={() => setIsCartOpen(false)} 
+        items={cartItems}
+        setItems={setCartItems}
+      />
     </div>
   );
 }

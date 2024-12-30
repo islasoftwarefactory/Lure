@@ -10,10 +10,10 @@ import { useNavigate } from 'react-router-dom';
 import { Header } from './Header'
 import { SocialIcons } from './SocialIcons'
 import ProductCard from "@/components/ProductCard"
+import { useCart } from '../context/CartContext';
 
 export function HomePage() {
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
+  const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
   const navigate = useNavigate();
 
   // ==================== CHAMADAS DE API COMENTADAS ====================
