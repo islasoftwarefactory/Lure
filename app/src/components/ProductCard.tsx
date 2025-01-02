@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge"
+import { useAuth } from '../context/AuthContext';
 
 interface ProductCardProps {
   title: string
@@ -7,20 +8,41 @@ interface ProductCardProps {
   isLimitedEdition?: boolean
   colorVariant?: string
   onClick?: () => void
+  productId: string
 }
 
 export default function ProductCard({
-  title = "Product Title",
-  subtitle = "Product Subtitle",
-  imageUrl = "/placeholder.svg?height=400&width=400",
+  title,
+  subtitle,
+  imageUrl,
   isLimitedEdition = false,
   colorVariant,
-  onClick
+  onClick,
+  productId
 }: ProductCardProps) {
+  const { token } = useAuth();
+
+  const handleClick = async () => {
+    try {
+      // Registra visualização do produto com token
+      await fetch(`/api/products/view/${productId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (onClick) onClick();
+    } catch (error) {
+      console.error('Error registering product view:', error);
+      if (onClick) onClick();
+    }
+  };
+
   return (
     <div 
       className="w-[380px] p-2 bg-transparent cursor-pointer" 
-      onClick={onClick}
+      onClick={handleClick}
     >
       <div className="overflow-hidden bg-white rounded-[30px] shadow-lg">
         <div className="relative">

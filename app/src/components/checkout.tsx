@@ -15,11 +15,13 @@ import { SocialIcons } from './SocialIcons'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { useAuth } from '../context/AuthContext'
 
 export function CheckoutComponent() {
   const location = useLocation();
   const cartItems = location.state?.items || [];
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { token } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [country, setCountry] = useState('Brazil')
   const [state, setState] = useState('')
@@ -47,13 +49,34 @@ export function CheckoutComponent() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitInitial = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form is valid, proceeding to payment');
-      setCheckoutStep('shipping');
-    } else {
-      console.log('Form is invalid');
+      try {
+        const response = await fetch('/api/checkout/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email,
+            firstName,
+            lastName,
+            address,
+            city,
+            state,
+            postalCode,
+            cartItems
+          })
+        });
+
+        if (response.ok) {
+          setCheckoutStep('shipping');
+        }
+      } catch (error) {
+        console.error('Error creating checkout session:', error);
+      }
     }
   };
 

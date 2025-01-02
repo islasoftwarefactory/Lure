@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, ReactNode } from 'react'
+import { useState, ReactNode, useEffect } from 'react'
 import { SideCart } from "./SideCart.tsx"
 import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg'
 import { AnnouncementBar } from './AnnouncementBar'
@@ -11,44 +11,42 @@ import { Header } from './Header'
 import { SocialIcons } from './SocialIcons'
 import ProductCard from "@/components/ProductCard"
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../hooks/useAuth';
 
 export function HomePage() {
   const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
   const navigate = useNavigate();
+  const { token, getAnonymousToken } = useAuth();
 
-  // ==================== CHAMADAS DE API COMENTADAS ====================
+  useEffect(() => {
+    const initializeAuth = async () => {
+      if (!token) {
+        await getAnonymousToken();
+      }
+    };
 
-  // 1. Autenticação Anônima
-  // useEffect(() => {
-  //   const checkAndGetAnonymousToken = async () => {
-  //     const existingToken = localStorage.getItem('jwt_token');
-  //     
-  //     if (!existingToken) {
-  //       try {
-  //         const response = await api.get('/auth/anonymous-token');
-  //         localStorage.setItem('jwt_token', response.data.token);
-  //       } catch (error) {
-  //         console.error('Erro ao gerar token:', error);
-  //       }
-  //     }
-  //   };
-  //   checkAndGetAnonymousToken();
-  // }, []);
+    initializeAuth();
+  }, []);
 
-  // 2. Busca de Produtos
-  // const { data: productsData, isLoading } = useQuery({
-  //   queryKey: ['products'],
-  //   queryFn: async () => {
-  //     const currentToken = localStorage.getItem('jwt_token');
-  //     const config = {
-  //       headers: { Authorization: `Bearer ${currentToken}` }
-  //     };
-  //     const response = await api.get('/product/read/all', config);
-  //     return response.data;
-  //   },
-  //   staleTime: 1000 * 60 * 5 // Cache de 5 minutos
-  // });
-  
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (token) {
+        try {
+          const response = await fetch('/api/products', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          // Processar produtos...
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      }
+    };
+
+    fetchProducts();
+  }, [token]);
+
   const isLoading = false;
   const currentProduct = null;
 

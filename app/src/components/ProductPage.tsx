@@ -1,17 +1,19 @@
 'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
 import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Plus } from 'lucide-react';
 import ProductCard from "@/components/ProductCard";
 import { CartItem, addToCartAndShow } from '../utils/cartUtils';
 import { useCart } from '../context/CartContext';
 import { SideCart } from "./SideCart";
+import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 
 interface Product {
   id: string;
@@ -61,16 +63,34 @@ export function ProductPage() {
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [product] = useState<Product>({
-    id: id || 'default-id',
-    name: 'The Flower',
-    price: 199.99,
-    description: 'Beautiful flower hoodie',
-    image: hoodieImage
-  });
+  const [product, setProduct] = useState<Product | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const shippingRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
+  const { token } = useAuth();
+
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      if (!token) return;
+
+      try {
+        const response = await fetch(`/api/products/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setProduct(data);
+        }
+      } catch (error) {
+        console.error('Error fetching product details:', error);
+      }
+    };
+
+    fetchProductDetails();
+  }, [id, token]);
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -101,17 +121,39 @@ export function ProductPage() {
     setQuantity(prev => Math.max(1, prev + change));
   };
 
-  const handleAddToCart = () => {
-    const newItem: CartItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      size: selectedSize,
-      quantity: quantity,
-      image: product.image
-    };
+  const handleAddToCart = async () => {
+    if (!token) return;
 
-    addToCartAndShow(newItem, setCartItems, setIsCartOpen);
+    try {
+      await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity,
+          size: selectedSize
+        })
+      });
+
+      // Atualiza carrinho local
+      if (product) {
+        const newItem: CartItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          size: selectedSize,
+          quantity: quantity,
+          image: product.image
+        };
+        setCartItems(prev => [...prev, newItem]);
+        setIsCartOpen(true);
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    }
   };
 
   return (

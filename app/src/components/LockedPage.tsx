@@ -5,6 +5,7 @@ import { SocialIcons } from './SocialIcons';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from '@/assets/icons/home/Logo.svg';
+import { useAuth } from '../hooks/useAuth';
 
 interface TimeLeft {
   days: number;
@@ -74,10 +75,32 @@ export function LockedPage() {
     email: '',
     whatsapp: ''
   });
+  const { token, setToken } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          contactMethod,
+        }),
+      });
+
+      if (response.ok) {
+        const { token: newToken } = await response.json();
+        setToken(newToken);
+        localStorage.setItem('jwt_token', newToken);
+        // Handle successful registration
+      }
+    } catch (error) {
+      console.error('Error during registration:', error);
+    }
   };
 
   return (
