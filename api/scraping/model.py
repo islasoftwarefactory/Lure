@@ -12,6 +12,7 @@ class Scraping(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     sms = db.Column(db.String(20), nullable=False)
+    type = db.Column(db.String(10), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -25,6 +26,7 @@ class Scraping(db.Model):
             "last_name": self.last_name,
             "email": self.email,
             "sms": self.sms,
+            "type": self.type,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
@@ -57,12 +59,16 @@ def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
         current_app.logger.error(f"Validation error: {error_message}")
         raise ValueError(error_message)
     
+    # Determinar o tipo baseado no que foi fornecido
+    contact_type = "email" if scraping_data.get("email") else "sms"
+    
     try:
         new_scraping = Scraping(
             first_name=scraping_data["first_name"],
             last_name=scraping_data["last_name"],
             email=scraping_data.get("email", ""),
-            sms=scraping_data.get("sms", "")
+            sms=scraping_data.get("sms", ""),
+            type=contact_type
         )
         db.session.add(new_scraping)
         db.session.commit()
