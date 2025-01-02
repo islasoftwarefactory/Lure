@@ -4,6 +4,7 @@ import axios from 'axios';
 interface AuthContextType {
   isLoggedIn: boolean;
   token: string | null;
+  setToken: (token: string | null) => void;
   login: () => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
@@ -16,68 +17,67 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState<string | null>(null);
 
-  // Inicializa com token anônimo se não houver token salvo
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) {
-      setToken(savedToken);
-      setIsLoggedIn(true);
-    } else {
-      getAnonymousToken();
-    }
-  }, []);
-
   const getAnonymousToken = async () => {
     try {
-      const response = await axios.get('/api/user/anonymous-token');
-      const newToken = response.data.token;
+      const url = 'http://localhost:8080/user/anonymous-token';
+      console.log('Buscando token anônimo...');
       
-      localStorage.setItem('anonymous_token', newToken);
+      const response = await axios.get(url);
+      const newToken = response.data.token;
+      console.log('Token recebido da API:', newToken);
+      
       setToken(newToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      localStorage.setItem('jwt_token', newToken);
     } catch (error) {
-      console.error('Failed to get anonymous token:', error);
+      console.error('Erro ao buscar token:', error);
     }
   };
 
+  useEffect(() => {
+    getAnonymousToken();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setIsLoggedIn(true);
+    }
+  }, [token]);
+
   const refreshToken = async () => {
     try {
-      const response = await axios.post('/api/user/refresh-token');
+      const response = await axios.post('http://localhost:5000/api/auth/refresh-token');
       const newToken = response.data.token;
-      
-      localStorage.setItem('token', newToken);
       setToken(newToken);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      localStorage.setItem('jwt_token', newToken);
     } catch (error) {
-      console.error('Failed to refresh token:', error);
-      // Se falhar o refresh, volta para token anônimo
+      console.error('Erro ao atualizar token:', error);
       await getAnonymousToken();
     }
   };
 
   const login = async () => {
     setIsLoggedIn(true);
-    // Aqui você pode adicionar a lógica de login com credenciais
-    // Por enquanto, vamos apenas atualizar o estado
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('jwt_token');
     setIsLoggedIn(false);
     setToken(null);
-    delete axios.defaults.headers.common['Authorization'];
-    getAnonymousToken(); // Obtém um token anônimo após logout
+  };
+
+  const contextValue: AuthContextType = {
+    isLoggedIn,
+    token,
+    setToken,
+    login,
+    logout,
+    refreshToken,
+    getAnonymousToken
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      isLoggedIn, 
-      token, 
-      login, 
-      logout,
-      refreshToken,
-      getAnonymousToken
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

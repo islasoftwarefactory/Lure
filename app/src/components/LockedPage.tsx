@@ -66,6 +66,7 @@ function CountdownTimer() {
 }
 
 export function LockedPage() {
+  const { token, setToken, getAnonymousToken } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [contactMethod, setContactMethod] = useState<'email' | 'whatsapp'>('email');
@@ -75,16 +76,36 @@ export function LockedPage() {
     email: '',
     whatsapp: ''
   });
-  const { token, setToken } = useAuth();
+
+  useEffect(() => {
+    const initAuth = async () => {
+      if (!token) {
+        console.log('LockedPage: Token não encontrado, solicitando token anônimo...');
+        try {
+          await getAnonymousToken();
+        } catch (error) {
+          console.error('Erro ao obter token anônimo:', error);
+        }
+      } else {
+        console.log('LockedPage: Token atual:', token);
+      }
+    };
+
+    initAuth();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      console.log('Enviando requisição com dados:', formData);
+      console.log('Token atual:', token);
+      
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           ...formData,
@@ -93,13 +114,18 @@ export function LockedPage() {
       });
 
       if (response.ok) {
-        const { token: newToken } = await response.json();
-        setToken(newToken);
-        localStorage.setItem('jwt_token', newToken);
-        // Handle successful registration
+        const data = await response.json();
+        console.log('Resposta do registro:', data);
+        
+        if (data.token) {
+          console.log('Novo token recebido:', data.token);
+          setToken(data.token);
+          localStorage.setItem('jwt_token', data.token);
+        }
       }
     } catch (error) {
-      console.error('Error during registration:', error);
+      console.error('Erro durante registro:', error);
+      console.log('Estado do token após erro:', token);
     }
   };
 
