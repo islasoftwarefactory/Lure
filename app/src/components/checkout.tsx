@@ -15,11 +15,13 @@ import { SocialIcons } from './SocialIcons'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { useAuth } from '../context/AuthContext'
 
 export function CheckoutComponent() {
   const location = useLocation();
   const cartItems = location.state?.items || [];
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { token } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [country, setCountry] = useState('Brazil')
   const [state, setState] = useState('')
@@ -47,13 +49,34 @@ export function CheckoutComponent() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitInitial = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log('Form is valid, proceeding to payment');
-      setCheckoutStep('shipping');
-    } else {
-      console.log('Form is invalid');
+      try {
+        const response = await fetch('/api/checkout/session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email,
+            firstName,
+            lastName,
+            address,
+            city,
+            state,
+            postalCode,
+            cartItems
+          })
+        });
+
+        if (response.ok) {
+          setCheckoutStep('shipping');
+        }
+      } catch (error) {
+        console.error('Error creating checkout session:', error);
+      }
     }
   };
 
@@ -73,126 +96,182 @@ export function CheckoutComponent() {
           <div className="grid md:grid-cols-2 gap-6">
             {checkoutStep === 'initial' ? (
               <>
-                <h1 className="text-2xl font-bold mb-6">Express checkout</h1>
-                <div className="grid gap-4 mb-6">
-                  <Button variant="outline" className="h-16 flex items-center justify-center bg-white">
-                    <img src={GooglePayIcon} alt="Google Pay" className="h-10" />
-                  </Button>
-                  <Button variant="outline" className="h-16 flex items-center justify-center bg-white">
-                    <img src={ApplePayIcon} alt="Apple Pay" className="h-10" />
-                  </Button>
+                <div className="col-span-1">
+                  <h1 className="text-4xl font-aleo font-bold text-center mb-6">Express checkout</h1>
+                  <div className="flex gap-4 mb-6">
+                    <Button variant="outline" className="flex-1 h-16 flex items-center justify-center bg-white">
+                      <img src={GooglePayIcon} alt="Google Pay" className="h-10" />
+                    </Button>
+                    <Button variant="outline" className="flex-1 h-16 flex items-center justify-center bg-white">
+                      <img src={ApplePayIcon} alt="Apple Pay" className="h-10" />
+                    </Button>
+                  </div>
+
+                  <form onSubmit={handleSubmitInitial} className="space-y-6">
+                    <Card className="bg-white">
+                      <CardHeader>
+                        <CardTitle className="font-aleo text-2xl font-bold">Contact</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="email" className="font-aleo text-base">Email</Label>
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="Your email address"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className={`font-aleo ${errors.email ? 'border-red-500' : ''}`}
+                            />
+                            {errors.email && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.email}</p>}
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="newsletter"
+                              className="w-4 h-4 rounded border-gray-300"
+                            />
+                            <Label htmlFor="newsletter" className="font-aleo text-sm">
+                              Email me with news and offers
+                            </Label>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-white">
+                      <CardHeader>
+                        <CardTitle className="font-aleo text-2xl font-bold">Shipping address</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Input 
+                          placeholder="Country/Region" 
+                          defaultValue="United States"
+                          name="delivery/country"
+                          readOnly
+                          disabled
+                          className="bg-gray-100 cursor-not-allowed font-aleo"
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Input 
+                              placeholder="First name" 
+                              value={firstName} 
+                              onChange={(e) => setFirstName(e.target.value)}
+                              className={`font-aleo ${errors.firstName ? 'border-red-500' : ''}`}
+                            />
+                            {errors.firstName && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.firstName}</p>}
+                          </div>
+                          <div>
+                            <Input 
+                              placeholder="Last name" 
+                              value={lastName} 
+                              onChange={(e) => setLastName(e.target.value)}
+                              className={`font-aleo ${errors.lastName ? 'border-red-500' : ''}`}
+                            />
+                            {errors.lastName && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.lastName}</p>}
+                          </div>
+                        </div>
+
+                        <div>
+                          <Input 
+                            placeholder="Address" 
+                            value={address} 
+                            onChange={(e) => setAddress(e.target.value)}
+                            className={`font-aleo ${errors.address ? 'border-red-500' : ''}`}
+                          />
+                          {errors.address && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.address}</p>}
+                        </div>
+
+                        <Input 
+                          placeholder="Apartment, suite, etc. (optional)" 
+                          className="font-aleo"
+                        />
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <Input 
+                              placeholder="City" 
+                              value={city} 
+                              onChange={(e) => setCity(e.target.value)}
+                              className={`font-aleo ${errors.city ? 'border-red-500' : ''}`}
+                            />
+                            {errors.city && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.city}</p>}
+                          </div>
+                          <div>
+                            <Select value={state} onValueChange={setState}>
+                              <SelectTrigger className={`font-aleo ${errors.state ? 'border-red-500' : ''}`}>
+                                <SelectValue placeholder="State" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="SP" className="font-aleo">São Paulo</SelectItem>
+                                <SelectItem value="RJ" className="font-aleo">Rio de Janeiro</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.state && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.state}</p>}
+                          </div>
+                          <div>
+                            <Input 
+                              placeholder="ZIP code" 
+                              value={postalCode} 
+                              onChange={(e) => setPostalCode(e.target.value)}
+                              className={`font-aleo ${errors.postalCode ? 'border-red-500' : ''}`}
+                            />
+                            {errors.postalCode && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.postalCode}</p>}
+                          </div>
+                        </div>
+
+                        <Input 
+                          placeholder="Phone (optional)" 
+                          className="font-aleo"
+                        />
+                      </CardContent>
+                    </Card>
+
+                    <Button type="submit" className="w-full bg-black text-white font-aleo text-lg font-bold">
+                      Continue to shipping
+                    </Button>
+                  </form>
                 </div>
 
-                <form onSubmit={handleSubmitInitial} className="space-y-6">
-                  <Card className="bg-white">
+                <div className="col-span-1 sticky top-6">
+                  <Card className="bg-white h-fit">
                     <CardHeader>
-                      <CardTitle>Contact</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Your email address"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className={errors.email ? 'border-red-500' : ''}
-                        />
-                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-white">
-                    <CardHeader>
-                      <CardTitle>Shipping address</CardTitle>
+                      <CardTitle className="font-aleo text-2xl font-bold">Order Summary</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <Select value={country} onValueChange={setCountry}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Country/Region" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Brazil">Brazil</SelectItem>
-                          {/* Add more countries as needed */}
-                        </SelectContent>
-                      </Select>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Input 
-                            placeholder="First name" 
-                            value={firstName} 
-                            onChange={(e) => setFirstName(e.target.value)}
-                            className={errors.firstName ? 'border-red-500' : ''}
-                          />
-                          {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
+                      {cartItems.map((item: any) => (
+                        <div key={item.id} className="flex justify-between items-center">
+                          <div className="flex items-center space-x-4">
+                            <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
+                            <div>
+                              <p className="font-aleo font-bold text-base">{item.name}</p>
+                              <p className="font-aleo text-sm text-black">Size: {item.size} | Quantity: {item.quantity}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-aleo font-bold text-base">${(item.price * item.quantity).toFixed(2)}</p>
+                          </div>
                         </div>
-                        <div>
-                          <Input 
-                            placeholder="Last name" 
-                            value={lastName} 
-                            onChange={(e) => setLastName(e.target.value)}
-                            className={errors.lastName ? 'border-red-500' : ''}
-                          />
-                          {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
-                        </div>
+                      ))}
+
+                      <div className="flex justify-between items-center">
+                        <span className="font-aleo text-base">Subtotal</span>
+                        <span className="font-aleo font-bold text-base">${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
                       </div>
-
-                      <div>
-                        <Input 
-                          placeholder="Postal code" 
-                          value={postalCode} 
-                          onChange={(e) => setPostalCode(e.target.value)}
-                          className={errors.postalCode ? 'border-red-500' : ''}
-                        />
-                        {errors.postalCode && <p className="text-red-500 text-sm mt-1">{errors.postalCode}</p>}
+                      <div className="flex justify-between items-center">
+                        <span className="font-aleo text-base">Shipping</span>
+                        <span className="font-aleo text-base">Calculated at next step</span>
                       </div>
-
-                      <div>
-                        <Input 
-                          placeholder="Address" 
-                          value={address} 
-                          onChange={(e) => setAddress(e.target.value)}
-                          className={errors.address ? 'border-red-500' : ''}
-                        />
-                        {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+                      <div className="flex justify-between items-center">
+                        <span className="font-aleo text-2xl font-bold">Total</span>
+                        <span className="font-aleo text-2xl font-bold">${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
                       </div>
-
-                      <Input placeholder="Apartment, suite, etc. (optional)" />
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Input 
-                            placeholder="City" 
-                            value={city} 
-                            onChange={(e) => setCity(e.target.value)}
-                            className={errors.city ? 'border-red-500' : ''}
-                          />
-                          {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
-                        </div>
-                        <div>
-                          <Select value={state} onValueChange={setState}>
-                            <SelectTrigger className={errors.state ? 'border-red-500' : ''}>
-                              <SelectValue placeholder="State" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="SP">São Paulo</SelectItem>
-                              <SelectItem value="RJ">Rio de Janeiro</SelectItem>
-                              {/* Add more states as needed */}
-                            </SelectContent>
-                          </Select>
-                          {errors.state && <p className="text-red-500 text-sm mt-1">{errors.state}</p>}
-                        </div>
-                      </div>
-
-                      <Input placeholder="Phone (optional)" />
                     </CardContent>
                   </Card>
-
-                  <Button type="submit" className="w-full bg-black text-white">Continue to shipping</Button>
-                </form>
+                </div>
               </>
             ) : (
               <ShippingConfirmation
@@ -203,41 +282,6 @@ export function CheckoutComponent() {
                 onContinue={handleContinueToPayment}
               />
             )}
-
-            <Card className="bg-white">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {cartItems.map((item: any) => (
-                  <div key={item.id} className="flex justify-between items-center">
-                    <div className="flex items-center space-x-4">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-gray-500">Size: {item.size} | Quantity: {item.quantity}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
-
-                <div className="flex justify-between items-center">
-                  <span>Subtotal</span>
-                  <span>${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>Shipping</span>
-                  <span>Calculated at next step</span>
-                </div>
-                <div className="flex justify-between items-center font-semibold text-lg">
-                  <span>Total</span>
-                  <span>${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </main>

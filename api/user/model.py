@@ -1,7 +1,8 @@
-from api.utils.db.connection import db  # Add this import
+from api.utils.db.connection import db
 from datetime import datetime
 import pytz
 from typing import Dict, Optional
+from flask import current_app
 
 class User(db.Model):
     __tablename__ = "users"

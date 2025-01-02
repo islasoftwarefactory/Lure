@@ -55,7 +55,10 @@ export const AnnouncementBar: React.FC = () => {
 
   return (
     <div 
-      style={estilosAnuncioBar.container} 
+      style={{
+        ...estilosAnuncioBar.container,
+        zIndex: 40
+      }} 
       ref={containerRef}
       onMouseEnter={() => setSlowMotion(true)}
       onMouseLeave={() => setSlowMotion(false)}

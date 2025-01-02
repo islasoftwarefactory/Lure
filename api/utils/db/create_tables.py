@@ -11,6 +11,7 @@ from api.product.model import Product
 from api.size.model import Size
 from api.user.model import User
 from api.utils.db.connection import db
+from sqlalchemy import inspect
 
 def create_tables():
     """Creates all database tables for registered models"""
@@ -18,7 +19,6 @@ def create_tables():
         # Força o carregamento de todos os modelos
         models = [User, Address, Cart, Category, Discount, Gender, 
                  ImageCategory, Payment, PaymentMethod, Product, Size]
-        
         db.create_all()
         print("Tables created successfully")
     except Exception as e:

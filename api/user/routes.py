@@ -1,7 +1,7 @@
 from flask import request, jsonify, Blueprint
 from api.user.model import User, create_user, get_user, update_user, delete_user
 from api.utils.jwt.decorators import token_required
-from api.utils.jwt_utils import generate_token
+from api.utils.jwt.jwt_utils import generate_token
 
 blueprint = Blueprint('user', __name__)
 
@@ -86,3 +86,21 @@ def delete(current_user_id, id):
 def refresh_token(current_user_id):
     new_token = generate_token(current_user_id)
     return jsonify({'token': new_token}), 200
+
+# Anonymous Token
+@blueprint.route('/anonymous-token', methods=['GET'])
+def get_anonymous_token():
+    """
+    Gera um token JWT anônimo para usuários não autenticados
+    """
+    try:
+        # Gera um token com ID 'anonymous'
+        token = generate_token('anonymous')
+        return jsonify({
+            'token': token,
+            'type': 'anonymous'
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'error': f'Erro ao gerar token anônimo: {str(e)}'
+        }), 500
