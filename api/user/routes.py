@@ -1,9 +1,24 @@
 from flask import request, jsonify, Blueprint
 from api.user.model import User, create_user, get_user, update_user, delete_user
 from api.utils.jwt.decorators import token_required
-from api.utils.jwt.jwt_utils import generate_token
+from api.utils.jwt.jwt_utils import generate_token, verify_token
+from functools import wraps
 
 blueprint = Blueprint('user', __name__)
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"message": "Token ausente!"}), 401
+
+        user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
+        if not user_id:
+            return jsonify({"message": "Token inválido ou expirado!"}), 401
+
+        return f(user_id, *args, **kwargs)
+    return decorated
 
 # Create
 @blueprint.route("/create", methods=["POST"])
