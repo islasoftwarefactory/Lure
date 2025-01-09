@@ -4,7 +4,7 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile.dev
-    command: gunicorn --bind 0.0.0.0:5000 --reload app:app
+    command: gunicorn --bind 0.0.0.0:5000 --reload app:application
     env_file:
       - ./.env
     ports:
@@ -18,8 +18,7 @@ services:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 40s
+      retries: 3
     volumes:
       - ./api:/api:Z
       - /api/__pycache__
