@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TikTok   } from 'lucide-react';
-import { Instagram, Mail } from 'lucide-react';
+import { TikTok, Instagram } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 
@@ -22,7 +21,7 @@ interface FormData {
   firstName: string;
   lastName: string;
   email: string;
-  whatsapp: string;
+  SMS: string;
 }
 
 function CountdownTimer() {
@@ -73,26 +72,23 @@ export function LockedPage() {
   const { token, setToken, getAnonymousToken } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
-  const [contactMethod, setContactMethod] = useState<'email' | 'whatsapp'>('email');
+  const [contactMethod, setContactMethod] = useState<'email' | 'SMS'>('email');
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
     email: '',
-    whatsapp: ''
+    SMS: ''
   });
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
       if (!token) {
-        console.log('LockedPage: Token não encontrado, solicitando token anônimo...');
         try {
           await getAnonymousToken();
         } catch (error) {
-          console.error('Erro ao obter token anônimo:', error);
+          // Handle error silently
         }
-      } else {
-        console.log('LockedPage: Token atual:', token);
       }
     };
 
@@ -101,62 +97,48 @@ export function LockedPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('=== Iniciando submissão do formulário ===');
     
     if (!token) {
-      console.warn('⚠️ Token não disponível para requisição');
       return;
     }
 
     try {
       setIsLoading(true);
       
-      // Primeiro, tentar uma requisição OPTIONS
+      // Try OPTIONS request
       try {
         await api.options('/scraping/create');
-        console.log('✅ Preflight bem sucedido');
       } catch (error) {
-        console.warn('⚠️ Erro no preflight:', error);
+        // Handle error silently
       }
       
       const requestData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: contactMethod === 'email' ? formData.email : '',
-        sms: contactMethod === 'whatsapp' ? formData.whatsapp : ''
+        sms: contactMethod === 'SMS' ? formData.SMS : ''
       };
       
-      console.log('📤 Iniciando requisição POST para /scraping/create');
-      console.log(requestData);
       const response = await api.post('/scraping/create', requestData);
       
       if (response.status === 401) {
-        console.error('🚫 Erro de autorização:', response.data);
         toast.error('Erro de autorização: Token inválido');
         return;
       }
 
       if (response.status === 201) {
-        console.log('✅ Dados enviados com sucesso');
         toast.success('Registro realizado com sucesso!');
         setFormData({
           firstName: '',
           lastName: '',
           email: '',
-          whatsapp: ''
+          SMS: ''
         });
       }
     } catch (error: any) {
-      console.error('❌ Erro ao enviar dados:', {
-        error,
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status
-      });
       toast.error(error.response?.data?.message || 'Erro ao enviar dados');
     } finally {
       setIsLoading(false);
-      console.log('🏁 Requisição finalizada');
     }
   };
 
@@ -184,7 +166,7 @@ export function LockedPage() {
                 <div className="flex gap-2 sm:gap-3 w-full">
                   <button
                     onClick={() => setContactMethod('email')}
-                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
+                    className={`flex-1 py-1 sm:py-1.5 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
                       contactMethod === 'email'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -193,9 +175,9 @@ export function LockedPage() {
                     Email
                   </button>
                   <button
-                    onClick={() => setContactMethod('whatsapp')}
-                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
-                      contactMethod === 'whatsapp'
+                    onClick={() => setContactMethod('SMS')}
+                    className={`flex-1 py-1 sm:py-1.5 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
+                      contactMethod === 'SMS'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
                     }`}
@@ -210,14 +192,14 @@ export function LockedPage() {
                     placeholder="First Name"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   <input
                     type="text"
                     placeholder="Last Name"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   
                   {contactMethod === 'email' ? (
@@ -226,22 +208,22 @@ export function LockedPage() {
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   ) : (
                     <input
                       type="tel"
-                      placeholder="WhatsApp"
-                      value={formData.whatsapp}
-                      onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      placeholder="SMS"
+                      value={formData.SMS}
+                      onChange={(e) => setFormData({ ...formData, SMS: e.target.value })}
+                      className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   )}
 
                   <div className="flex justify-center pt-1 sm:pt-2">
                     <button
                       type="submit"
-                      className="w-[50%] py-1.5 sm:py-2 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
+                      className="w-[50%] py-1 sm:py-1.5 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
                     >
                       SEND
                     </button>
@@ -256,13 +238,7 @@ export function LockedPage() {
       <div className="fixed bottom-4 right-4 z-50">
         <div className="flex space-x-2 md:space-x-4">
           <a
-            href="mailto:contact@example.com"
-            className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
-          >
-            <Mail className="w-4 h-4 md:w-5 md:h-5 text-white" />
-          </a>
-          <a
-            href="https://www.instagram.com"
+            href="https://www.instagram.com/lure.us/"
             target="_blank"
             rel="noopener noreferrer"
             className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"

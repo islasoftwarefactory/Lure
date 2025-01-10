@@ -20,16 +20,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const getAnonymousToken = async () => {
     try {
       const url = 'http://localhost:8080/user/anonymous-token';
-      console.log('Buscando token anônimo...');
-      
       const response = await axios.get(url);
       const newToken = response.data.token;
-      console.log('Token recebido da API:', newToken);
       
       setToken(newToken);
       localStorage.setItem('jwt_token', newToken);
     } catch (error) {
-      console.error('Erro ao buscar token:', error);
+      // Handle error silently
     }
   };
 
@@ -51,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(newToken);
       localStorage.setItem('jwt_token', newToken);
     } catch (error) {
-      console.error('Erro ao atualizar token:', error);
       await getAnonymousToken();
     }
   };
