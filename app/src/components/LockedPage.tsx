@@ -46,22 +46,22 @@ function CountdownTimer() {
   }, []);
 
   return (
-    <div className="grid grid-cols-4 gap-4 text-center my-4">
-      <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-sm uppercase tracking-wider font-medium text-black">Days</div>
+    <div className="grid grid-cols-4 gap-2 sm:gap-4 text-center bg-white rounded-[20px] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+      <div className="flex flex-col items-center justify-center px-2 sm:px-4">
+        <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Days</div>
       </div>
-      <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-sm uppercase tracking-wider font-medium text-black">Hours</div>
+      <div className="flex flex-col items-center justify-center px-2 sm:px-4">
+        <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Hours</div>
       </div>
-      <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-sm uppercase tracking-wider font-medium text-black">Minutes</div>
+      <div className="flex flex-col items-center justify-center px-2 sm:px-4">
+        <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Minutes</div>
       </div>
-      <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-sm uppercase tracking-wider font-medium text-black">Seconds</div>
+      <div className="flex flex-col items-center justify-center px-2 sm:px-4">
+        <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Seconds</div>
       </div>
     </div>
   );
@@ -133,27 +133,29 @@ export function LockedPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f2f2f2] text-black">
-      <main className="flex-grow flex flex-col items-center justify-center p-4 animate-pageLoad">
-        <div className="relative">
-          <div className="absolute left-1/2 -translate-x-1/2 -top-24 z-10">
+      <main className="flex-grow flex flex-col items-center justify-center p-4 pt-8 sm:pt-12 animate-pageLoad">
+        <div className="relative w-full max-w-[95%] md:max-w-[1000px]">
+          <div className="mb-8 sm:mb-12 w-full">
             <CountdownTimer />
           </div>
-          <div className="w-[1000px] h-[600px] bg-white rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-8 flex flex-col items-center">
+          
+          <div className="w-full h-auto min-h-[500px] md:h-[600px] bg-white rounded-[20px] md:rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 md:p-8 flex flex-col items-center">
             <img 
               src={Logo} 
               alt="Logo" 
-              className="w-32 h-32 drop-shadow-xl animate-float mb-4"
+              className="w-24 h-24 md:w-32 md:h-32 drop-shadow-xl animate-float mb-4"
             />
-            <div className="w-full max-w-2xl space-y-4">
-              <h2 className="text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
+            
+            <div className="w-full max-w-sm md:max-w-2xl space-y-4">
+              <h2 className="text-xl md:text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
                 NEWSLETTER
               </h2>
               
-              <div className="space-y-6">
-                <div className="flex gap-4 w-full">
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex gap-2 md:gap-4 w-full">
                   <button
                     onClick={() => setContactMethod('email')}
-                    className={`flex-1 py-3 rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-2 md:py-3 text-sm md:text-base rounded-full font-medium transition-colors ${
                       contactMethod === 'email'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -163,7 +165,7 @@ export function LockedPage() {
                   </button>
                   <button
                     onClick={() => setContactMethod('whatsapp')}
-                    className={`flex-1 py-3 rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-2 md:py-3 text-sm md:text-base rounded-full font-medium transition-colors ${
                       contactMethod === 'whatsapp'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -173,20 +175,20 @@ export function LockedPage() {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
                   <input
                     type="text"
                     placeholder="First Name"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   <input
                     type="text"
                     placeholder="Last Name"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   
                   {contactMethod === 'email' ? (
@@ -195,7 +197,7 @@ export function LockedPage() {
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   ) : (
                     <input
@@ -203,14 +205,14 @@ export function LockedPage() {
                       placeholder="WhatsApp"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   )}
 
                   <div className="flex justify-center">
                     <button
                       type="submit"
-                      className="w-[50%] py-3 rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
+                      className="w-[50%] py-2 md:py-3 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
                     >
                       SEND
                     </button>
@@ -223,30 +225,30 @@ export function LockedPage() {
       </main>
 
       <div className="fixed bottom-4 right-4 z-50">
-        <div className="flex space-x-4">
+        <div className="flex space-x-2 md:space-x-4">
           <a
             href="mailto:contact@example.com"
-            className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+            className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
           >
-            <Mail className="w-5 h-5" />
+            <Mail className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </a>
           <a
             href="https://www.instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+            className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
           >
-            <Instagram className="w-5 h-5" />
+            <Instagram className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </a>
           <a
             href="https://www.tiktok.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors"
+            className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors"
           >
             <svg 
               viewBox="0 0 24 24" 
-              className="w-5 h-5"
+              className="w-4 h-4 md:w-5 md:h-5 text-white"
               fill="currentColor"
             >
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
