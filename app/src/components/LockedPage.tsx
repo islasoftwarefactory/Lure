@@ -139,23 +139,23 @@ export function LockedPage() {
             <CountdownTimer />
           </div>
           
-          <div className="w-full h-auto min-h-[500px] md:h-[600px] bg-white rounded-[20px] md:rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-4 md:p-8 flex flex-col items-center">
+          <div className="w-full aspect-[2/1] sm:aspect-[3/1] bg-white rounded-[20px] md:rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-6 md:p-8 flex flex-col items-center justify-center">
             <img 
               src={Logo} 
               alt="Logo" 
-              className="w-24 h-24 md:w-32 md:h-32 drop-shadow-xl animate-float mb-4"
+              className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 drop-shadow-xl animate-float mb-4"
             />
             
-            <div className="w-full max-w-sm md:max-w-2xl space-y-4">
-              <h2 className="text-xl md:text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
+            <div className="w-full max-w-[280px] sm:max-w-xs md:max-w-md space-y-3 sm:space-y-4">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
                 NEWSLETTER
               </h2>
               
-              <div className="space-y-4 md:space-y-6">
-                <div className="flex gap-2 md:gap-4 w-full">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex gap-2 sm:gap-3 w-full">
                   <button
                     onClick={() => setContactMethod('email')}
-                    className={`flex-1 py-2 md:py-3 text-sm md:text-base rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors ${
                       contactMethod === 'email'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -165,7 +165,7 @@ export function LockedPage() {
                   </button>
                   <button
                     onClick={() => setContactMethod('whatsapp')}
-                    className={`flex-1 py-2 md:py-3 text-sm md:text-base rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors ${
                       contactMethod === 'whatsapp'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -175,20 +175,20 @@ export function LockedPage() {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-2">
                   <input
                     type="text"
                     placeholder="First Name"
                     value={formData.firstName}
                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   <input
                     type="text"
                     placeholder="Last Name"
                     value={formData.lastName}
                     onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                   />
                   
                   {contactMethod === 'email' ? (
@@ -197,7 +197,7 @@ export function LockedPage() {
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   ) : (
                     <input
@@ -205,14 +205,14 @@ export function LockedPage() {
                       placeholder="WhatsApp"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      className="w-full px-3 md:px-4 py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                      className="w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
                     />
                   )}
 
-                  <div className="flex justify-center">
+                  <div className="flex justify-center pt-1 sm:pt-2">
                     <button
                       type="submit"
-                      className="w-[50%] py-2 md:py-3 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
+                      className="w-[50%] py-1.5 sm:py-2 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
                     >
                       SEND
                     </button>

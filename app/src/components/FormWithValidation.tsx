@@ -47,47 +47,43 @@ const FormWithValidation: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form-container">
-      <div className="form-group">
-        <label htmlFor="name">Nome:</label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          className={errors.name ? 'error' : ''}
-        />
-        {errors.name && <span className="error-message">{errors.name}</span>}
-      </div>
+    <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white rounded-lg p-8">
+      <div className="space-y-4 w-full">
+        <div className="flex flex-col">
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="First Name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+          />
+          {errors.name && <span className="text-red-500 text-sm mt-1">{errors.name}</span>}
+        </div>
 
-      <div className="form-group">
-        <label htmlFor="email">E-mail:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          className={errors.email ? 'error' : ''}
-        />
-        {errors.email && <span className="error-message">{errors.email}</span>}
-      </div>
+        <div className="flex flex-col">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+          />
+          {errors.email && <span className="text-red-500 text-sm mt-1">{errors.email}</span>}
+        </div>
 
-      <div className="form-group">
-        <label htmlFor="age">Idade:</label>
-        <input
-          type="number"
-          id="age"
-          name="age"
-          value={formData.age}
-          onChange={handleChange}
-          className={errors.age ? 'error' : ''}
-        />
-        {errors.age && <span className="error-message">{errors.age}</span>}
+        <div className="flex justify-center mt-6">
+          <button
+            type="submit"
+            className="w-[50%] py-2 rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
+          >
+            SEND
+          </button>
+        </div>
       </div>
-
-      <button type="submit">Enviar</button>
     </form>
   );
 };
