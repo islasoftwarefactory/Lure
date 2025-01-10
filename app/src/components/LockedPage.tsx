@@ -46,19 +46,19 @@ function CountdownTimer() {
   return (
     <div className="grid grid-cols-4 gap-4 text-center my-4">
       <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">{time.days}</div>
+        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
         <div className="text-sm uppercase tracking-wider font-medium text-black">Days</div>
       </div>
       <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">{time.hours}</div>
+        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
         <div className="text-sm uppercase tracking-wider font-medium text-black">Hours</div>
       </div>
       <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">{time.minutes}</div>
+        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
         <div className="text-sm uppercase tracking-wider font-medium text-black">Minutes</div>
       </div>
       <div>
-        <div className="text-4xl font-extrabold font-aleo text-black">{time.seconds}</div>
+        <div className="text-4xl font-extrabold font-aleo text-black">??</div>
         <div className="text-sm uppercase tracking-wider font-medium text-black">Seconds</div>
       </div>
     </div>
@@ -147,78 +147,74 @@ export function LockedPage() {
                 NEWSLETTER
               </h2>
               
-              <div className="flex justify-center gap-6">
-                <Button
-                  type="button"
-                  onClick={() => setContactMethod('email')}
-                  className={`px-12 py-3 text-xl font-semibold rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgb(0,0,0,0.10)] hover:shadow-[0_6px_20px_rgb(0,0,0,0.15)] hover:scale-105 ${
-                    contactMethod === 'email' 
-                      ? 'bg-black text-white' 
-                      : 'bg-white text-black border-2 border-black hover:bg-gray-100'
-                  }`}
-                >
-                  EMAIL
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => setContactMethod('whatsapp')}
-                  className={`px-12 py-3 text-xl font-semibold rounded-full transition-all duration-300 shadow-[0_4px_14px_0_rgb(0,0,0,0.10)] hover:shadow-[0_6px_20px_rgb(0,0,0,0.15)] hover:scale-105 ${
-                    contactMethod === 'whatsapp' 
-                      ? 'bg-black text-white' 
-                      : 'bg-white text-black border-2 border-black hover:bg-gray-100'
-                  }`}
-                >
-                  SMS
-                </Button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="space-y-4 mt-4 w-full flex flex-col items-center">
-                <Input
-                  type="text"
-                  placeholder="First Name"
-                  value={formData.firstName}
-                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  className="w-full max-w-md border-2 border-black rounded-3xl p-3 text-lg focus:ring-2 focus:ring-black shadow-[0_2px_10px_rgb(0,0,0,0.06)] focus:shadow-[0_4px_16px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-[1.02]"
-                  required
-                />
-                <Input
-                  type="text"
-                  placeholder="Last Name"
-                  value={formData.lastName}
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  className="w-full max-w-md border-2 border-black rounded-3xl p-3 text-lg focus:ring-2 focus:ring-black shadow-[0_2px_10px_rgb(0,0,0,0.06)] focus:shadow-[0_4px_16px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-[1.02]"
-                  required
-                />
-                
-                {contactMethod === 'email' ? (
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full max-w-md border-2 border-black rounded-3xl p-3 text-lg focus:ring-2 focus:ring-black shadow-[0_2px_10px_rgb(0,0,0,0.06)] focus:shadow-[0_4px_16px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-[1.02]"
-                    required
-                  />
-                ) : (
-                  <Input
-                    type="tel"
-                    placeholder="SMS"
-                    value={formData.whatsapp}
-                    onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                    className="w-full max-w-md border-2 border-black rounded-3xl p-3 text-lg focus:ring-2 focus:ring-black shadow-[0_2px_10px_rgb(0,0,0,0.06)] focus:shadow-[0_4px_16px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-[1.02]"
-                    required
-                  />
-                )}
-
-                <div className="flex justify-center mt-4">
-                  <Button 
-                    type="submit"
-                    className="px-12 py-3 bg-black text-white text-xl font-semibold hover:bg-gray-800 transition-all duration-300 rounded-full shadow-[0_4px_14px_0_rgb(0,0,0,0.20)] hover:shadow-[0_6px_24px_rgb(0,0,0,0.25)] hover:scale-105 transform"
+              <div className="space-y-6">
+                <div className="flex gap-4 w-full">
+                  <button
+                    onClick={() => setContactMethod('email')}
+                    className={`flex-1 py-3 rounded-full font-medium transition-colors ${
+                      contactMethod === 'email'
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-black'
+                    }`}
                   >
-                    SEND
-                  </Button>
+                    Email
+                  </button>
+                  <button
+                    onClick={() => setContactMethod('whatsapp')}
+                    className={`flex-1 py-3 rounded-full font-medium transition-colors ${
+                      contactMethod === 'whatsapp'
+                        ? 'bg-black text-white'
+                        : 'bg-gray-100 text-black'
+                    }`}
+                  >
+                    SMS
+                  </button>
                 </div>
-              </form>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                    className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                  />
+                  
+                  {contactMethod === 'email' ? (
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    />
+                  ) : (
+                    <input
+                      type="tel"
+                      placeholder="WhatsApp"
+                      value={formData.whatsapp}
+                      onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+                      className="w-full px-4 py-2 rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
+                    />
+                  )}
+
+                  <div className="flex justify-center">
+                    <button
+                      type="submit"
+                      className="w-[50%] py-3 rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
+                    >
+                      SEND
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
