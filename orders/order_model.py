@@ -8,10 +8,13 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     delivery_address = db.Column(db.String(255))
-    status = db.Column(db.String(50), nullable=False)
+    status_id = db.Column(db.Integer, db.ForeignKey('orders_status.id'), nullable=False)
     observation = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Add the relationship definition here instead
+    order_status = db.relationship('OrdersStatus', backref=db.backref('orders', lazy=True))
 
     def __repr__(self):
         return f"<Order {self.id}>"
@@ -34,7 +37,7 @@ def create_order(order_data):
         new_order = Order(
             user_id=order_data["user_id"],
             delivery_address=order_data.get("delivery_address"),
-            status=order_data["status"],
+            status_id=order_data["status_id"],
             observation=order_data.get("observation")
         )
         

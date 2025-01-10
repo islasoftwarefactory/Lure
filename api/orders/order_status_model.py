@@ -11,9 +11,6 @@ class OrdersStatus(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relacionamento com Order
-    orders = db.relationship('Order', backref='status', lazy=True)
-
     def serialize(self):
         return {
             "id": self.id,

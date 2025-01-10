@@ -6,8 +6,7 @@ blueprint = Blueprint('scraping', __name__)
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-@token_required
-def create(current_user_id):
+def create():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400

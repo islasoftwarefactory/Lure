@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { TikTok   } from 'lucide-react';
 import { Instagram, Mail } from 'lucide-react';
+import { toast } from 'react-toastify';
+import api from '../services/api';
 
 import { SideCart } from './SideCart';
 import { SocialIcons } from './SocialIcons';
@@ -78,6 +80,7 @@ export function LockedPage() {
     email: '',
     whatsapp: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -98,36 +101,62 @@ export function LockedPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('=== Iniciando submissão do formulário ===');
     
-    try {
-      console.log('Enviando requisição com dados:', formData);
-      console.log('Token atual:', token);
-      
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          contactMethod,
-        }),
-      });
+    if (!token) {
+      console.warn('⚠️ Token não disponível para requisição');
+      return;
+    }
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Resposta do registro:', data);
-        
-        if (data.token) {
-          console.log('Novo token recebido:', data.token);
-          setToken(data.token);
-          localStorage.setItem('jwt_token', data.token);
-        }
+    try {
+      setIsLoading(true);
+      
+      // Primeiro, tentar uma requisição OPTIONS
+      try {
+        await api.options('/scraping/create');
+        console.log('✅ Preflight bem sucedido');
+      } catch (error) {
+        console.warn('⚠️ Erro no preflight:', error);
       }
-    } catch (error) {
-      console.error('Erro durante registro:', error);
-      console.log('Estado do token após erro:', token);
+      
+      const requestData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: contactMethod === 'email' ? formData.email : '',
+        sms: contactMethod === 'whatsapp' ? formData.whatsapp : ''
+      };
+      
+      console.log('📤 Iniciando requisição POST para /scraping/create');
+      console.log(requestData);
+      const response = await api.post('/scraping/create', requestData);
+      
+      if (response.status === 401) {
+        console.error('🚫 Erro de autorização:', response.data);
+        toast.error('Erro de autorização: Token inválido');
+        return;
+      }
+
+      if (response.status === 201) {
+        console.log('✅ Dados enviados com sucesso');
+        toast.success('Registro realizado com sucesso!');
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          whatsapp: ''
+        });
+      }
+    } catch (error: any) {
+      console.error('❌ Erro ao enviar dados:', {
+        error,
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(error.response?.data?.message || 'Erro ao enviar dados');
+    } finally {
+      setIsLoading(false);
+      console.log('🏁 Requisição finalizada');
     }
   };
 
@@ -155,7 +184,7 @@ export function LockedPage() {
                 <div className="flex gap-2 sm:gap-3 w-full">
                   <button
                     onClick={() => setContactMethod('email')}
-                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
                       contactMethod === 'email'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'
@@ -165,7 +194,7 @@ export function LockedPage() {
                   </button>
                   <button
                     onClick={() => setContactMethod('whatsapp')}
-                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors ${
+                    className={`flex-1 py-1.5 sm:py-2 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
                       contactMethod === 'whatsapp'
                         ? 'bg-black text-white'
                         : 'bg-gray-100 text-black'

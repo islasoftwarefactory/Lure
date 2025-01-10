@@ -66,6 +66,7 @@ def verify_jwt():
         'health',  # /health
         'user.get_anonymous_token',  # /user/anonymous-token
         'user.create',  # /user/create
+        'scraping.create',  # /scraping/create
         'static'   # arquivos estáticos
     ]
     
