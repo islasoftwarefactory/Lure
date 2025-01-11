@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_URL } from '@/config';
 import axios from 'axios';
 
 interface AuthContextType {
@@ -19,7 +20,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const getAnonymousToken = async () => {
     try {
-      const url = 'http://localhost:8080/user/anonymous-token';
+      const url = `${API_URL}/user/anonymous-token`;
       const response = await axios.get(url);
       const newToken = response.data.token;
       
@@ -43,7 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshToken = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/refresh-token');
+      const response = await axios.post(`${API_URL}/api/auth/refresh-token`);
       const newToken = response.data.token;
       setToken(newToken);
       localStorage.setItem('jwt_token', newToken);
