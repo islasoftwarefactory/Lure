@@ -57,7 +57,7 @@ services:
     networks:
       - lure-net
     volumes:
-      - ./db/redis:/data
+      - redis-data:/data
 
 
 volumes:
