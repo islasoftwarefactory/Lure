@@ -22,14 +22,13 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
       # Runs a single command using the runners shell
       - name: Start container and build application
         run: |
-          cd /home/lure
           git fetch origin pipeline
           git checkout pipeline
           git pull origin pipeline
-          docker run --rm --name lure-app-build -w /app -v $(pwd):/app -v sites:/var/www node:lts bash -c "npm i && npm run build && cp -r ./dist/* /var/www/lureclo"
+          docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app -v sites:/var/www node:lts bash -c "npm i && npm run build && cp -r ./dist/* /var/www/lureclo"
