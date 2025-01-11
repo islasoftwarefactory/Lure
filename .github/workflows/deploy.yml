@@ -31,4 +31,4 @@ jobs:
           git fetch origin pipeline
           git checkout pipeline
           git pull origin pipeline
-          docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app -v sites:/var/www node:lts bash -c "npm i && npm run build && cp -r ./dist/* /var/www/lureclo"
+          docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app -v sites:/var/www node:lts bash -c "npm i && npm run build && ls -la /var/www/"
