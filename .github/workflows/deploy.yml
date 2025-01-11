@@ -31,6 +31,6 @@ jobs:
           git fetch origin pipeline
           git checkout pipeline
           git pull origin pipeline
-          docker start lure-app-build
-          docker exec lure-app-build sh -c "npm i && npm run build && cp -r ./dist/* /var/www/lureclo"
-          docker stop lure-app-build
+          docker start 5653a3e685b7
+          docker exec 5653a3e685b7 sh -c "npm i && npm run build && cp -r ./dist/* /var/www/lureclo"
+          docker stop 5653a3e685b7
