@@ -32,4 +32,23 @@ jobs:
           git checkout pipeline
           git pull origin pipeline
           docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
-          sh $GITHUB_WORKSPACE/test.sh
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: app/dist/
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: app/dist
+
+      - name: Copy to lureclo directory
+        run: cp -r app/dist/* /var/www/lureclo/
