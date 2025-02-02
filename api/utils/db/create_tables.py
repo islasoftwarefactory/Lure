@@ -10,17 +10,35 @@ from api.payment_method.model import PaymentMethod
 from api.product.model import Product
 from api.size.model import Size
 from api.user.model import User
+from api.scraping.model import Scraping
+from api.scraping.type.model import ContactType
 from api.utils.db.connection import db
 from sqlalchemy import inspect
 
 def create_tables():
     """Creates all database tables for registered models"""
     try:
-        # Força o carregamento de todos os modelos
-        models = [User, Address, Cart, Category, Discount, Gender, 
-                 ImageCategory, Payment, PaymentMethod, Product, Size]
-        db.create_all()
-        print("Tables created successfully")
+        with db.session.begin_nested():
+            # Usa uma transação aninhada para garantir atomicidade
+            db.create_all()
+            
+            # Criar tipos de contato padrão
+            from api.scraping.type.model import ContactType
+            
+            # Verificar se já existem os tipos
+            if not ContactType.query.filter_by(name='email').first():
+                email_type = ContactType(name='email', disabled=False)
+                db.session.add(email_type)
+            
+            if not ContactType.query.filter_by(name='sms').first():
+                sms_type = ContactType(name='sms', disabled=False)
+                db.session.add(sms_type)
+        
+        # Commit da transação principal
+        db.session.commit()
+        print("Tables and default contact types created successfully")
+        
     except Exception as e:
         print(f"Error creating tables: {str(e)}")
-        raise  # Re-lança o erro para debug
+        db.session.rollback()
+        raise

@@ -1,8 +1,19 @@
 from flask import request, jsonify, Blueprint
 from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping
-from api.utils.jwt.decorators import token_required
+from api.scraping.type.model import ContactType
+
 
 blueprint = Blueprint('scraping', __name__)
+
+# Contact Type Routes
+@blueprint.route("/contact-types", methods=["GET"])
+def get_contact_types():
+    """Get all active contact types"""
+    contact_types = ContactType.query.filter_by(disabled=False).all()
+    return jsonify({
+        "data": [ct.serialize() for ct in contact_types],
+        "message": "Contact types retrieved successfully."
+    }), 200
 
 # Create
 @blueprint.route("/create", methods=["POST"])
@@ -10,6 +21,14 @@ def create():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
+
+    # Verificar se o contact_type_id é válido
+    if "contact_type_id" in data:
+        contact_type = ContactType.query.get(data["contact_type_id"])
+        if not contact_type:
+            return jsonify({"error": "Invalid contact type ID"}), 400
+        if contact_type.disabled:
+            return jsonify({"error": "This contact type is disabled"}), 400
 
     try:
         scraping = create_scraping(data)
@@ -25,8 +44,7 @@ def create():
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
-@token_required
-def read(current_user_id, id):
+def read(id):
     scraping = get_scraping(id)
     if scraping is None:
         return jsonify({"error": "Scraping entry not found"}), 404
@@ -37,8 +55,7 @@ def read(current_user_id, id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
-@token_required
-def read_all(current_user_id):
+def read_all():
     scrapings = Scraping.query.all()
     scrapings_data = [scraping.serialize() for scraping in scrapings]
 
@@ -49,9 +66,16 @@ def read_all(current_user_id):
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-@token_required
-def update(current_user_id, id):
+def update(id):
     data = request.get_json()
+
+    # Verificar se o contact_type_id é válido (se estiver sendo atualizado)
+    if "contact_type_id" in data:
+        contact_type = ContactType.query.get(data["contact_type_id"])
+        if not contact_type:
+            return jsonify({"error": "Invalid contact type ID"}), 400
+        if contact_type.disabled:
+            return jsonify({"error": "This contact type is disabled"}), 400
 
     try:
         scraping = update_scraping(id, data)
@@ -67,8 +91,7 @@ def update(current_user_id, id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
-@token_required
-def delete(current_user_id, id):
+def delete(id):
     try:
         scraping = delete_scraping(id)
         if scraping is None:

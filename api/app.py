@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, g
+from flask import Flask, request, jsonify, g, make_response
 from api.utils.db.config import database_uri
 from api.utils.db.connection import connect_to_db, init_db, db
 from sqlalchemy.exc import OperationalError
@@ -7,15 +7,14 @@ from flask_migrate import Migrate
 from api.utils.jwt.jwt_utils import verify_token, generate_token
 from flask_cors import CORS
 from api.utils.db.create_tables import create_tables
+from sqlalchemy import inspect
 
 from os import getenv
 from datetime import datetime
 
 
 application = Flask(__name__)
-CORS(application, 
-     resources={r"/*": {"origins": "*"}}, 
-     supports_credentials=True)
+
 register_blueprints(application)
 
 application.config["SQLALCHEMY_DATABASE_URI"] = database_uri()
@@ -33,23 +32,22 @@ try:
         # Desabilita temporariamente o rastreamento de modificações
         application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         
-        # Inicializa as migrações primeiro
-        migrate = Migrate(application, db)
-        
-        # Espera um momento para garantir que não há operações pendentes
-        db.session.commit()
-        
         try:
-            # Tenta criar as tabelas
-            create_tables()
-            print("Tables created successfully")
+            # Primeiro, verifica se as tabelas já existem
+            inspector = inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            if not existing_tables:
+                # Se não existirem tabelas, cria todas de uma vez
+                create_tables()
+                print("Tables created successfully")
+            else:
+                print("Tables already exist, skipping creation")
+                
         except Exception as e:
-            print(f"Error creating tables: {str(e)}")
+            print(f"Error during database initialization: {str(e)}")
             db.session.rollback()
             raise
-        
-        # Reativa o rastreamento de modificações se necessário
-        application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
         
 except OperationalError as e:
     print("Connection failed: OperationalError")
@@ -61,19 +59,34 @@ except Exception as e:
 
 @application.before_request
 def verify_jwt():
+    # Permitir todas as requisições OPTIONS sem verificação de token
+    if request.method == 'OPTIONS':
+        return None
+        
     # Lista de endpoints que não precisam de autenticação
     public_endpoints = [
-        'health',  # /health
-        'user.get_anonymous_token',  # /user/anonymous-token
-        'user.create',  # /user/create
-        'scraping.create',  # /scraping/create
-        'static'   # arquivos estáticos
+        'health',
+        'user.get_anonymous_token',
+        'scraping.create',
+        'user.create',
+        'static',
+        'handle_options',
+        'contact_type.create',
+        'contact_type.read',
+        'contact_type.read_all',
+        'contact_type.read_active',
+        'contact_type.update',
+        'contact_type.delete'
     ]
     
-    print(f"Current endpoint: {request.endpoint}")  # Adicione esta linha para debug
+    # Lista de paths públicos
+    public_paths = [
+        '/contact/create',
+        '/scraping/create'
+    ]
     
-    # Se o endpoint atual está na lista de públicos, permite o acesso
-    if request.endpoint in public_endpoints:
+    # Verifica se é um endpoint ou path público
+    if request.endpoint in public_endpoints or request.path in public_paths:
         return None
         
     # Verifica o token para outras rotas
@@ -90,6 +103,15 @@ def verify_jwt():
     g.current_user_id = user_id
 
 
+@application.before_request
+def log_request_info():
+    print("\n=== Before Request ===", flush=True)
+    print(f"URL: {request.url}", flush=True)
+    print(f"Method: {request.method}", flush=True)
+    print(f"Endpoint: {request.endpoint}", flush=True)
+    return None
+
+
 @application.route('/health')
 def health():
     return jsonify({
@@ -98,5 +120,40 @@ def health():
     }), 200
 
 
+@application.after_request
+def after_request(response):
+    # Remove headers existentes para evitar duplicação
+    response.headers.pop('Access-Control-Allow-Origin', None)
+    response.headers.pop('Access-Control-Allow-Headers', None)
+    response.headers.pop('Access-Control-Allow-Methods', None)
+    response.headers.pop('Access-Control-Allow-Credentials', None)
+    
+    origin = request.headers.get('Origin', '')
+    if origin == 'http://localhost:8081':
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Max-Age'] = '86400'
+    return response
+
+
+@application.route('/<path:path>', methods=['OPTIONS'])
+@application.route('/', methods=['OPTIONS'])
+def handle_options(path=''):
+    response = make_response()
+    origin = request.headers.get('Origin', '')
+    if origin == 'http://localhost:8081':
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        response.headers['Access-Control-Max-Age'] = '86400'
+    return response
+
+
+print("=== Servidor Iniciando ===")
+
 if __name__ == "__main__":
+    print("=== Servidor Rodando ===")
     application.run(debug=True)

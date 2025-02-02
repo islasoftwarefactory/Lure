@@ -8,46 +8,36 @@ class Scraping(db.Model):
     __tablename__ = "scrapings"
 
     id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    sms = db.Column(db.String(20), nullable=False)
-    type = db.Column(db.String(10), nullable=False)
+    first_name = db.Column(db.String(40), nullable=False)
+    last_name = db.Column(db.String(40), nullable=False)
+    contact_value = db.Column(db.String(256), nullable=False)
+    contact_type_id = db.Column(db.Integer, db.ForeignKey('contact_types.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
     def __repr__(self):
-        return f"<Scraping {self.id}, Name: {self.first_name} {self.last_name}>"
+        return f"<Scraping {self.id}>"
 
     def serialize(self):
         return {
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email,
-            "sms": self.sms,
-            "type": self.type,
+            "contact_value": self.contact_value,
+            "contact_type_id": self.contact_type_id,
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
 
-def validate_scraping_data(scraping_data: Dict) -> tuple[bool, Optional[str]]:
-    """
-    Validates scraping data before creation/update
-    Returns (is_valid: bool, error_message: Optional[str])
-    """
-    # Validar campos obrigatórios
-    if not all(field in scraping_data for field in ["first_name", "last_name"]):
-        return False, "Missing required fields (first_name, last_name)"
-
-    # Validação de email XOR sms
-    has_email = bool(scraping_data.get("email"))
-    has_sms = bool(scraping_data.get("sms"))
+def validate_scraping_data(data: Dict) -> tuple[bool, str]:
+    """Validates scraping data"""
+    required_fields = ["first_name", "last_name", "contact_type_id", "contact_value"]
     
-    if not (has_email ^ has_sms):
-        return False, "Must provide either email OR sms, not both or neither"
+    for field in required_fields:
+        if field not in data:
+            return False, f"Missing required field: {field}"
     
-    return True, None
+    return True, ""
 
 def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
     """Creates a new scraping entry"""
@@ -59,16 +49,12 @@ def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
         current_app.logger.error(f"Validation error: {error_message}")
         raise ValueError(error_message)
     
-    # Determinar o tipo baseado no que foi fornecido
-    contact_type = "email" if scraping_data.get("email") else "sms"
-    
     try:
         new_scraping = Scraping(
             first_name=scraping_data["first_name"],
             last_name=scraping_data["last_name"],
-            email=scraping_data.get("email", ""),
-            sms=scraping_data.get("sms", ""),
-            type=contact_type
+            contact_type_id=scraping_data["contact_type_id"],
+            contact_value=scraping_data["contact_value"]
         )
         db.session.add(new_scraping)
         db.session.commit()
@@ -88,7 +74,7 @@ def update_scraping(scraping_id: int, scraping_data: Dict) -> Optional[Scraping]
     """Updates an existing scraping entry"""
     scraping = get_scraping(scraping_id)
     if scraping:
-        for field in ["first_name", "last_name", "email", "sms"]:
+        for field in ["first_name", "last_name", "contact_type_id", "contact_value"]:
             if field in scraping_data:
                 setattr(scraping, field, scraping_data[field])
         db.session.commit()

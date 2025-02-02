@@ -11,6 +11,3 @@ class Payment(db.Model):
     status = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Adicione a relação aqui
-    cart = db.relationship("Cart", backref=db.backref("payment", lazy=True))

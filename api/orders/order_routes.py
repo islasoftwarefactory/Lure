@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, jsonify, request
-from api.utils.jwt.decorators import token_required
+from api.utils.db.decorators import token_required
 from api.orders.order_model import (
     create_order,
     get_order,
@@ -9,7 +9,7 @@ from api.orders.order_model import (
     Order
 )
 from api.cart.model import Cart
-from api.utils.db.connection import db
+from api.utils.jwt.connection import db
 
 blueprint = Blueprint("orders", __name__)
 
