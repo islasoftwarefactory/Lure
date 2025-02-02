@@ -69,7 +69,6 @@ function CountdownTimer() {
 }
 
 export function LockedPage() {
-  const { token, setToken, getAnonymousToken } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const [contactMethod, setContactMethod] = useState<'email' | 'SMS'>('email');
@@ -81,36 +80,11 @@ export function LockedPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      if (!token) {
-        try {
-          await getAnonymousToken();
-        } catch (error) {
-          // Handle error silently
-        }
-      }
-    };
-
-    initAuth();
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!token) {
-      return;
-    }
-
     try {
       setIsLoading(true);
-      
-      // Try OPTIONS request
-      try {
-        await api.options('/scraping/create');
-      } catch (error) {
-        // Handle error silently
-      }
       
       const requestData = {
         first_name: formData.firstName,
@@ -120,11 +94,6 @@ export function LockedPage() {
       };
       
       const response = await api.post('/scraping/create', requestData);
-      
-      if (response.status === 401) {
-        toast.error('Erro de autorização: Token inválido');
-        return;
-      }
 
       if (response.status === 201) {
         toast.success('Registro realizado com sucesso!');
@@ -159,7 +128,7 @@ export function LockedPage() {
             
             <div className="w-full max-w-[280px] sm:max-w-xs md:max-w-md space-y-3 sm:space-y-4">
               <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
-                NEWSLETTER
+                Test
               </h2>
               
               <div className="space-y-2 sm:space-y-3">
