@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TikTok, Instagram } from 'lucide-react';
+import { TikTok, Instagram, User, Phone, Mail } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 
@@ -9,6 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Logo from '@/assets/icons/home/Logo.svg';
 import { useAuth } from '../hooks/useAuth';
+
+// Importe as imagens da pasta @pieces
+import image1 from '@/assets/icons/pieces/soons.jpeg';
+// import image2 from '@/assets/pieces/conjunto2.jpg';
+// import image3 from '@/assets/pieces/conjunto3.jpg';
 
 interface TimeLeft {
   days: number;
@@ -20,8 +25,7 @@ interface TimeLeft {
 interface FormData {
   firstName: string;
   lastName: string;
-  email: string;
-  SMS: string;
+  contactValue: string;
 }
 
 function CountdownTimer() {
@@ -50,47 +54,73 @@ function CountdownTimer() {
     <div className="grid grid-cols-4 gap-2 sm:gap-4 text-center bg-white rounded-[20px] p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
       <div className="flex flex-col items-center justify-center px-2 sm:px-4">
         <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Days</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium font-aleo text-black">Days</div>
       </div>
       <div className="flex flex-col items-center justify-center px-2 sm:px-4">
         <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Hours</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium font-aleo text-black">Hours</div>
       </div>
       <div className="flex flex-col items-center justify-center px-2 sm:px-4">
         <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Minutes</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium font-aleo text-black">Minutes</div>
       </div>
       <div className="flex flex-col items-center justify-center px-2 sm:px-4">
         <div className="text-2xl sm:text-4xl font-extrabold font-aleo text-black">??</div>
-        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium text-black">Seconds</div>
+        <div className="text-xs sm:text-sm uppercase tracking-wider font-medium font-aleo text-black">Seconds</div>
       </div>
     </div>
   );
 }
 
+// Adicione esta função de validação
+const validateContact = (value: string) => {
+  // Regex para validar email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Regex para validar telefone (formato brasileiro)
+  const phoneRegex = /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/;
+
+  if (emailRegex.test(value)) {
+    return { type: 'email', valid: true };
+  } else if (phoneRegex.test(value)) {
+    return { type: 'phone', valid: true };
+  }
+  return { type: 'unknown', valid: false };
+};
+
 export function LockedPage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
-  const [contactMethod, setContactMethod] = useState<'email' | 'SMS'>('email');
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
     lastName: '',
-    email: '',
-    SMS: ''
+    contactValue: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [currentImage, setCurrentImage] = useState(0);
+  const images = [image1]; // Apenas a primeira imagem
 
+  // Modifique a função handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validar o contato
+    const contactValidation = validateContact(formData.contactValue);
+    if (!contactValidation.valid) {
+      toast.error('Por favor, insira um email ou telefone válido');
+      return;
+    }
+
+    // Definir o contact_type_id baseado no tipo
+    const contactTypeId = contactValidation.type === 'email' ? 1 : 2; // Supondo que 1 = email, 2 = phone
+
     try {
       setIsLoading(true);
       
       const requestData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
-        email: contactMethod === 'email' ? formData.email : '',
-        sms: contactMethod === 'SMS' ? formData.SMS : ''
+        contact_value: formData.contactValue,
+        contact_type_id: contactTypeId
       };
       
       const response = await api.post('/scraping/create', requestData);
@@ -100,8 +130,7 @@ export function LockedPage() {
         setFormData({
           firstName: '',
           lastName: '',
-          email: '',
-          SMS: ''
+          contactValue: ''
         });
       }
     } catch (error: any) {
@@ -119,86 +148,90 @@ export function LockedPage() {
             <CountdownTimer />
           </div>
           
-          <div className="w-full aspect-[2/1] sm:aspect-[3/1] bg-white rounded-[20px] md:rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-6 md:p-8 flex flex-col items-center justify-center">
-            <img 
-              src={Logo} 
-              alt="Logo" 
-              className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 drop-shadow-xl animate-float mb-4"
-            />
-            
-            <div className="w-full max-w-[280px] sm:max-w-xs md:max-w-md space-y-3 sm:space-y-4">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-extrabold font-aleo text-black text-center drop-shadow-sm">
-                Test
-              </h2>
+          <div className="relative w-full aspect-[1.5/1] sm:aspect-[2/1] bg-white/80 rounded-[20px] md:rounded-[30px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex backdrop-blur-sm overflow-hidden">
+            {/* Lado esquerdo (frase) com fundo preto e gradiente sutil */}
+            <div className="w-1/2 flex flex-col items-center justify-center p-6 md:p-8 bg-gradient-to-br from-black via-gray-900 to-black relative">
+              {/* Divider com onda */}
+              <div className="absolute right-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-transparent via-white to-transparent opacity-30" style={{ clipPath: 'polygon(0 0, 100% 10%, 100% 90%, 0 100%)' }}></div>
+              <div className="absolute right-0 top-0 bottom-0 w-[4px] bg-gradient-to-b from-transparent via-white to-transparent opacity-20" style={{ clipPath: 'polygon(0 0, 100% 15%, 100% 85%, 0 100%)' }}></div>
               
-              <div className="space-y-2 sm:space-y-3">
-                <div className="flex gap-2 sm:gap-3 w-full">
-                  <button
-                    onClick={() => setContactMethod('email')}
-                    className={`flex-1 py-1 sm:py-1.5 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
-                      contactMethod === 'email'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-black'
-                    }`}
-                  >
-                    Email
-                  </button>
-                  <button
-                    onClick={() => setContactMethod('SMS')}
-                    className={`flex-1 py-1 sm:py-1.5 text-sm md:text-base rounded-full font-medium transition-colors hover:bg-black hover:text-white ${
-                      contactMethod === 'SMS'
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-black'
-                    }`}
-                  >
-                    SMS
-                  </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="First Name"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Last Name"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
-                  />
-                  
-                  {contactMethod === 'email' ? (
-                    <input
-                      type="email"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
-                    />
-                  ) : (
-                    <input
-                      type="tel"
-                      placeholder="SMS"
-                      value={formData.SMS}
-                      onChange={(e) => setFormData({ ...formData, SMS: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-1 sm:py-1.5 text-sm md:text-base rounded-full border-2 border-black focus:outline-none focus:border-gray-800"
-                    />
-                  )}
-
-                  <div className="flex justify-center pt-1 sm:pt-2">
-                    <button
-                      type="submit"
-                      className="w-[50%] py-1 sm:py-1.5 text-sm md:text-base rounded-full bg-black text-white font-medium hover:bg-gray-900 transition-colors"
-                    >
-                      SEND
-                    </button>
-                  </div>
-                </form>
+              {/* Frase com sombra sutil */}
+              <div className="text-center text-white font-aleo font-semibold text-xl sm:text-2xl md:text-3xl leading-tight drop-shadow-lg">
+                Register now to unlock exclusive early access to the Genesis Drop.
               </div>
+            </div>
+
+            {/* Lado direito (formulário e logo) */}
+            <div className="w-1/2 flex items-center justify-center p-6 md:p-8">
+              <div className="w-full max-w-[280px] sm:max-w-xs md:max-w-md space-y-4 sm:space-y-5">
+                {/* Logo com sombra sutil */}
+                <div className="flex justify-center -mt-10">
+                  <img 
+                    src={Logo} 
+                    alt="Logo" 
+                    className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 drop-shadow-lg"
+                  />
+                </div>
+                
+                {/* Formulário */}
+                <div className="space-y-3 sm:space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-3 flex flex-col items-center">
+                    <div className="w-full space-y-1">
+                      <label className="text-sm font-medium font-aleo text-gray-700">First Name</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <User className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <input
+                          type="text"
+                          value={formData.firstName}
+                          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm rounded-xl focus:outline-none transition-all shadow-sm bg-[#f2f2f2] hover:bg-gray-100 hover:scale-[1.02] hover:shadow-md relative border border-gray-200"
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full space-y-1">
+                      <label className="text-sm font-medium font-aleo text-gray-700">Last Name</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <User className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <input
+                          type="text"
+                          value={formData.lastName}
+                          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm rounded-xl focus:outline-none transition-all shadow-sm bg-[#f2f2f2] hover:bg-gray-100 hover:scale-[1.02] hover:shadow-md relative border border-gray-200"
+                        />
+                      </div>
+                    </div>
+                    <div className="w-full space-y-1">
+                      <label className="text-sm font-medium font-aleo text-gray-700">Contact</label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                          <Phone className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <input
+                          type="text"
+                          value={formData.contactValue}
+                          onChange={(e) => setFormData({ ...formData, contactValue: e.target.value })}
+                          className="w-full pl-10 pr-4 py-3 text-sm rounded-xl focus:outline-none transition-all shadow-sm bg-[#f2f2f2] hover:bg-gray-100 hover:scale-[1.02] hover:shadow-md relative border border-gray-200"
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            {/* Botão SEND com gradiente sutil */}
+            <div className="absolute bottom-4 right-0 w-1/2 flex justify-center">
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="w-[60%] py-2.5 text-lg md:text-xl rounded-[20px] border-2 border-black bg-gradient-to-r from-black to-gray-900 text-white font-medium font-aleo hover:bg-gray-900 transition-all shadow-lg hover:shadow-xl"
+              >
+                SEND
+              </button>
             </div>
           </div>
         </div>
