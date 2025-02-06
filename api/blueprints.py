@@ -7,8 +7,8 @@ from api.image_category.routes import blueprint as image_category_blueprint
 from api.scraping.routes import blueprint as scraping_blueprint
 from api.user.routes import blueprint as user_blueprint
 from api.product.routes import blueprint as product_blueprint
-# from api.contact.routes import blueprint as contact_blueprint
 from api.scraping.type.routes import blueprint as scraping_type_blueprint
+from api.contact.routes import blueprint as contact_blueprint
 
 def register_blueprints(app):
     app.register_blueprint(address_blueprint, url_prefix='/address')
@@ -21,4 +21,4 @@ def register_blueprints(app):
     app.register_blueprint(product_blueprint, url_prefix='/product')
     app.register_blueprint(scraping_blueprint, url_prefix='/scraping')
     app.register_blueprint(scraping_type_blueprint, url_prefix='/contact_type')
-    # app.register_blueprint(contact_blueprint, url_prefix='/contact')  
+    app.register_blueprint(contact_blueprint, url_prefix='/contact')  

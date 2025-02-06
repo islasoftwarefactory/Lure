@@ -52,6 +52,9 @@ export default {
 	    },
 	    fontFamily: {
 	      aleo: ['Aleo', 'HelveticaNeue', 'Helvetica Neue', 'sans-serif'],
+	      poppins: ['Poppins', 'sans-serif'],
+	      arbatosh: ['Arbutus Slab', 'serif'],
+	      recoleta: ['Recoleta', 'serif'],
 	    },
 	  },
 	},

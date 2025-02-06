@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Arbutus+Slab&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Recoleta:wght@400;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -75,4 +78,20 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.font-arbatosh {
+  font-family: 'Arbutus Slab', serif !important;
+}
+
+@font-face {
+  font-family: 'Recoleta';
+  src: url('/fonts/Recoleta-RegularDEMO.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
