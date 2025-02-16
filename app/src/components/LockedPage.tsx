@@ -214,7 +214,7 @@ export function LockedPage() {
             transition={{ duration: 0.8, type: 'spring' }}
             className="absolute inset-0 overflow-hidden flex"
             style={{
-              backgroundImage: 'url("/src/assets/icons/home/LURE.svg")',
+              backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
               backgroundSize: 'cover',
               backgroundPosition: '0 0',
               backgroundRepeat: 'no-repeat',
