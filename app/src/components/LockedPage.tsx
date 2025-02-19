@@ -103,6 +103,26 @@ export function LockedPage() {
     }
   };
 
+  // Animação de página
+  const pageVariants = {
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      transition: {
+        duration: 0.8,
+        ease: [0.4, 0, 0.2, 1]
+      }
+    },
+    exit: { 
+      opacity: 0,
+      scale: 0.98,
+      transition: {
+        duration: 0.5
+      }
+    }
+  };
+
   // Nova função para lidar com o envio do formulário de contato
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,13 +189,19 @@ export function LockedPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       className="flex flex-col min-h-screen w-screen overflow-hidden bg-[#000000] text-white relative"
     >
       {!showSecondPage ? (
-        <main className="flex-grow flex items-center justify-center w-screen h-screen relative">
+        <motion.main
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex-grow flex items-center justify-center w-screen h-screen relative"
+        >
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -314,12 +340,12 @@ export function LockedPage() {
               </div>
             </motion.div>
           </motion.div>
-        </main>
+        </motion.main>
       ) : (
         <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, type: 'spring' }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
           className="absolute inset-0 overflow-hidden w-[1917px] h-[990px] rounded-2xl shadow-lg"
           style={{
             backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
@@ -392,7 +418,7 @@ export function LockedPage() {
               {modalContent === 'about' ? (
                 <>
                   <h2 className="text-2xl font-bold font-recoleta">About Us</h2>
-                  <div className="prose prose-invert">
+                  <div className="prose prose-invert font-recoleta">
                     <p>
                       Welcome to LURE, where fashion meets sophistication. We are a premium clothing brand dedicated to creating timeless pieces that embody elegance and style.
                     </p>
