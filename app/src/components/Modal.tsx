@@ -21,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
-            className="bg-black text-white p-8 rounded-lg max-w-md w-full shadow-xl border border-white/20"
+            className="bg-[#f2f2f2] text-black p-8 rounded-lg max-w-md w-full shadow-xl border border-white/20"
             onClick={(e) => e.stopPropagation()}
           >
             {children}

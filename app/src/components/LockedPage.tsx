@@ -182,19 +182,41 @@ export function LockedPage() {
             animate="visible"
             className="w-screen h-screen relative"
           >
-            {/* Ajustando a posição do botão CONTACT */}
+            {/* Botão CONTACT */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="absolute top-8 left-80 z-10"
+              className="absolute top-16 left-72 z-10"
             >
               <Button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setModalContent('contact');
+                  setIsModalOpen(true);
+                }}
                 variant="ghost"
-                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[140px] min-h-[60px] bg-transparent"
+                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[154px] min-h-[60px] bg-transparent"
               >
                 <span className="sr-only">Contact</span>
+              </Button>
+            </motion.div>
+
+            {/* Botão ABOUT */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="absolute top-16 left-40 z-10"
+            >
+              <Button
+                onClick={() => {
+                  setModalContent('about');
+                  setIsModalOpen(true);
+                }}
+                variant="ghost"
+                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[120px] min-h-[60px] bg-transparent"
+              >
+                <span className="sr-only">About</span>
               </Button>
             </motion.div>
 
@@ -214,11 +236,11 @@ export function LockedPage() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.8, type: 'spring' }}
-              className="absolute inset-0 overflow-hidden w-[2130px] h-[1100px] rounded-2xl shadow-lg"
+              className="absolute inset-0 overflow-hidden w-[1917px] h-[990px] rounded-2xl shadow-lg"
               style={{
                 backgroundImage: 'url("/src/assets/icons/home/first_page.svg")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
+                backgroundSize: '100%',
+                backgroundPosition: 'center 100%',
                 backgroundRepeat: 'no-repeat',
                 margin: 0,
                 padding: 0,
@@ -226,7 +248,7 @@ export function LockedPage() {
               }}
             >
             
-              <div className="absolute right-0 top-0 w-[35%] h-full flex items-center justify-center p-8">
+              <div className="absolute right-[10%] top-0 w-[35%] h-full flex items-center justify-center p-8">
                 <form 
                   onSubmit={handleSubmit}
                   className="w-full max-w-[400px] space-y-12"
@@ -280,7 +302,7 @@ export function LockedPage() {
                   >
                     <Button 
                       type="submit"
-                      className="w-[80%] bg-white hover:bg-[#f0f0f0] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
+                      className="w-[80%] bg-[#f2f2f2] hover:bg-[#f2f2f2] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
                       disabled={isLoading}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
@@ -295,17 +317,58 @@ export function LockedPage() {
         </main>
       ) : (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="w-screen h-screen"
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, type: 'spring' }}
+          className="absolute inset-0 overflow-hidden w-[1917px] h-[990px] rounded-2xl shadow-lg"
           style={{
             backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
+            backgroundRepeat: 'no-repeat',
+            margin: 0,
+            padding: 0,
+            objectFit: 'cover'
           }}
-        />
+        >
+          {/* Botão CONTACT */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="absolute top-16 left-72 z-10"
+          >
+            <Button
+              onClick={() => {
+                setModalContent('contact');
+                setIsModalOpen(true);
+              }}
+              variant="ghost"
+              className="text-transparent hover:bg-transparent p-0 h-auto min-w-[154px] min-h-[60px] bg-transparent"
+            >
+              <span className="sr-only">Contact</span>
+            </Button>
+          </motion.div>
+
+          {/* Botão ABOUT */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="absolute top-16 left-40 z-10"
+          >
+            <Button
+              onClick={() => {
+                setModalContent('about');
+                setIsModalOpen(true);
+              }}
+              variant="ghost"
+              className="text-transparent hover:bg-transparent p-0 h-auto min-w-[77px] min-h-[60px] bg-transparent"
+            >
+              <span className="sr-only">About</span>
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Removendo os botões de redes sociais
@@ -321,64 +384,83 @@ export function LockedPage() {
         setItems={setCartItems}
       /> */}
 
-      {/* Modal com formulário atualizado */}
+      {/* Modal atualizado para mostrar conteúdo diferente baseado em modalContent */}
       <AnimatePresence>
         {isModalOpen && (
           <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold font-recoleta">Contact Us</h2>
-              
-              <form onSubmit={handleContactSubmit} className="space-y-4">
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="Full Name"
-                    value={contactForm.full_name}
-                    onChange={(e) => setContactForm({...contactForm, full_name: e.target.value})}
-                    className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
-                    required
-                  />
-                </div>
+              {modalContent === 'about' ? (
+                <>
+                  <h2 className="text-2xl font-bold font-recoleta">About Us</h2>
+                  <div className="prose prose-invert">
+                    <p>
+                      Welcome to LURE, where fashion meets sophistication. We are a premium clothing brand dedicated to creating timeless pieces that embody elegance and style.
+                    </p>
+                    <p>
+                      Our mission is to provide high-quality, sustainable fashion that makes you feel confident and comfortable. Each piece is carefully crafted with attention to detail and a commitment to excellence.
+                    </p>
+                    <p>
+                      Join us in our journey to redefine modern fashion while maintaining the highest standards of quality and design.
+                    </p>
+                  </div>
+                </>
+              ) : (
+                // Conteúdo existente do formulário de contato
+                <>
+                  <h2 className="text-2xl font-bold font-recoleta">Contact Us</h2>
+                  <form onSubmit={handleContactSubmit} className="space-y-4">
+                    <div>
+                      <Input
+                        type="text"
+                        placeholder="Full Name"
+                        value={contactForm.full_name}
+                        onChange={(e) => setContactForm({...contactForm, full_name: e.target.value})}
+                        className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <Input
-                    type="tel"
-                    placeholder="Phone (optional)"
-                    value={contactForm.phone}
-                    onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
-                    className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
-                  />
-                </div>
+                    <div>
+                      <Input
+                        type="tel"
+                        placeholder="Phone (optional)"
+                        value={contactForm.phone}
+                        onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                        className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
+                      />
+                    </div>
 
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Email"
-                    value={contactForm.email}
-                    onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
-                    className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
-                    required
-                  />
-                </div>
+                    <div>
+                      <Input
+                        type="email"
+                        placeholder="Email"
+                        value={contactForm.email}
+                        onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                        className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <textarea
-                    placeholder="Message"
-                    value={contactForm.message}
-                    onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
-                    className="w-full bg-transparent border border-white/20 rounded-lg p-3 focus:ring-white focus:border-white min-h-[100px] resize-none"
-                    required
-                  />
-                </div>
+                    <div>
+                      <textarea
+                        placeholder="Message"
+                        value={contactForm.message}
+                        onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                        className="w-full bg-transparent border border-white/20 rounded-lg p-3 focus:ring-white focus:border-white min-h-[100px] resize-none"
+                        required
+                      />
+                    </div>
 
-                <Button 
-                  type="submit"
-                  className="w-full bg-white text-black hover:bg-white/90 font-recoleta"
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Sending...' : 'Send Message'}
-                </Button>
-              </form>
+                    <Button 
+                      type="submit"
+                      className="w-full bg-white text-black hover:bg-white/90 font-recoleta"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? 'Sending...' : 'Send Message'}
+                    </Button>
+                  </form>
+                </>
+              )}
             </div>
           </Modal>
         )}
