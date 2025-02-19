@@ -75,6 +75,9 @@ export function LockedPage() {
     message: ''
   });
 
+  // Adicione este estado no início do componente, junto com os outros estados
+  const [showSecondPage, setShowSecondPage] = useState(false);
+
   // Animação de container
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -97,47 +100,6 @@ export function LockedPage() {
         type: "spring",
         stiffness: 120
       }
-    }
-  };
-
-  // Modifique a função handleSubmit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validar o contato
-    const contactValidation = validateContact(formData.contactValue);
-    if (!contactValidation.valid) {
-      toast.error('Por favor, insira um email ou telefone válido');
-      return;
-    }
-
-    // Definir o contact_type_id baseado no tipo
-    const contactTypeId = contactValidation.type === 'email' ? 1 : 2; // Supondo que 1 = email, 2 = phone
-
-    try {
-      setIsLoading(true);
-      
-      const requestData = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        contact_value: formData.contactValue,
-        contact_type_id: contactTypeId
-      };
-      
-      const response = await api.post('/scraping/create', requestData);
-
-      if (response.status === 201) {
-        toast.success('Registro realizado com sucesso!');
-        setFormData({
-          firstName: '',
-          lastName: '',
-          contactValue: ''
-        });
-      }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Erro ao enviar dados');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -166,129 +128,185 @@ export function LockedPage() {
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const contactValidation = validateContact(formData.contactValue);
+    if (!contactValidation.valid) {
+      toast.error('Por favor, insira um email ou telefone válido');
+      return;
+    }
+
+    const contactTypeId = contactValidation.type === 'email' ? 1 : 2;
+
+    try {
+      setIsLoading(true);
+      
+      const requestData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        contact_value: formData.contactValue,
+        contact_type_id: contactTypeId
+      };
+      
+      const response = await api.post('/scraping/create', requestData);
+
+      if (response.status === 201) {
+        setFormData({
+          firstName: '',
+          lastName: '',
+          contactValue: ''
+        });
+        
+        setShowSecondPage(true);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erro ao enviar dados');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col min-h-screen max-h-screen overflow-hidden bg-[#000000] text-white"
+      className="flex flex-col min-h-screen w-screen overflow-hidden bg-[#000000] text-white relative"
     >
-      <main className="flex-grow flex items-center justify-center p-0 h-full">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="w-full h-screen relative"
-        >
-          {/* Ajustando a posição do botão CONTACT */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="absolute top-8 left-80 z-10"
-          >
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              variant="ghost"
-              className="text-transparent hover:bg-transparent p-0 h-auto min-w-[140px] min-h-[60px] bg-transparent"
-            >
-              <span className="sr-only">Contact</span>
-            </Button>
-          </motion.div>
-
-          {/* Texto LURE centralizado */}
-          <div className="absolute inset-0 flex items-center justify-center z-0">
-            <motion.h1 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="text-[20vw] font-recoleta font-bold text-white select-none"
-            >
-              LURE
-            </motion.h1>
-          </div>
-
+      {!showSecondPage ? (
+        <main className="flex-grow flex items-center justify-center w-screen h-screen relative">
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.8, type: 'spring' }}
-            className="absolute inset-0 overflow-hidden flex"
-            style={{
-              backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
-              backgroundSize: 'cover',
-              backgroundPosition: '0 0',
-              backgroundRepeat: 'no-repeat',
-              width: '100%',
-              height: '100%'
-            }}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="w-screen h-screen relative"
           >
-            <div className="w-[35%] h-full flex items-center justify-center p-8 ml-auto">
-              <form 
-                onSubmit={handleSubmit}
-                className="w-full max-w-[400px] space-y-12"
+            {/* Ajustando a posição do botão CONTACT */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="absolute top-8 left-80 z-10"
+            >
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                variant="ghost"
+                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[140px] min-h-[60px] bg-transparent"
               >
-                <motion.div 
-                  className="space-y-8"
-                  variants={containerVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  <motion.div className="relative" variants={itemVariants}>
-                    <User className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white w-7 h-7" />
-                    <Input
-                      type="text"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                      className="w-full bg-[#000000] rounded-xl pl-14 pr-6 py-8 placeholder-white focus-visible:ring-0 border-0 font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200"
-                      placeholder="Name"
-                      required
-                    />
-                  </motion.div>
-                  
-                  <motion.div className="relative" variants={itemVariants}>
-                    <User2 className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white w-7 h-7" />
-                    <Input
-                      type="text"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                      className="w-full bg-[#000000] rounded-xl pl-14 pr-6 py-8 placeholder-white focus-visible:ring-0 border-0 font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200"
-                      placeholder="Last Name"
-                      required
-                    />
-                  </motion.div>
-                  
-                  <motion.div className="relative" variants={itemVariants}>
-                    <Mail className="absolute left-5 top-1/2 transform -translate-y-1/2 text-white w-7 h-7" />
-                    <Input
-                      type="text"
-                      value={formData.contactValue}
-                      onChange={(e) => setFormData({...formData, contactValue: e.target.value})}
-                      className="w-full bg-[#000000] rounded-xl pl-14 pr-6 py-8 placeholder-white focus-visible:ring-0 border-0 font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200"
-                      placeholder="Contact (Email or Phone)"
-                      required
-                    />
-                  </motion.div>
-                </motion.div>
+                <span className="sr-only">Contact</span>
+              </Button>
+            </motion.div>
 
-                <motion.div 
-                  className="flex justify-center"
-                  variants={itemVariants}
-                >
-                  <Button 
-                    type="submit"
-                    className="w-[80%] bg-white hover:bg-[#f0f0f0] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
-                    disabled={isLoading}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {isLoading ? 'Enviando...' : 'Send'}
-                  </Button>
-                </motion.div>
-              </form>
+            {/* Texto LURE centralizado */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.h1 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className="text-[15vw] font-recoleta font-bold text-white select-none"
+              >
+                LURE
+              </motion.h1>
             </div>
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, type: 'spring' }}
+              className="absolute inset-0 overflow-hidden w-[2130px] h-[1100px] rounded-2xl shadow-lg"
+              style={{
+                backgroundImage: 'url("/src/assets/icons/home/first_page.svg")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                margin: 0,
+                padding: 0,
+                objectFit: 'cover'
+              }}
+            >
+            
+              <div className="absolute right-0 top-0 w-[35%] h-full flex items-center justify-center p-8">
+                <form 
+                  onSubmit={handleSubmit}
+                  className="w-full max-w-[400px] space-y-12"
+                >
+                  <motion.div 
+                    className="space-y-8"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    <motion.div className="relative" variants={itemVariants}>
+                      <User className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                      <Input
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                        placeholder="Name"
+                        required
+                      />
+                    </motion.div>
+                    
+                    <motion.div className="relative" variants={itemVariants}>
+                      <User2 className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                      <Input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                        placeholder="Last Name"
+                        required
+                      />
+                    </motion.div>
+                    
+                    <motion.div className="relative" variants={itemVariants}>
+                      <Mail className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                      <Input
+                        type="text"
+                        value={formData.contactValue}
+                        onChange={(e) => setFormData({...formData, contactValue: e.target.value})}
+                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                        placeholder="Contact (Email or Phone)"
+                        required
+                      />
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.div 
+                    className="flex justify-center"
+                    variants={itemVariants}
+                  >
+                    <Button 
+                      type="submit"
+                      className="w-[80%] bg-white hover:bg-[#f0f0f0] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
+                      disabled={isLoading}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {isLoading ? 'Enviando...' : 'Send'}
+                    </Button>
+                  </motion.div>
+                </form>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      </main>
+        </main>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-screen h-screen"
+          style={{
+            backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+      )}
 
       {/* Removendo os botões de redes sociais
       <div className="fixed bottom-4 right-4 z-50">
