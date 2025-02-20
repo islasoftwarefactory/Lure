@@ -27,7 +27,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
               ease: [0.4, 0, 0.2, 1],
               scale: { duration: 0.3 }
             }}
-            className="bg-[#f2f2f2] text-black p-8 rounded-2xl max-w-md w-full shadow-[0_0_60px_-15px_rgba(0,0,0,0.5)] border border-white/10 relative"
+            className="bg-[#f2f2f2] text-black p-4 md:p-8 rounded-2xl max-w-[90%] md:max-w-md w-full shadow-[0_0_60px_-15px_rgba(0,0,0,0.5)] border border-white/10 relative m-4"
             onClick={(e) => e.stopPropagation()}
           >
             <motion.div

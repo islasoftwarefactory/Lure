@@ -17,6 +17,12 @@ import image1 from '@/assets/icons/pieces/soons.jpeg';
 // import image2 from '@/assets/pieces/conjunto2.jpg';
 // import image3 from '@/assets/pieces/conjunto3.jpg';
 
+// Importando as imagens
+import fluerIcon from '@/assets/icons/home/fluer.svg';
+import logoIcon from '@/assets/icons/home/logo.svg';
+import fraseIcon from '@/assets/icons/home/frase_tela1.svg';
+import columnIcon from '@/assets/icons/home/column.png';
+
 interface TimeLeft {
   days: number;
   hours: number;
@@ -188,254 +194,146 @@ export function LockedPage() {
   };
 
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      className="flex flex-col min-h-screen w-screen overflow-hidden bg-[#000000] text-white relative"
-    >
-      {!showSecondPage ? (
-        <motion.main
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex-grow flex items-center justify-center w-screen h-screen relative"
-        >
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="w-screen h-screen relative"
+    <div className="min-h-screen bg-white overflow-hidden">
+      <div className="relative h-screen">
+        {/* Fluer - 10% para esquerda e 8% para cima (ajustado de -10% para -8%) */}
+        <div className="absolute top-[-8%] left-[-10%] z-10">
+          <img
+            src={fluerIcon}
+            alt="Logo"
+            className="rounded-full w-[150px] h-[150px] sm:w-[300px] sm:h-[300px] lg:w-[500px] lg:h-[500px] object-contain"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+        </div>
+
+        {/* Logo - 15% maior e 10% mais para cima */}
+        <div className="absolute left-4 top-[40%] transform -translate-y-1/2">
+          <img
+            src={logoIcon}
+            alt="Main Image"
+            className="rounded-lg w-[172px] h-[172px] sm:w-[345px] sm:h-[345px] lg:w-[460px] lg:h-[460px] object-contain"
+          />
+        </div>
+
+        {/* Frase_tela1 - 50% maior e 35% mais para baixo */}
+        <div className="absolute right-[20%] top-[85%] transform -translate-y-1/2">
+          <img
+            src={fraseIcon}
+            alt="Right Image"
+            className="rounded-lg w-[225px] h-[225px] sm:w-[450px] sm:h-[450px] lg:w-[600px] lg:h-[600px] object-contain"
+          />
+        </div>
+
+        {/* Full height column - muito mais para direita */}
+        <div className="absolute -right-[50%] top-0 h-screen w-[2000px] sm:w-[2000px] lg:w-[2000px] overflow-hidden">
+          <img
+            src={columnIcon}
+            alt="Column Image"
+            className="h-full w-full object-contain"
+            style={{ maxWidth: '100%' }}
+          />
+        </div>
+
+        {/* Botões do arquivo antigo */}
+        <motion.div className="absolute top-[2.5%] left-72 z-10">
+          <Button
+            onClick={() => {
+              setModalContent('contact');
+              setIsModalOpen(true);
+            }}
+            variant="ghost"
+            className="text-black hover:bg-transparent p-4 h-auto min-w-[154px] min-h-[60px] bg-transparent font-recoleta text-2xl font-semibold"
           >
-            {/* Botão CONTACT */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="absolute top-16 left-72 z-10"
-            >
-              <Button
-                onClick={() => {
-                  setModalContent('contact');
-                  setIsModalOpen(true);
-                }}
-                variant="ghost"
-                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[154px] min-h-[60px] bg-transparent"
-              >
-                <span className="sr-only">Contact</span>
-              </Button>
-            </motion.div>
-
-            {/* Botão ABOUT */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="absolute top-16 left-40 z-10"
-            >
-              <Button
-                onClick={() => {
-                  setModalContent('about');
-                  setIsModalOpen(true);
-                }}
-                variant="ghost"
-                className="text-transparent hover:bg-transparent p-0 h-auto min-w-[120px] min-h-[60px] bg-transparent"
-              >
-                <span className="sr-only">About</span>
-              </Button>
-            </motion.div>
-
-            {/* Texto LURE centralizado */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <motion.h1 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
-                className="text-[15vw] font-recoleta font-bold text-white select-none"
-              >
-                LURE
-              </motion.h1>
-            </div>
-
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.8, type: 'spring' }}
-              className="absolute inset-0 overflow-hidden w-[1917px] h-[990px] rounded-2xl shadow-lg"
-              style={{
-                backgroundImage: 'url("/src/assets/icons/home/first_page.svg")',
-                backgroundSize: '100%',
-                backgroundPosition: 'center 100%',
-                backgroundRepeat: 'no-repeat',
-                margin: 0,
-                padding: 0,
-                objectFit: 'cover'
-              }}
-            >
-            
-              <div className="absolute right-[10%] top-0 w-[35%] h-full flex items-center justify-center p-8">
-                <form 
-                  onSubmit={handleSubmit}
-                  className="w-full max-w-[400px] space-y-12"
-                >
-                  <motion.div 
-                    className="space-y-8"
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                    <motion.div className="relative" variants={itemVariants}>
-                      <User className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
-                      <Input
-                        type="text"
-                        value={formData.firstName}
-                        onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
-                        placeholder="Name"
-                        required
-                      />
-                    </motion.div>
-                    
-                    <motion.div className="relative" variants={itemVariants}>
-                      <User2 className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
-                      <Input
-                        type="text"
-                        value={formData.lastName}
-                        onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
-                        placeholder="Last Name"
-                        required
-                      />
-                    </motion.div>
-                    
-                    <motion.div className="relative" variants={itemVariants}>
-                      <Mail className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
-                      <Input
-                        type="text"
-                        value={formData.contactValue}
-                        onChange={(e) => setFormData({...formData, contactValue: e.target.value})}
-                        className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
-                        placeholder="Contact (Email or Phone)"
-                        required
-                      />
-                    </motion.div>
-                  </motion.div>
-
-                  <motion.div 
-                    className="flex justify-center"
-                    variants={itemVariants}
-                  >
-                    <Button 
-                      type="submit"
-                      className="w-[80%] bg-[#f2f2f2] hover:bg-[#f2f2f2] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
-                      disabled={isLoading}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {isLoading ? 'Enviando...' : 'Send'}
-                    </Button>
-                  </motion.div>
-                </form>
-              </div>
-            </motion.div>
-          </motion.div>
-        </motion.main>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-          className="absolute inset-0 overflow-hidden w-[1917px] h-[990px] rounded-2xl shadow-lg"
-          style={{
-            backgroundImage: 'url("/src/assets/icons/home/second_page.svg")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            margin: 0,
-            padding: 0,
-            objectFit: 'cover'
-          }}
-        >
-          {/* Botão CONTACT */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="absolute top-16 left-72 z-10"
-          >
-            <Button
-              onClick={() => {
-                setModalContent('contact');
-                setIsModalOpen(true);
-              }}
-              variant="ghost"
-              className="text-transparent hover:bg-transparent p-0 h-auto min-w-[154px] min-h-[60px] bg-transparent"
-            >
-              <span className="sr-only">Contact</span>
-            </Button>
-          </motion.div>
-
-          {/* Botão ABOUT */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="absolute top-16 left-40 z-10"
-          >
-            <Button
-              onClick={() => {
-                setModalContent('about');
-                setIsModalOpen(true);
-              }}
-              variant="ghost"
-              className="text-transparent hover:bg-transparent p-0 h-auto min-w-[77px] min-h-[60px] bg-transparent"
-            >
-              <span className="sr-only">About</span>
-            </Button>
-          </motion.div>
+            Contact
+          </Button>
         </motion.div>
-      )}
 
-      {/* Removendo os botões de redes sociais
-      <div className="fixed bottom-4 right-4 z-50">
-        ... conteúdo dos botões de redes sociais ...
-      </div> */}
+        <motion.div className="absolute top-[2.5%] left-40 z-10">
+          <Button
+            onClick={() => {
+              setModalContent('about');
+              setIsModalOpen(true);
+            }}
+            variant="ghost"
+            className="text-black hover:bg-transparent p-4 h-auto min-w-[77px] min-h-[60px] bg-transparent font-recoleta text-2xl font-semibold"
+          >
+            About
+          </Button>
+        </motion.div>
 
-      {/* Removendo o SideCart
-      <SideCart 
-        isOpen={isCartOpen} 
-        onClose={() => setIsCartOpen(false)} 
-        items={cartItems}
-        setItems={setCartItems}
-      /> */}
+        {/* Formulário do arquivo antigo */}
+        <div className="absolute right-[10%] top-0 w-[35%] h-full flex items-center justify-center p-8">
+          <form onSubmit={handleSubmit} className="w-full max-w-[400px] space-y-12">
+            <motion.div className="space-y-8" variants={containerVariants} initial="hidden" animate="visible">
+              <motion.div className="relative" variants={itemVariants}>
+                <User className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                <Input
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                  className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                  placeholder="Name"
+                  required
+                />
+              </motion.div>
+              
+              <motion.div className="relative" variants={itemVariants}>
+                <User2 className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                <Input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                  className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                  placeholder="Last Name"
+                  required
+                />
+              </motion.div>
+              
+              <motion.div className="relative" variants={itemVariants}>
+                <Mail className="absolute left-5 top-1/2 transform -translate-y-1/2 text-black w-7 h-7" />
+                <Input
+                  type="text"
+                  value={formData.contactValue}
+                  onChange={(e) => setFormData({...formData, contactValue: e.target.value})}
+                  className="w-full bg-transparent rounded-xl pl-14 pr-6 py-8 placeholder-black text-black focus-visible:ring-0 border-[3px] border-[#000] font-recoleta placeholder:font-recoleta text-2xl hover:scale-[1.02] transition-transform duration-200 [&::placeholder]:text-black"
+                  placeholder="Contact (Email or Phone)"
+                  required
+                />
+              </motion.div>
+            </motion.div>
 
-      {/* Modal atualizado para mostrar conteúdo diferente baseado em modalContent */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-            <div className="space-y-6">
-              {modalContent === 'about' ? (
-                <>
-                  <h2 className="text-2xl font-bold font-recoleta">About Us</h2>
-                  <div className="prose prose-invert font-recoleta">
-                    <p>
-                      Welcome to LURE, where fashion meets sophistication. We are a premium clothing brand dedicated to creating timeless pieces that embody elegance and style.
-                    </p>
-                    <p>
-                      Our mission is to provide high-quality, sustainable fashion that makes you feel confident and comfortable. Each piece is carefully crafted with attention to detail and a commitment to excellence.
-                    </p>
-                    <p>
-                      Join us in our journey to redefine modern fashion while maintaining the highest standards of quality and design.
-                    </p>
-                  </div>
-                </>
-              ) : (
-                // Conteúdo existente do formulário de contato
-                <>
-                  <h2 className="text-2xl font-bold font-recoleta">Contact Us</h2>
-                  <form onSubmit={handleContactSubmit} className="space-y-4">
-                    <div>
+            <motion.div className="flex justify-center" variants={itemVariants}>
+              <Button 
+                type="submit"
+                className="w-[80%] bg-[#f2f2f2] hover:bg-[#f2f2f2] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
+                disabled={isLoading}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isLoading ? 'Enviando...' : 'Send'}
+              </Button>
+            </motion.div>
+          </form>
+        </div>
+
+        {/* Modal do arquivo antigo */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+              <div className="space-y-6">
+                {modalContent === 'about' ? (
+                  <>
+                    <h2 className="text-2xl font-bold font-recoleta">About Us</h2>
+                    <div className="prose prose-invert font-recoleta">
+                      <p>Welcome to LURE, where fashion meets sophistication...</p>
+                      <p>Our mission is to provide high-quality, sustainable fashion...</p>
+                      <p>Join us in our journey to redefine modern fashion...</p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-bold font-recoleta">Contact Us</h2>
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
                       <Input
                         type="text"
                         placeholder="Full Name"
@@ -444,9 +342,6 @@ export function LockedPage() {
                         className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
                         required
                       />
-                    </div>
-
-                    <div>
                       <Input
                         type="tel"
                         placeholder="Phone (optional)"
@@ -454,9 +349,6 @@ export function LockedPage() {
                         onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
                         className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
                       />
-                    </div>
-
-                    <div>
                       <Input
                         type="email"
                         placeholder="Email"
@@ -465,9 +357,6 @@ export function LockedPage() {
                         className="w-full bg-transparent border-white/20 rounded-lg focus-visible:ring-white"
                         required
                       />
-                    </div>
-
-                    <div>
                       <textarea
                         placeholder="Message"
                         value={contactForm.message}
@@ -475,23 +364,22 @@ export function LockedPage() {
                         className="w-full bg-transparent border border-white/20 rounded-lg p-3 focus:ring-white focus:border-white min-h-[100px] resize-none"
                         required
                       />
-                    </div>
-
-                    <Button 
-                      type="submit"
-                      className="w-full bg-white text-black hover:bg-white/90 font-recoleta"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? 'Sending...' : 'Send Message'}
-                    </Button>
-                  </form>
-                </>
-              )}
-            </div>
-          </Modal>
-        )}
-      </AnimatePresence>
-    </motion.div>
+                      <Button 
+                        type="submit"
+                        className="w-full bg-white text-black hover:bg-white/90 font-recoleta"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? 'Sending...' : 'Send Message'}
+                      </Button>
+                    </form>
+                  </>
+                )}
+              </div>
+            </Modal>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }
 
