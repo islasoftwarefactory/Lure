@@ -133,11 +133,20 @@ export function LockedPage() {
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Iniciando envio do formulário de contato:', contactForm);
+    
     try {
       setIsLoading(true);
-      const response = await api.post('/contact/create', contactForm);
+      console.log('Fazendo request para /contact/create');
+      
+      // Aumentando o timeout para 10 segundos
+      const response = await api.post('/contact/create', contactForm, {
+        timeout: 10000 // 10 segundos
+      });
+      console.log('Resposta da API:', response.data);
 
       if (response.status === 201) {
+        console.log('Mensagem enviada com sucesso!');
         toast.success('Mensagem enviada com sucesso!');
         setContactForm({
           full_name: '',
@@ -148,9 +157,18 @@ export function LockedPage() {
         setIsModalOpen(false);
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Erro ao enviar mensagem');
+      console.error('Erro ao enviar mensagem:', error);
+      console.error('Detalhes do erro:', error.response?.data);
+      console.error('Status do erro:', error.response?.status);
+      console.error('URL da requisição:', error.config?.url);
+      toast.error(
+        error.code === 'ECONNABORTED' 
+          ? 'Tempo de conexão excedido. Tente novamente.'
+          : error.response?.data?.message || 'Erro ao enviar mensagem'
+      );
     } finally {
       setIsLoading(false);
+      console.log('Request finalizada');
     }
   };
 
@@ -305,7 +323,7 @@ export function LockedPage() {
             <motion.div className="flex justify-center" variants={itemVariants}>
               <Button 
                 type="submit"
-                className="w-[80%] bg-[#f2f2f2] hover:bg-[#f2f2f2] text-black rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
+                className="w-[80%] bg-[#4f0202] hover:bg-[#4f0202] text-white rounded-2xl py-8 font-recoleta font-bold text-2xl transform hover:scale-[1.02] transition-all duration-200 hover:shadow-lg"
                 disabled={isLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}

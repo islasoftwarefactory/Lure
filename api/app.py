@@ -8,18 +8,32 @@ from api.utils.jwt.jwt_utils import verify_token, generate_token
 from flask_cors import CORS
 from api.utils.db.create_tables import create_tables
 from sqlalchemy import inspect
+from flask_mail import Mail
+from api.contact.routes import blueprint as contact_blueprint
 
-from os import getenv
+from dotenv import load_dotenv
+import os
+
 from datetime import datetime
 
-
+load_dotenv()
 application = Flask(__name__)
+
+# Configuração do email iCloud
+application.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+application.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
+application.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS')
+application.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+application.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
+# Inicializar Flask-Mail
+mail = Mail(application)
 
 register_blueprints(application)
 
 application.config["SQLALCHEMY_DATABASE_URI"] = database_uri()
 application.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-application.config["JWT_SECRET_KEY"] = getenv("JWT_SECRET_KEY")
+application.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
 
 init_db(application)
 migrate = Migrate(application, db)
