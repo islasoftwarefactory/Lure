@@ -18,10 +18,11 @@ import image1 from '@/assets/icons/pieces/soons.jpeg';
 // import image3 from '@/assets/pieces/conjunto3.jpg';
 
 // Importando as imagens
-import fluerIcon from '@/assets/icons/home/fluer.svg';
+import fluerIcon from '@/assets/icons/home/read_fluer.svg';
 import logoIcon from '@/assets/icons/home/logo.svg';
-import fraseIcon from '@/assets/icons/home/frase_tela1.svg';
+import fraseIcon from '@/assets/icons/home/frase.svg';
 import columnIcon from '@/assets/icons/home/column.png';
+import fundoIcon from '@/assets/icons/home/fundo.svg';
 
 interface TimeLeft {
   days: number;
@@ -212,29 +213,41 @@ export function LockedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white overflow-hidden">
+    <div 
+      className="min-h-screen bg-white overflow-hidden"
+      style={{
+        backgroundImage: `url(${fundoIcon})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
       <div className="relative h-screen">
-        {/* Fluer - 10% para esquerda e 8% para cima (ajustado de -10% para -8%) */}
-        <div className="absolute top-[-8%] left-[-10%] z-10">
+        {/* Fluer - 15% smaller while maintaining position */}
+        <div className="absolute top-[-17%] left-[-7%] z-10">
           <img
             src={fluerIcon}
             alt="Logo"
             className="rounded-full w-[150px] h-[150px] sm:w-[300px] sm:h-[300px] lg:w-[500px] lg:h-[500px] object-contain"
-            style={{ maxWidth: '100%', height: 'auto' }}
+            style={{ 
+              transform: 'scale(0.85)',
+              transformOrigin: 'top left'
+            }}
           />
         </div>
 
-        {/* Logo - 15% maior e 10% mais para cima */}
-        <div className="absolute left-4 top-[40%] transform -translate-y-1/2">
+        {/* Logo - dobro do tamanho original e mais para a esquerda */}
+        <div className="absolute left-[-9%] top-[52%] transform -translate-y-1/2">
           <img
             src={logoIcon}
             alt="Main Image"
-            className="rounded-lg w-[172px] h-[172px] sm:w-[345px] sm:h-[345px] lg:w-[460px] lg:h-[460px] object-contain"
+            className="rounded-lg w-[344px] h-[344px] sm:w-[690px] sm:h-[690px] lg:w-[920px] lg:h-[920px] object-contain"
+            style={{ maxWidth: '200%', height: 'auto' }}
           />
         </div>
 
-        {/* Frase_tela1 - 50% maior e 35% mais para baixo */}
-        <div className="absolute right-[20%] top-[85%] transform -translate-y-1/2">
+        {/* frase - Reposicionada para ficar abaixo do botão Send */}
+        <div className="absolute right-[10%] top-[50%] w-[35%] flex justify-center">
           <img
             src={fraseIcon}
             alt="Right Image"
