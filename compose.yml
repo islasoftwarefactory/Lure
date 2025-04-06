@@ -32,7 +32,7 @@ services:
     env_file:
       - ./.env
     ports:
-      - "8081:5173"
+      - "5173:5173"
     networks:
       - lure-net
     volumes:

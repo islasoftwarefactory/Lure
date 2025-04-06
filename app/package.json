@@ -30,6 +30,7 @@
     "react-router-dom": "^6.26.2",
     "react-toastify": "^10.0.5",
     "recharts": "^2.12.7",
+    "@supabase/supabase-js": "^2.49.4",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vite-plugin-svgr": "^4.2.0"
