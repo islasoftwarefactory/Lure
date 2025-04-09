@@ -32,28 +32,32 @@ export function LoginComponent() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow flex flex-col items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-12 flex flex-col items-center">
+      <main className="flex-grow flex flex-col items-center pt-[200px] pb-[120px]">
+        <div className="w-full max-w-md space-y-16 flex flex-col items-center px-6">
           <div className="w-full text-center">
-            <h2 className="text-xl font-semibold mb-6">LOGIN</h2>
-            <div className="space-y-4 w-full">
-              <Button 
-                className="w-full bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
-                onClick={handleGoogleLogin}
-              >
-                <GoogleSSO className="mr-2 h-5 w-5" />
-                <span className="text-sm">Continue with Google</span>
-              </Button>
-              <Button 
-                className="w-full bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center"
-                onClick={handleAppleLogin}
-              >
-                <AppleSSO className="mr-2 h-5 w-5" />
-                <span className="text-sm">Continue with Apple</span>
-              </Button>
-            </div>
+            <h2 className="text-3xl font-extrabold font-aleo mb-6">LOGIN</h2>
+            <p className="text-gray-600 mb-8">Acesse sua conta para continuar</p>
           </div>
-          <div>
+          
+          <div className="w-full space-y-5 mt-20">
+            <Button 
+              className="w-full py-4 bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center rounded-full"
+              onClick={handleGoogleLogin}
+            >
+              <GoogleSSO className="mr-3 h-5 w-5" />
+              <span className="text-sm font-medium">Continue with Google</span>
+            </Button>
+            
+            <Button 
+              className="w-full py-4 bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center rounded-full"
+              onClick={handleAppleLogin}
+            >
+              <AppleSSO className="mr-3 h-5 w-5" />
+              <span className="text-sm font-medium">Continue with Apple</span>
+            </Button>
+          </div>
+          
+          <div className="mt-16">
             <p className="text-sm text-gray-600 text-center">
               By continuing, you agree to LURE's Terms of Service and Privacy Policy.
             </p>

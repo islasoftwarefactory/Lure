@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { LockedPage } from './components/LockedPage';
+// import { LockedPage } from './components/LockedPage';
 import { CartProvider } from './context/CartContext';
-import { Session } from '@supabase/supabase-js';
-import { supabase } from './lib/supabaseClient'; // Import client
-import LoginPage from './components/LoginPage'; // Importe a nova página de login
+// import { Session } from '@supabase/supabase-js';
+// import { supabase } from './lib/supabaseClient'; // Import client
+// import LoginPage from './components/LoginPage'; // Importe a nova página de login
+import { HomePage } from './components/home-page';
+import { ProductPage } from './components/ProductPage';
+import { LoginComponent } from './components/LoginComponent';
+import { AnnouncementProvider } from './contexts/AnnouncementContext';
+
+// Importe diretamente o AuthProvider do seu arquivo existente
+import { AuthProvider } from './context/AuthContext'; 
 
 export default function App() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true); // Adiciona estado de carregamento
+  // const [session, setSession] = useState<Session | null>(null);
+  // const [loading, setLoading] = useState(true); // Adiciona estado de carregamento
 
-  useEffect(() => {
+  /* useEffect(() => {
     setLoading(true);
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -36,9 +43,9 @@ export default function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, []); */
 
-  const handleLogout = async () => {
+  /* const handleLogout = async () => {
     setLoading(true); // Opcional: mostrar carregando durante logout
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -51,62 +58,32 @@ export default function App() {
       // Se o listener não setar loading para false em logout, descomente a linha abaixo
       // setLoading(false);
     }
-  };
+  }; */
 
   // Mostra um indicador enquanto a sessão está sendo verificada
-  if (loading) {
+  /* if (loading) {
     return <div>Verificando sessão...</div>; // Use um componente de Spinner se preferir
-  }
+  } */
 
-  // O CartProvider pode envolver tudo, mas AuthProvider/AnnouncementProvider
-  // podem ser necessários dentro das rotas ou em componentes específicos.
+  // Aninhamos os providers necessários para toda a aplicação
   return (
-    <CartProvider>
-      <Router>
-          <ToastContainer />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                session ? (
-                  // Usuário LOGADO na raiz: Mostra a página principal/protegida
-                  <>
-                    <LockedPage />
-                    <button
-                      onClick={handleLogout}
-                      style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 1000, padding: '8px 12px', cursor: 'pointer' }}
-                    >
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  // Usuário NÃO LOGADO na raiz: Redireciona para /auth
-                  <Navigate to="/auth" replace />
-                )
-              }
-            />
-            <Route
-              path="/auth"
-              element={
-                session ? (
-                  // Usuário LOGADO tenta acessar /auth: Redireciona para a raiz
-                  <Navigate to="/" replace />
-                ) : (
-                  // Usuário NÃO LOGADO acessa /auth: Mostra a página de login
-                  <LoginPage />
-                )
-              }
-            />
-
-            {/* Adicione outras rotas protegidas aqui, se necessário */}
-            {/* Exemplo: <Route path="/dashboard" element={session ? <Dashboard /> : <Navigate to="/auth" />} /> */}
-
-            {/* Rota catch-all pode redirecionar para a raiz ou para /auth se preferir */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-
-          </Routes>
-      </Router>
-    </CartProvider>
+    <AuthProvider>
+      <AnnouncementProvider>
+        <CartProvider>
+          <Router>
+            <ToastContainer />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/product/:id" element={<ProductPage />} />
+              <Route path="/login" element={<LoginComponent />} />
+              
+              {/* Rota catch-all redireciona para a raiz */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Router>
+        </CartProvider>
+      </AnnouncementProvider>
+    </AuthProvider>
   );
 }
 
