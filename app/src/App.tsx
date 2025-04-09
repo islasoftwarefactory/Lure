@@ -11,9 +11,11 @@ import { HomePage } from './components/home-page';
 import { ProductPage } from './components/ProductPage';
 import { LoginComponent } from './components/LoginComponent';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
+import { AuthProvider } from './context/AuthContext';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Importe diretamente o AuthProvider do seu arquivo existente
-import { AuthProvider } from './context/AuthContext'; 
+// import { AuthProvider } from './context/AuthContext'; 
 
 export default function App() {
   // const [session, setSession] = useState<Session | null>(null);
@@ -65,25 +67,29 @@ export default function App() {
     return <div>Verificando sessão...</div>; // Use um componente de Spinner se preferir
   } */
 
+  const GOOGLE_CLIENT_ID = "2202647269-903kc0a4eh3pfn781rp5b4n42a8sov9n.apps.googleusercontent.com"; // Substitua pelo seu Client ID do Google
+  
   // Aninhamos os providers necessários para toda a aplicação
   return (
-    <AuthProvider>
-      <AnnouncementProvider>
-        <CartProvider>
-          <Router>
-            <ToastContainer />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/product/:id" element={<ProductPage />} />
-              <Route path="/login" element={<LoginComponent />} />
-              
-              {/* Rota catch-all redireciona para a raiz */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Router>
-        </CartProvider>
-      </AnnouncementProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <AnnouncementProvider>
+          <CartProvider>
+            <Router>
+              <ToastContainer />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/product/:id" element={<ProductPage />} />
+                <Route path="/login" element={<LoginComponent />} />
+                
+                {/* Rota catch-all redireciona para a raiz */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Router>
+          </CartProvider>
+        </AnnouncementProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 

@@ -9,18 +9,22 @@ import { SocialIcons } from './SocialIcons'
 import { Footer } from './Footer'
 import { SideCart } from './SideCart'
 import { CartItem } from '../types/CartItem'
-import GoogleSSO from '../assets/icons/home/GoogleSSO.svg?react'
 import AppleSSO from '../assets/icons/home/AppleSSO.svg?react'
+import { useAuth } from '../context/AuthContext'
+import { GoogleLogin } from '@react-oauth/google'
+import { jwtDecode } from 'jwt-decode'
 
 export function LoginComponent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
-  const handleGoogleLogin = () => {
-    // Implement Google SSO login logic here
-    console.log('Google login clicked');
-  };
+  // Redirecionar se já estiver autenticado
+  if (isAuthenticated) {
+    navigate('/');
+    return null;
+  }
 
   const handleAppleLogin = () => {
     // Implement Apple SSO login logic here
@@ -40,13 +44,9 @@ export function LoginComponent() {
           </div>
           
           <div className="w-full space-y-5 mt-20">
-            <Button 
-              className="w-full py-4 bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center rounded-full"
-              onClick={handleGoogleLogin}
-            >
-              <GoogleSSO className="mr-3 h-5 w-5" />
-              <span className="text-sm font-medium">Continue with Google</span>
-            </Button>
+            <div className="flex justify-center w-full">
+              <GoogleLogin />
+            </div>
             
             <Button 
               className="w-full py-4 bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center rounded-full"
