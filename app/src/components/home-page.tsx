@@ -32,7 +32,7 @@ export function HomePage() {
     const fetchProducts = async () => {
       if (token) {
         try {
-          const response = await fetch('/api/products', {
+          const response = await fetch('/product/read/all', {
             headers: {
               'Authorization': `Bearer ${token}`
             }

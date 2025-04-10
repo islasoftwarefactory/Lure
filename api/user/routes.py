@@ -36,11 +36,13 @@ def create():
     current_app.logger.info("Tentando criar usuário com os dados recebidos.")
     try:
         user = create_user(data)
-        current_app.logger.info(f"Usuário criado com sucesso: ID {user.id}, Email {user.email}")
+        token = generate_token(user.id)
+        current_app.logger.info(f"Usuário criado/encontrado com sucesso: ID {user.id}, Email {user.email}. Token gerado.")
         return jsonify({
             "data": user.serialize(),
-            "message": "User created successfully."
-        }), 201
+            "token": token,
+            "message": "User created/logged in successfully."
+        }), 200
     except ValueError as e:
         current_app.logger.error(f"Erro de validação ao criar usuário: {str(e)}")
         return jsonify({"error": f"Invalid user data: {str(e)}"}), 400

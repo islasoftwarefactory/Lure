@@ -74,7 +74,7 @@ export function ProductPage() {
       if (!token) return;
 
       try {
-        const response = await fetch(`/api/products/${id}`, {
+        const response = await fetch(`/product/read/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -93,7 +93,7 @@ export function ProductPage() {
   }, [id, token]);
 
   const handleProductClick = (productId: string) => {
-    navigate(`/product/${productId}`);
+    navigate(`/product/read/${productId}`);
   };
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, section: string) => {

@@ -25,7 +25,7 @@ export default function ProductCard({
   const handleClick = async () => {
     try {
       // Registra visualização do produto com token
-      await fetch(`/api/products/view/${productId}`, {
+      await fetch(`/product/read/${productId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
