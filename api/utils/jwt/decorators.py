@@ -1,7 +1,7 @@
 print("=== Carregando módulo decorators.py ===", flush=True)
 
 from functools import wraps
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, g
 from api.utils.jwt.jwt_utils import verify_token, decode_token
 import jwt
 from flask import current_app
@@ -17,42 +17,43 @@ PUBLIC_ROUTES = [
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        print("\n=== INÍCIO DA REQUISIÇÃO ===", flush=True)
+        print("\n=== INÍCIO DA REQUISIÇÃO (decorator) ===", flush=True)
         print(f"Método: {request.method}", flush=True)
-        
-        # Permitir requisições OPTIONS sem verificar token
-        if request.method == 'OPTIONS':
-            response = make_response()
-            response.headers.add('Access-Control-Allow-Origin', 'http://localhost:8081')
-            response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-            response.headers.add('Access-Control-Allow-Methods', 'GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS')
-            response.headers.add('Access-Control-Allow-Credentials', 'true')
-            response.headers.add('Access-Control-Max-Age', '86400')
-            return response, 200
+
+        # Flask-CORS agora lida com OPTIONS automaticamente
+        # if request.method == 'OPTIONS':
+        #     response = make_response()
+        #     response.headers.add('Access-Control-Allow-Origin', 'http://localhost:60123')
+        #     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        #     response.headers.add('Access-Control-Allow-Methods', 'GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS')
+        #     response.headers.add('Access-Control-Allow-Credentials', 'true')
+        #     response.headers.add('Access-Control-Max-Age', '86400')
+        #     return response, 200
             
         # Verifica se a rota atual está na lista de rotas públicas
         if request.path in PUBLIC_ROUTES:
             return f(*args, **kwargs)
 
-        print("\n=== Validação de Token ===", flush=True)
+        print("\n=== Validação de Token (decorator) ===", flush=True)
         token = request.headers.get("Authorization")
         
         if not token:
-            print("❌ Token ausente no header", flush=True)
+            print("❌ Token ausente no header (decorator)", flush=True)
             return jsonify({"message": "Token ausente!"}), 401
             
         if token.startswith("Bearer "):
             token = token.split()[1]
-            print("✓ Bearer token encontrado", flush=True)
+            print("✓ Bearer token encontrado (decorator)", flush=True)
         
-        print(f"Token recebido: {token[:20]}...", flush=True)
+        print(f"Token recebido (decorator): {token[:20]}...", flush=True)
         
         try:
             user_id = verify_token(token)
-            print(f"✓ Token válido para user_id: {user_id}", flush=True)
-            return f(user_id, *args, **kwargs)
+            print(f"✓ Token válido para user_id: {user_id} (decorator)", flush=True)
+            kwargs['current_user_id'] = user_id
+            return f(*args, **kwargs)
         except Exception as e:
-            print(f"❌ Erro na validação do token: {str(e)}", flush=True)
+            print(f"❌ Erro na validação do token (decorator): {str(e)}", flush=True)
             return jsonify({"message": "Token inválido ou expirado!"}), 401
             
     return decorated
