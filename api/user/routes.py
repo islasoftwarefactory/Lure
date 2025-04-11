@@ -126,21 +126,15 @@ def delete(current_user_id, id):
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to delete user due to an internal server error."}), 500
 
-# Token Refresh
 @blueprint.route('/refresh-token', methods=['POST'])
 @token_required
 def refresh_token(current_user_id):
     new_token = generate_token(current_user_id)
     return jsonify({'token': new_token}), 200
 
-# Anonymous Token
 @blueprint.route('/anonymous-token', methods=['GET'])
 def get_anonymous_token():
-    """
-    Gera um token JWT anônimo para usuários não autenticados
-    """
     try:
-        # Gera um token com ID 'anonymous'
         token = generate_token('anonymous')
         return jsonify({
             'token': token,
