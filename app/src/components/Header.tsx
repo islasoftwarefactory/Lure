@@ -25,18 +25,18 @@ export const Header: React.FC<HeaderProps> = ({
           className="flex items-center justify-between w-[98%] py-6 px-12 rounded-[40px] bg-white h-full shadow-xl border border-black/10"
         >
           <div className="w-16 flex items-center justify-center pl-4">
-            <Link to="/homepage">
+            <Link to="/">
               <Logo className="h-12 w-12 cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>
           </div>
           
           <div style={{ minWidth: `${iconsPosition}px` }}></div>
           
-          <div className="flex items-center gap-4 pr-4">
+          <div className="flex items-center gap-6 pr-4">
             <button className="text-black" onClick={onCartClick}>
               <ShoppingCart size={28} className="cursor-pointer" />
             </button>
-            <Link to="/account/login">
+            <Link to="/profile">
               <User size={28} className="cursor-pointer" />
             </Link>
           </div>

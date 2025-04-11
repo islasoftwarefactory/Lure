@@ -132,8 +132,8 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      {/* Conteúdo Principal */}
-      <main className="flex-grow container mx-auto px-4 py-8 pt-[120px] flex justify-center">
+      {/* Conteúdo Principal com flex-grow e padding */}
+      <main className="flex-grow flex items-center justify-center px-4 py-16 md:py-24">
         <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-8">
           <h1 className="text-3xl font-extrabold font-aleo mb-6 text-center">My Profile</h1>
 
