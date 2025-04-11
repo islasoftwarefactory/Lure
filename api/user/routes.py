@@ -21,35 +21,113 @@ def token_required(f):
         return f(user_id, *args, **kwargs)
     return decorated
 
-# Create
+# Create or Login via OAuth data
 @blueprint.route("/create", methods=["POST"])
-def create():
-    current_app.logger.info("Recebida requisição POST em /user/create")
-    data = request.get_json()
+def create_or_login_oauth():
+    # --- LOG INICIAL DA ROTA ---
+    current_app.logger.info(">>> Rota /user/create (OAuth) INICIADA")
+    # --- FIM LOG INICIAL ---
 
-    current_app.logger.debug(f"Dados recebidos no corpo JSON: {data}")
+    data = request.get_json()
+    current_app.logger.debug(f"Dados OAuth recebidos no corpo JSON: {data}")
 
     if not data:
-        current_app.logger.warning("Requisição recebida sem corpo JSON.")
+        current_app.logger.warning("<<< Rota /user/create (OAuth) FALHA: Request body não é JSON ou vazio.")
         return jsonify({"error": "Request body must be JSON"}), 400
 
-    current_app.logger.info("Tentando criar usuário com os dados recebidos.")
+    email = data.get('email')
+    provider = data.get('auth_provider')
+    provider_id = data.get('provider_id')
+
+    # --- LOG: Dados Extraídos ---
+    current_app.logger.debug(f"Dados extraídos: email={email}, provider={provider}, provider_id={provider_id}")
+    # --- FIM LOG ---
+
+    if not email or not provider or not provider_id:
+         current_app.logger.error(f"Dados OAuth incompletos recebidos: {data}")
+         current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Dados OAuth incompletos.")
+         return jsonify({"error": "Incomplete OAuth data received (email, auth_provider, provider_id required)."}), 400
+
+    user = None
+
     try:
-        user = create_user(data)
-        token = generate_token(user.id)
-        current_app.logger.info(f"Usuário criado/encontrado com sucesso: ID {user.id}, Email {user.email}. Token gerado.")
-        return jsonify({
-            "data": user.serialize(),
-            "token": token,
-            "message": "User created/logged in successfully."
-        }), 200
+        # --- Passo 1: Tentar Encontrar Usuário Existente ---
+        current_app.logger.debug(f"Passo 1: Tentando encontrar usuário por provider={provider}, provider_id={provider_id}")
+        existing_user = User.query.filter_by(auth_provider=provider, provider_id=provider_id).first()
+        current_app.logger.debug(f"Resultado da busca por usuário existente: {'Encontrado (ID: ' + str(existing_user.id) + ')' if existing_user else 'Não Encontrado'}")
+
+        if existing_user:
+            current_app.logger.info(f"Usuário existente encontrado. ID: {existing_user.id}. Procedendo com fluxo de login.")
+            user = existing_user
+
+            # Opcional: Atualizar dados usando a função update_user do model
+            update_data = {}
+            if 'name' in data and data.get('name') != user.name: # Usar .get() para segurança
+                 update_data['name'] = data['name']
+            if 'photo' in data and data.get('photo') != user.photo: # Usar .get()
+                 update_data['photo'] = data['photo']
+
+            if update_data:
+                current_app.logger.debug(f"Tentando atualizar dados para usuário ID {user.id} com: {update_data}")
+                try:
+                    user = update_user(user.id, update_data) # update_user retorna o usuário atualizado
+                    current_app.logger.info(f"Dados do usuário ID {user.id} atualizados com sucesso via update_user.")
+                except Exception as update_err:
+                    current_app.logger.error(f"Erro ao tentar atualizar dados via update_user para ID {user.id}: {update_err}")
+                    # Loga o erro mas continua com o usuário não atualizado
+
+        else:
+            # --- Passo 2: Criar Novo Usuário (se não encontrado) ---
+            current_app.logger.info(f"Passo 2: Nenhum usuário encontrado. Tentando criar novo usuário usando create_user.")
+            try:
+                 user = create_user(data)
+                 current_app.logger.info(f"Novo usuário criado com sucesso: ID {user.id}, Email {user.email}")
+            except ValueError as create_val_err: # Captura especificamente erro de validação do create_user
+                 current_app.logger.error(f"Erro de validação ao tentar criar usuário: {create_val_err}")
+                 current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro de validação na criação.")
+                 return jsonify({"error": f"Invalid user data for creation: {str(create_val_err)}"}), 400
+            except Exception as create_err: # Captura outros erros de create_user
+                 current_app.logger.error(f"Erro inesperado ao tentar criar usuário: {create_err}")
+                 current_app.logger.error(traceback.format_exc())
+                 current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro interno na criação.")
+                 return jsonify({"error": "Failed to create user due to an internal server error."}), 500
+
+
+        # --- Passo 3: Geração de Token e Resposta ---
+        current_app.logger.debug(f"Passo 3: Preparando para gerar token para o usuário ID: {user.id if user else 'N/A'}")
+        if user:
+            try:
+                token = generate_token(user.id)
+                current_app.logger.info(f"Token gerado com sucesso para usuário ID {user.id}.")
+                # --- LOG ANTES DE RETORNAR SUCESSO ---
+                current_app.logger.info(f"<<< Rota /user/create (OAuth) SUCESSO: Retornando dados e token para usuário ID {user.id}")
+                # --- FIM LOG ---
+                return jsonify({
+                    "data": user.serialize(),
+                    "token": token,
+                    "message": "User logged in/created successfully via OAuth."
+                }), 200
+            except Exception as token_err:
+                current_app.logger.error(f"Erro ao gerar token para usuário ID {user.id}: {token_err}")
+                current_app.logger.error(traceback.format_exc())
+                current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro na geração do token.")
+                return jsonify({"error": "Failed to generate session token after processing user."}), 500
+        else:
+            # Este log não deveria ser alcançado se a lógica estiver correta
+            current_app.logger.error("Erro crítico: 'user' não definido no final do fluxo try.")
+            current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro interno, usuário não processado.")
+            return jsonify({"error": "Failed to process user data."}), 500
+
+    # Estes excepts externos capturam erros antes da lógica principal ou falhas não pegas
     except ValueError as e:
-        current_app.logger.error(f"Erro de validação ao criar usuário: {str(e)}")
+        current_app.logger.error(f"Erro de validação PÓS-BUSCA/CRIAÇÃO durante create/login OAuth: {str(e)}")
+        current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro de validação.")
         return jsonify({"error": f"Invalid user data: {str(e)}"}), 400
     except Exception as e:
-        current_app.logger.error(f"Erro inesperado ao criar usuário: {str(e)}")
+        current_app.logger.error(f"Erro inesperado GERAL durante create/login OAuth: {str(e)}")
         current_app.logger.error(traceback.format_exc())
-        return jsonify({"error": "Failed to create user due to an internal server error."}), 500
+        current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Erro interno geral.")
+        return jsonify({"error": "Failed to process OAuth login/creation due to an internal server error."}), 500
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])

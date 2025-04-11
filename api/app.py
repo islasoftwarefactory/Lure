@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, g, make_response
+from flask import Flask, request, jsonify, g, make_response, current_app
 from api.utils.db.config import database_uri
 from api.utils.db.connection import connect_to_db, init_db, db
 from sqlalchemy.exc import OperationalError
@@ -78,22 +78,15 @@ except Exception as e:
 
 @application.before_request
 def verify_jwt():
-    # Permite que requisições OPTIONS passem diretamente para o Flask-CORS
     if request.method == 'OPTIONS':
-        return None # Retorna None para continuar o processamento normal (Flask-CORS)
-
-    # Permitir todas as requisições OPTIONS automaticamente (Flask-CORS cuida disso agora)
-    # A lógica principal aqui é verificar o token para rotas NÃO públicas
-    # if request.method == 'OPTIONS': # Linha antiga removida/comentada
-    #     return None
+        return None
 
     public_endpoints = [
         'health',
         'user.get_anonymous_token',
         'scraping.create',
-        'user.create',
+        'user.create_or_login_oauth',
         'static',
-        # 'handle_options', # Remover da lista se a rota foi removida
         'contact_type.create',
         'contact_type.read',
         'contact_type.read_all',
@@ -107,14 +100,19 @@ def verify_jwt():
         '/scraping/create'
     ]
 
-    # Verifica se o endpoint existe antes de checar se é público
-    # E verifica se a rota atual requer autenticação
-    if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
-        return None # Não verifica token para rotas públicas
+    # Log para debug do endpoint sendo verificado
+    current_app.logger.debug(f"verify_jwt: Checking request endpoint '{request.endpoint}' against public lists.")
 
-    # --- Se chegou aqui, a rota é protegida ---
+    if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
+        current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is public. Skipping token check.")
+        return None # Não verifica token para rotas públicas
+    else:
+         current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is NOT public. Proceeding with token check.")
+
+
     token = request.headers.get("Authorization")
     if not token:
+        current_app.logger.warning(f"verify_jwt: Token ausente para endpoint protegido '{request.endpoint}'.")
         return jsonify({"message": "Token ausente!"}), 401
 
     try:
