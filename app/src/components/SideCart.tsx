@@ -3,20 +3,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Overlay } from './common/Overlay';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Plus, Minus } from 'lucide-react';
 import { CartItem, removeFromCart, updateCartItemQuantity } from '../utils/cartUtils';
+import { useCart } from '../context/CartContext';
 
 interface SideCartProps {
   isOpen: boolean;
   onClose: () => void;
-  items: CartItem[];
-  setItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
-const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems }) => {
+const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose }) => {
   const cartRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth(); // Get the login status from AuthContext
+  const { isLoggedIn } = useAuth();
+  const { cartItems, removeFromCart: cartContextRemoveFromCart, updateQuantity: cartContextUpdateQuantity, setIsCartOpen } = useCart();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,27 +31,45 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems })
     };
   }, [isOpen, onClose]);
 
-  const removeItem = (id: string) => {
-    const updatedCart = removeFromCart(id, '');
-    setItems(updatedCart);
+  const handleRemove = async (cartItemId: number) => {
+    try {
+      console.log(`SideCart: Requesting removal of item ${cartItemId}`);
+      await cartContextRemoveFromCart(cartItemId);
+      console.log(`SideCart: Removal request for ${cartItemId} successful.`);
+    } catch (error) {
+      console.error(`SideCart: Failed to remove item ${cartItemId}`, error);
+    }
   };
 
-  const updateQuantity = (id: string, change: number) => {
-    const item = items.find(item => item.id === id);
-    if (item) {
-      const newQuantity = Math.max(1, item.quantity + change);
-      const updatedCart = updateCartItemQuantity(id, item.size, newQuantity);
-      setItems(updatedCart);
+  const handleQuantityIncrease = async (item: CartItem) => {
+    try {
+      const newQuantity = item.quantity + 1;
+      console.log(`SideCart: Requesting quantity increase for item ${item.cart_item_id} to ${newQuantity}`);
+      await cartContextUpdateQuantity(item.cart_item_id, newQuantity);
+      console.log(`SideCart: Quantity increase request for ${item.cart_item_id} successful.`);
+    } catch (error) {
+      console.error(`SideCart: Failed to increase quantity for item ${item.cart_item_id}`, error);
+    }
+  };
+
+  const handleQuantityDecrease = async (item: CartItem) => {
+    try {
+      const newQuantity = item.quantity - 1;
+      console.log(`SideCart: Requesting quantity decrease for item ${item.cart_item_id} to ${newQuantity}`);
+      await cartContextUpdateQuantity(item.cart_item_id, newQuantity);
+      console.log(`SideCart: Quantity decrease/removal request for ${item.cart_item_id} successful.`);
+    } catch (error) {
+      console.error(`SideCart: Failed to decrease quantity/remove for item ${item.cart_item_id}`, error);
     }
   };
 
   const calculateTotal = () => {
-    return items.reduce((total, item) => total + item.price * item.quantity, 0);
+    return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   };
 
   const handleCheckout = () => {
     onClose();
-    navigate('/checkout', { state: { items } });
+    navigate('/checkout', { state: { items: cartItems } });
   };
 
   const handleProfileClick = () => {
@@ -100,13 +118,13 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems })
               </div>
               
               <div className="flex-grow overflow-y-auto p-1">
-                {items.length === 0 ? (
+                {cartItems.length === 0 ? (
                   <div className="mx-8 my-12 p-12 bg-[#ffffff] rounded-xl shadow-sm">
                     <p className="text-gray-400 text-center">Your cart is currently empty.</p>
                   </div>
                 ) : (
-                  items.map((item) => (
-                    <div key={item.id} className="mx-8 mb-4">
+                  cartItems.map((item) => (
+                    <div key={`${item.cart_item_id}-${item.size}`} className="mx-8 mb-4">
                       <div className="bg-white p-4 rounded-xl h-[160px] flex">
                         <div className="w-[120px] h-[120px] bg-[#f2f2f2] rounded-lg flex items-center justify-center">
                           <img 
@@ -125,22 +143,22 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems })
 
                           <div className="flex items-center space-x-4">
                             <button 
-                              onClick={() => updateQuantity(item.id, -1)} 
+                              onClick={() => handleQuantityDecrease(item)}
                               className="w-8 h-8 flex items-center justify-center bg-[#f2f2f2] rounded-full text-black font-bold hover:bg-gray-200 transition-colors"
                             >
-                              -
+                              <Minus size={14} />
                             </button>
                             <span className="font-aleo font-bold text-base w-4 text-center">{item.quantity}</span>
                             <button 
-                              onClick={() => updateQuantity(item.id, 1)} 
+                              onClick={() => handleQuantityIncrease(item)}
                               className="w-8 h-8 flex items-center justify-center bg-[#f2f2f2] rounded-full text-black font-bold hover:bg-gray-200 transition-colors"
                             >
-                              +
+                              <Plus size={14} />
                             </button>
                             <button 
-                              onClick={() => removeItem(item.id)} 
+                              onClick={() => handleRemove(item.cart_item_id)}
                               className="ml-auto text-gray-500 hover:text-black transition-colors"
-                              aria-label="Remove item"
+                              aria-label={`Remove ${item.name}`}
                             >
                               <Trash2 size={20} />
                             </button>
@@ -153,7 +171,7 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose, items, setItems })
               </div>
 
               {/* Subtotal e Botão de Checkout */}
-              {items.length > 0 && (
+              {cartItems.length > 0 && (
                 <div className="px-8 py-6 bg-[#f3f3f3] mt-auto">
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-aleo text-black text-2xl font-extrabold pl-3">Subtotal</span>
