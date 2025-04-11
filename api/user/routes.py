@@ -65,6 +65,44 @@ def read(current_user_id, id):
         "message": "User retrieved successfully."
     }), 200
 
+# --- NEW ROUTE: Get Logged-in User's Data ---
+@blueprint.route("/me", methods=["GET"])
+@token_required
+def get_current_user(current_user_id):
+    """
+    Retrieves the data for the currently authenticated user.
+    The user ID is obtained from the validated JWT token.
+    """
+    current_app.logger.info(f"Recebida requisição GET em /user/me para usuário ID: {current_user_id}")
+
+    # Handle cases where current_user_id might be 'anonymous' if that token is somehow used here
+    if current_user_id == 'anonymous':
+         current_app.logger.warning("Tentativa de acesso a /user/me com token anônimo.")
+         # Decide how to handle anonymous token requests here. Usually deny.
+         return jsonify({"error": "Anonymous users do not have profile data."}), 403 # Forbidden
+
+    try:
+        # Use the current_user_id passed by the decorator to get the user
+        user = get_user(current_user_id)
+
+        if user is None:
+            # This case is less likely if the token is valid, but good practice to check
+            current_app.logger.error(f"Usuário não encontrado para ID {current_user_id} validado pelo token.")
+            return jsonify({"error": "User not found for validated token."}), 404
+
+        current_app.logger.info(f"Dados do usuário ID {current_user_id} recuperados com sucesso.")
+        # Return the serialized user data
+        return jsonify({
+            "data": user.serialize(),
+            "message": "Current user data retrieved successfully."
+        }), 200
+
+    except Exception as e:
+        current_app.logger.error(f"Erro inesperado ao buscar dados para usuário ID {current_user_id}: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to retrieve user data due to an internal server error."}), 500
+# --- END NEW ROUTE ---
+
 @blueprint.route("/read/all", methods=["GET"])
 @token_required
 def read_all(current_user_id):

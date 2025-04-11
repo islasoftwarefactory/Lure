@@ -10,6 +10,7 @@ import { CartProvider } from './context/CartContext';
 import { HomePage } from './components/home-page';
 import { ProductPage } from './components/ProductPage';
 import { LoginComponent } from './components/LoginComponent';
+import { ProfilePage } from './components/ProfilePage';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import { AuthProvider } from './context/AuthContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -81,6 +82,7 @@ export default function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/product/:id" element={<ProductPage />} />
                 <Route path="/login" element={<LoginComponent />} />
+                <Route path="/profile" element={<ProfilePage />} />
                 
                 {/* Rota catch-all redireciona para a raiz */}
                 <Route path="*" element={<Navigate to="/" replace />} />
