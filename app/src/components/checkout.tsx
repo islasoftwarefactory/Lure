@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,23 +16,84 @@ import { AnnouncementBar } from './AnnouncementBar'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { useAuth } from '../context/AuthContext'
+import { CartItem } from '../context/CartContext'
+
+// Interface atualizada para incluir cidades
+interface USStateWithCities {
+  name: string;
+  abbreviation: string;
+  cities: string[]; // Array de nomes de cidades
+}
 
 export function CheckoutComponent() {
   const location = useLocation();
-  const cartItems = location.state?.items || [];
+  const cartItems: CartItem[] = location.state?.items || [];
   const navigate = useNavigate();
   const { token } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [country, setCountry] = useState('Brazil')
-  const [state, setState] = useState('')
+  const [country, setCountry] = useState('United States')
+  const [selectedStateAbbr, setSelectedStateAbbr] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
   const [email, setEmail] = useState('')
   const [checkoutStep, setCheckoutStep] = useState('initial')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [address, setAddress] = useState('')
-  const [city, setCity] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Armazena todos os dados de estados e cidades
+  const [locationData, setLocationData] = useState<USStateWithCities[]>([])
+  // Armazena as cidades disponíveis para o estado selecionado
+  const [availableCities, setAvailableCities] = useState<string[]>([])
+  const [isLoadingStates, setIsLoadingStates] = useState(true)
+  const [statesError, setStatesError] = useState<string | null>(null)
+
+  // Busca dados de estados e cidades do Gist
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      setIsLoadingStates(true)
+      setStatesError(null)
+      setAvailableCities([]) // Limpa cidades disponíveis ao buscar
+      const gistUrl = 'https://gist.githubusercontent.com/Migguell/f1da1cf08e555a0c3c75c78ab8fe91f2/raw/4176589d2bbae5f65f2f7c2dc83835ac91d7d6cc/StatesEUA'
+      console.log(`Fetching US location data from: ${gistUrl}`);
+      try {
+        const response = await fetch(gistUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data && Array.isArray(data.states)) {
+          // Verifica se a estrutura interna está correta
+          const validData = data.states.filter((s: any) => s.name && s.abbreviation && Array.isArray(s.cities));
+          setLocationData(validData);
+          console.log("US location data loaded successfully:", validData.length, "states");
+        } else {
+           throw new Error("Invalid data format received for locations.");
+        }
+      } catch (error: any) {
+        console.error("Error fetching US location data:", error);
+        setStatesError("Failed to load locations.");
+      } finally {
+        setIsLoadingStates(false);
+      }
+    };
+
+    fetchLocationData();
+  }, []);
+
+  // Atualiza cidades disponíveis quando o "estado" selecionado muda
+  useEffect(() => {
+    if (selectedStateAbbr) {
+      const selectedStateData = locationData.find(s => s.abbreviation === selectedStateAbbr);
+      setAvailableCities(selectedStateData ? selectedStateData.cities : []);
+      setSelectedCity(''); // Reseta a cidade selecionada ao mudar o estado
+      console.log(`Cities for ${selectedStateAbbr} set:`, selectedStateData?.cities);
+    } else {
+      setAvailableCities([]); // Limpa cidades se nenhum estado estiver selecionado
+      setSelectedCity('');
+    }
+  }, [selectedStateAbbr, locationData]); // Depende da abreviação e dos dados carregados
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -41,8 +102,8 @@ export function CheckoutComponent() {
     if (!firstName.trim()) newErrors.firstName = 'First name is required';
     if (!lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!address.trim()) newErrors.address = 'Address is required';
-    if (!city.trim()) newErrors.city = 'City is required';
-    if (!state.trim()) newErrors.state = 'State is required';
+    if (!selectedCity) newErrors.city = 'City is required';
+    if (!selectedStateAbbr) newErrors.state = 'State is required';
     if (!postalCode.trim()) newErrors.postalCode = 'Postal code is required';
 
     setErrors(newErrors);
@@ -52,6 +113,7 @@ export function CheckoutComponent() {
   const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
+      console.log("Form validated successfully. Submitting checkout session...");
       try {
         const response = await fetch('/api/checkout/session', {
           method: 'POST',
@@ -64,26 +126,34 @@ export function CheckoutComponent() {
             firstName,
             lastName,
             address,
-            city,
-            state,
+            city: selectedCity,
+            state: selectedStateAbbr,
             postalCode,
+            country,
             cartItems
           })
         });
 
         if (response.ok) {
+          console.log("Checkout session created successfully.");
           setCheckoutStep('shipping');
+        } else {
+           const errorData = await response.text();
+           console.error('Checkout session API error:', response.status, errorData);
+           setErrors({ form: `Failed to proceed (${response.status}). Please try again.` });
         }
       } catch (error) {
         console.error('Error creating checkout session:', error);
+        setErrors({ form: "An unexpected error occurred. Please try again." });
       }
+    } else {
+       console.log("Form validation failed:", errors);
     }
   };
 
-  const fullAddress = `${address}, ${city}, ${state} ${postalCode}, ${country}`
+  const fullAddress = `${address}, ${selectedCity}, ${selectedStateAbbr} ${postalCode}, ${country}`
 
   const handleContinueToPayment = () => {
-    // Implement logic to continue to payment
     console.log('Continuing to payment');
   };
 
@@ -192,32 +262,68 @@ export function CheckoutComponent() {
 
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <Input 
-                              placeholder="City" 
-                              value={city} 
-                              onChange={(e) => setCity(e.target.value)}
-                              className={`font-aleo ${errors.city ? 'border-red-500' : ''}`}
-                            />
-                            {errors.city && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.city}</p>}
-                          </div>
-                          <div>
-                            <Select value={state} onValueChange={setState}>
+                            <Select value={selectedStateAbbr} onValueChange={setSelectedStateAbbr}>
                               <SelectTrigger className={`font-aleo ${errors.state ? 'border-red-500' : ''}`}>
                                 <SelectValue placeholder="State" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="SP" className="font-aleo">São Paulo</SelectItem>
-                                <SelectItem value="RJ" className="font-aleo">Rio de Janeiro</SelectItem>
+                                {isLoadingStates ? (
+                                  <SelectItem value="loading" disabled className="font-aleo">Loading...</SelectItem>
+                                ) : statesError ? (
+                                   <SelectItem value="error" disabled className="font-aleo text-red-500">{statesError}</SelectItem>
+                                ) : (
+                                  locationData.map((stateData) => (
+                                    <SelectItem
+                                      key={stateData.abbreviation}
+                                      value={stateData.abbreviation}
+                                      className="font-aleo"
+                                    >
+                                      {stateData.name}
+                                    </SelectItem>
+                                  ))
+                                )}
                               </SelectContent>
                             </Select>
                             {errors.state && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.state}</p>}
                           </div>
                           <div>
-                            <Input 
-                              placeholder="ZIP code" 
-                              value={postalCode} 
+                            <Select
+                              value={selectedCity}
+                              onValueChange={setSelectedCity}
+                              disabled={!selectedStateAbbr || availableCities.length === 0 || isLoadingStates}
+                            >
+                              <SelectTrigger className={`font-aleo ${errors.city ? 'border-red-500' : ''} ${!selectedStateAbbr || availableCities.length === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}>
+                                <SelectValue placeholder="City" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {!selectedStateAbbr ? (
+                                  <SelectItem value="select_state" disabled className="font-aleo">Select state first</SelectItem>
+                                ) : availableCities.length === 0 && selectedStateAbbr ? (
+                                   <SelectItem value="no_cities" disabled className="font-aleo">No cities listed</SelectItem>
+                                ) : (
+                                  availableCities.map((cityName) => (
+                                    <SelectItem
+                                      key={cityName}
+                                      value={cityName}
+                                      className="font-aleo"
+                                    >
+                                      {cityName}
+                                    </SelectItem>
+                                  ))
+                                )}
+                              </SelectContent>
+                            </Select>
+                            {errors.city && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.city}</p>}
+                          </div>
+                          <div>
+                            <Input
+                              placeholder="ZIP code"
+                              value={postalCode}
                               onChange={(e) => setPostalCode(e.target.value)}
                               className={`font-aleo ${errors.postalCode ? 'border-red-500' : ''}`}
+                              maxLength={5}
+                              type="tel"
+                              pattern="[0-9]*"
                             />
                             {errors.postalCode && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.postalCode}</p>}
                           </div>
@@ -230,6 +336,7 @@ export function CheckoutComponent() {
                       </CardContent>
                     </Card>
 
+                    {errors.form && <p className="text-red-500 text-center font-bold mt-4">{errors.form}</p>}
                     <Button type="submit" className="w-full bg-black text-white font-aleo text-lg font-bold">
                       Continue to shipping
                     </Button>
