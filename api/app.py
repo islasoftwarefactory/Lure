@@ -78,9 +78,13 @@ except Exception as e:
 
 @application.before_request
 def verify_jwt():
+    # Permite que requisições OPTIONS passem diretamente para o Flask-CORS
+    if request.method == 'OPTIONS':
+        return None # Retorna None para continuar o processamento normal (Flask-CORS)
+
     # Permitir todas as requisições OPTIONS automaticamente (Flask-CORS cuida disso agora)
     # A lógica principal aqui é verificar o token para rotas NÃO públicas
-    # if request.method == 'OPTIONS': # Remover ou comentar esta verificação
+    # if request.method == 'OPTIONS': # Linha antiga removida/comentada
     #     return None
 
     public_endpoints = [

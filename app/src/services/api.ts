@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:60123',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:60123',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -11,20 +11,28 @@ const api = axios.create({
 // Adicionar interceptors para melhor logging
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const token = localStorage.getItem('authToken');
+
+    console.log('API Interceptor: Token from localStorage("authToken"):', token ? token.substring(0, 10) + '...' : 'None');
+
+    if (token && token !== 'undefined') {
+      config.headers['Authorization'] = `Bearer ${token}`;
+      console.log('API Interceptor: Added Authorization header.');
+    } else {
+      console.log('API Interceptor: No valid token found, header not added.');
+      delete config.headers['Authorization'];
     }
+
     console.log('🚀 Requisição sendo enviada:', {
       method: config.method,
       url: config.url,
       baseURL: config.baseURL,
-      fullUrl: config.baseURL + config.url
+      fullUrl: config.url?.startsWith('http') ? config.url : `${config.baseURL}${config.url}`
     });
     return config;
   },
   (error) => {
-    console.error('❌ Erro na requisição:', error);
+    console.error('❌ Erro na configuração da requisição:', error);
     return Promise.reject(error);
   }
 );
@@ -33,7 +41,6 @@ api.interceptors.response.use(
   (response) => {
     console.log('✅ Resposta recebida:', {
       status: response.status,
-      data: response.data
     });
     return response;
   },
@@ -42,11 +49,8 @@ api.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data,
       message: error.message,
-      config: {
-        method: error.config?.method,
-        url: error.config?.url,
-        baseURL: error.config?.baseURL
-      }
+      request_url: error.config?.url,
+      request_method: error.config?.method,
     });
     return Promise.reject(error);
   }
