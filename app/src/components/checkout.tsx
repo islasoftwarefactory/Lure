@@ -25,13 +25,19 @@ interface USStateWithCities {
   cities: string[]; // Array de nomes de cidades
 }
 
+// Interface para a estrutura completa do Gist
+interface LocationData {
+  country: string;
+  states: USStateWithCities[];
+}
+
 export function CheckoutComponent() {
   const location = useLocation();
   const cartItems: CartItem[] = location.state?.items || [];
   const navigate = useNavigate();
   const { token } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [country, setCountry] = useState('United States')
+  const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedStateAbbr, setSelectedStateAbbr] = useState('')
   const [selectedCity, setSelectedCity] = useState('')
   const [email, setEmail] = useState('')
@@ -42,58 +48,79 @@ export function CheckoutComponent() {
   const [postalCode, setPostalCode] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // Armazena todos os dados de estados e cidades
-  const [locationData, setLocationData] = useState<USStateWithCities[]>([])
-  // Armazena as cidades disponíveis para o estado selecionado
+  // Armazena apenas os estados do país buscado
+  const [locationStates, setLocationStates] = useState<USStateWithCities[]>([])
   const [availableCities, setAvailableCities] = useState<string[]>([])
-  const [isLoadingStates, setIsLoadingStates] = useState(true)
-  const [statesError, setStatesError] = useState<string | null>(null)
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false)
+  const [locationsError, setLocationsError] = useState<string | null>(null)
 
-  // Busca dados de estados e cidades do Gist
+  // Busca dados de país, estados e cidades do Gist
   useEffect(() => {
-    const fetchLocationData = async () => {
-      setIsLoadingStates(true)
-      setStatesError(null)
-      setAvailableCities([]) // Limpa cidades disponíveis ao buscar
-      const gistUrl = 'https://gist.githubusercontent.com/Migguell/f1da1cf08e555a0c3c75c78ab8fe91f2/raw/4176589d2bbae5f65f2f7c2dc83835ac91d7d6cc/StatesEUA'
-      console.log(`Fetching US location data from: ${gistUrl}`);
+    const fetchLocationData = async (countryIdentifier: string) => {
+      if (countryIdentifier !== 'United States') {
+        setLocationStates([]);
+        setSelectedStateAbbr('');
+        setAvailableCities([]);
+        setSelectedCity('');
+        setLocationsError('Data for the selected country is not available.');
+        setIsLoadingLocations(false);
+        return;
+      }
+
+      setIsLoadingLocations(true);
+      setLocationsError(null);
+      setLocationStates([]);
+      setSelectedStateAbbr('');
+      setAvailableCities([]);
+      setSelectedCity('');
+
+      const gistUrl = 'https://gist.githubusercontent.com/Migguell/f1da1cf08e555a0c3c75c78ab8fe91f2/raw/ec08c5ae38728ed432128a3ab1ebfe4feec5a5ec/StatesEUA';
+      console.log(`Fetching location data for ${countryIdentifier} from: ${gistUrl}`);
       try {
         const response = await fetch(gistUrl);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
-        if (data && Array.isArray(data.states)) {
-          // Verifica se a estrutura interna está correta
-          const validData = data.states.filter((s: any) => s.name && s.abbreviation && Array.isArray(s.cities));
-          setLocationData(validData);
-          console.log("US location data loaded successfully:", validData.length, "states");
+        const data: LocationData = await response.json();
+
+        if (data && data.country === countryIdentifier && Array.isArray(data.states)) {
+          const validStates = data.states.filter((s: any) => s.name && s.abbreviation && Array.isArray(s.cities));
+          setLocationStates(validStates);
+          console.log(`Location data loaded for ${data.country}: ${validStates.length} states`);
         } else {
-           throw new Error("Invalid data format received for locations.");
+           throw new Error("Invalid data format or country mismatch.");
         }
       } catch (error: any) {
-        console.error("Error fetching US location data:", error);
-        setStatesError("Failed to load locations.");
+        console.error("Error fetching location data:", error);
+        setLocationsError(`Failed to load data for ${countryIdentifier}.`);
       } finally {
-        setIsLoadingStates(false);
+        setIsLoadingLocations(false);
       }
     };
 
-    fetchLocationData();
-  }, []);
+    if (selectedCountry) {
+      fetchLocationData(selectedCountry);
+    } else {
+        setLocationStates([]);
+        setSelectedStateAbbr('');
+        setAvailableCities([]);
+        setSelectedCity('');
+        setIsLoadingLocations(false);
+    }
+  }, [selectedCountry]);
 
-  // Atualiza cidades disponíveis quando o "estado" selecionado muda
+  // Atualiza cidades disponíveis quando o estado selecionado muda
   useEffect(() => {
     if (selectedStateAbbr) {
-      const selectedStateData = locationData.find(s => s.abbreviation === selectedStateAbbr);
+      const selectedStateData = locationStates.find(s => s.abbreviation === selectedStateAbbr);
       setAvailableCities(selectedStateData ? selectedStateData.cities : []);
-      setSelectedCity(''); // Reseta a cidade selecionada ao mudar o estado
+      setSelectedCity('');
       console.log(`Cities for ${selectedStateAbbr} set:`, selectedStateData?.cities);
     } else {
-      setAvailableCities([]); // Limpa cidades se nenhum estado estiver selecionado
+      setAvailableCities([]);
       setSelectedCity('');
     }
-  }, [selectedStateAbbr, locationData]); // Depende da abreviação e dos dados carregados
+  }, [selectedStateAbbr, locationStates]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -105,6 +132,7 @@ export function CheckoutComponent() {
     if (!selectedCity) newErrors.city = 'City is required';
     if (!selectedStateAbbr) newErrors.state = 'State is required';
     if (!postalCode.trim()) newErrors.postalCode = 'Postal code is required';
+    if (!selectedCountry) newErrors.country = 'Country is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -113,7 +141,7 @@ export function CheckoutComponent() {
   const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Form validated successfully. Submitting checkout session...");
+      console.log("Submitting checkout with:", { email, firstName, lastName, address, selectedCity, selectedStateAbbr, postalCode, selectedCountry });
       try {
         const response = await fetch('/api/checkout/session', {
           method: 'POST',
@@ -129,7 +157,7 @@ export function CheckoutComponent() {
             city: selectedCity,
             state: selectedStateAbbr,
             postalCode,
-            country,
+            country: selectedCountry,
             cartItems
           })
         });
@@ -151,7 +179,7 @@ export function CheckoutComponent() {
     }
   };
 
-  const fullAddress = `${address}, ${selectedCity}, ${selectedStateAbbr} ${postalCode}, ${country}`
+  const fullAddress = `${address}, ${selectedCity}, ${selectedStateAbbr} ${postalCode}, ${selectedCountry}`
 
   const handleContinueToPayment = () => {
     console.log('Continuing to payment');
@@ -215,14 +243,17 @@ export function CheckoutComponent() {
                         <CardTitle className="font-aleo text-2xl font-bold">Shipping address</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <Input 
-                          placeholder="Country/Region" 
-                          defaultValue="United States"
-                          name="delivery/country"
-                          readOnly
-                          disabled
-                          className="bg-gray-100 cursor-not-allowed font-aleo"
-                        />
+                        <div>
+                          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                              <SelectTrigger className={`font-aleo ${errors.country ? 'border-red-500' : ''}`}>
+                                <SelectValue placeholder="Country/Region" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="United States" className="font-aleo">United States</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {errors.country && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.country}</p>}
+                        </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
@@ -262,17 +293,25 @@ export function CheckoutComponent() {
 
                         <div className="grid grid-cols-3 gap-4">
                           <div>
-                            <Select value={selectedStateAbbr} onValueChange={setSelectedStateAbbr}>
-                              <SelectTrigger className={`font-aleo ${errors.state ? 'border-red-500' : ''}`}>
+                            <Select
+                              value={selectedStateAbbr}
+                              onValueChange={setSelectedStateAbbr}
+                              disabled={!selectedCountry || isLoadingLocations || !!locationsError || locationStates.length === 0}
+                            >
+                              <SelectTrigger className={`font-aleo ${errors.state ? 'border-red-500' : ''} ${!selectedCountry || isLoadingLocations || !!locationsError || locationStates.length === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}>
                                 <SelectValue placeholder="State" />
                               </SelectTrigger>
                               <SelectContent>
-                                {isLoadingStates ? (
+                                {isLoadingLocations ? (
                                   <SelectItem value="loading" disabled className="font-aleo">Loading...</SelectItem>
-                                ) : statesError ? (
-                                   <SelectItem value="error" disabled className="font-aleo text-red-500">{statesError}</SelectItem>
+                                ) : !selectedCountry ? (
+                                   <SelectItem value="sel_country" disabled className="font-aleo">Select country</SelectItem>
+                                ) : locationsError ? (
+                                   <SelectItem value="error" disabled className="font-aleo text-red-500">{locationsError}</SelectItem>
+                                ) : locationStates.length === 0 ? (
+                                    <SelectItem value="no_states" disabled className="font-aleo">No states found</SelectItem>
                                 ) : (
-                                  locationData.map((stateData) => (
+                                  locationStates.map((stateData) => (
                                     <SelectItem
                                       key={stateData.abbreviation}
                                       value={stateData.abbreviation}
@@ -290,13 +329,15 @@ export function CheckoutComponent() {
                             <Select
                               value={selectedCity}
                               onValueChange={setSelectedCity}
-                              disabled={!selectedStateAbbr || availableCities.length === 0 || isLoadingStates}
+                              disabled={!selectedStateAbbr || availableCities.length === 0 || isLoadingLocations || !!locationsError}
                             >
                               <SelectTrigger className={`font-aleo ${errors.city ? 'border-red-500' : ''} ${!selectedStateAbbr || availableCities.length === 0 ? 'bg-gray-100 cursor-not-allowed' : ''}`}>
                                 <SelectValue placeholder="City" />
                               </SelectTrigger>
                               <SelectContent>
-                                {!selectedStateAbbr ? (
+                                {isLoadingLocations ? (
+                                   <SelectItem value="loading" disabled className="font-aleo">...</SelectItem>
+                                ) : !selectedStateAbbr ? (
                                   <SelectItem value="select_state" disabled className="font-aleo">Select state first</SelectItem>
                                 ) : availableCities.length === 0 && selectedStateAbbr ? (
                                    <SelectItem value="no_cities" disabled className="font-aleo">No cities listed</SelectItem>

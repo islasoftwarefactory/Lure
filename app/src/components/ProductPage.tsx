@@ -264,6 +264,30 @@ export function ProductPage() {
     }
   };
 
+  const handleBuyNow = () => {
+    if (!product) {
+      console.error("Cannot buy now: Product data is missing.");
+      // Pode exibir uma mensagem de erro para o usuário
+      return;
+    }
+
+    // Cria um objeto 'CartItem' temporário para este item específico
+    // Note: Não precisa de cart_item_id aqui, pois não vem do carrinho existente
+    const itemToCheckout: Omit<CartItem, 'cart_item_id'> & { id: number } = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity, // Usa a quantidade selecionada
+      size: selectedSize, // Usa o tamanho selecionado
+      image: productImage || hoodieImage // Usa a imagem carregada ou fallback
+    };
+
+    console.log("Navigating to checkout with single item:", itemToCheckout);
+
+    // Navega para a página de checkout, passando o item em um array no estado
+    navigate('/checkout', { state: { items: [itemToCheckout] } });
+  };
+
   return (
     <div className="min-h-screen bg-[#f2f2f2]">
       <AnnouncementBar />
@@ -350,12 +374,17 @@ export function ProductPage() {
 
               {/* Botões de Ação */}
               <div className="mt-8 space-y-3 px-5">
-                {/* Botão Comprar Agora */}
-                <button className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors">
+                {/* Botão Comprar Agora - ATUALIZADO */}
+                <button
+                  onClick={handleBuyNow} // Chama a nova função
+                  className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  disabled={!product || !auth.token} // Desabilita se não houver produto ou token
+                >
                   <span>BUY NOW</span>
                 </button>
+                {/* --- FIM DA ATUALIZAÇÃO --- */}
 
-                {/* Botão Adicionar ao Carrinho */}
+                {/* Botão Adicionar ao Carrinho (mantido como estava) */}
                 <button
                   onClick={handleAddToCart}
                   className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
