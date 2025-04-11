@@ -217,23 +217,50 @@ export function ProductPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!product) return;
+    // --- DEBUG LOGS ---
+    console.log("handleAddToCart called. Checking values:");
+    console.log("  - product:", product);
+    console.log("  - auth.token:", auth.token);
+    console.log("  - addToCart function:", addToCart);
+    // --- END DEBUG LOGS ---
+
+    if (!product || !auth.token || !addToCart) {
+      console.error("Não é possível adicionar ao carrinho: Produto, token ou função addToCart ausentes.");
+      return;
+    }
+
+    console.log(`🛒 Tentando adicionar ao carrinho: Produto ID ${product.id}, Qtd: ${quantity}, Tamanho: ${selectedSize}`);
 
     try {
-      const newItem: CartItem = {
-        id: product.id,
-        name: product.name,
-        price: product.price,
+      console.log("🚀 Enviando requisição para POST /cart/create");
+      const response = await api.post('/cart/create', {
+        product_id: product.id,
         quantity: quantity,
-        size: selectedSize,
-        image: productImage || hoodieImage
-      };
+        size: selectedSize
+      });
 
-      await addToCart(newItem);
-      setIsCartOpen(true);
+      console.log("✅ Resposta da API /cart/create:", response.data);
+
+      if (response.status === 201 && response.data.data) {
+        const newItem: CartItem = {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: quantity,
+          size: selectedSize,
+          image: productImage || hoodieImage
+        };
+
+        addToCart(newItem);
+        console.log("🛒 Item adicionado ao estado do carrinho local.");
+
+        setIsCartOpen(true);
+      } else {
+        console.error("Erro ao adicionar ao carrinho: Resposta da API inesperada.", response);
+      }
 
     } catch (error: any) {
-      console.error('❌ Erro ao adicionar ao carrinho:', error);
+      console.error('❌ Erro ao adicionar ao carrinho via API:', error);
     }
   };
 
@@ -329,9 +356,10 @@ export function ProductPage() {
                 </button>
 
                 {/* Botão Adicionar ao Carrinho */}
-                <button 
+                <button
                   onClick={handleAddToCart}
                   className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  disabled={!product || !auth.token}
                 >
                   <span>ADD TO CART</span>
                 </button>
