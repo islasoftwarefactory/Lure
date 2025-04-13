@@ -101,14 +101,6 @@ def verify_jwt():
     ]
 
     # Log para debug do endpoint sendo verificado
-    current_app.logger.debug(f"verify_jwt: Checking request endpoint '{request.endpoint}' against public lists.")
-
-    if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
-        current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is public. Skipping token check.")
-        return None # Não verifica token para rotas públicas
-    else:
-         current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is NOT public. Proceeding with token check.")
-
 
     token = request.headers.get("Authorization")
     if not token:

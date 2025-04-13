@@ -17,6 +17,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { useAuth } from '../context/AuthContext'
 import { CartItem } from '../context/CartContext'
+import api from '../services/api'
 
 // Interface atualizada para incluir cidades
 interface USStateWithCities {
@@ -45,6 +46,8 @@ export function CheckoutComponent() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [address, setAddress] = useState('')
+  const [addressNumber, setAddressNumber] = useState('')
+  const [apartment, setApartment] = useState('')
   const [postalCode, setPostalCode] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -53,6 +56,8 @@ export function CheckoutComponent() {
   const [availableCities, setAvailableCities] = useState<string[]>([])
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
   const [locationsError, setLocationsError] = useState<string | null>(null)
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Busca dados de país, estados e cidades do Gist
   useEffect(() => {
@@ -128,7 +133,12 @@ export function CheckoutComponent() {
     if (!email.trim()) newErrors.email = 'Email is required';
     if (!firstName.trim()) newErrors.firstName = 'First name is required';
     if (!lastName.trim()) newErrors.lastName = 'Last name is required';
-    if (!address.trim()) newErrors.address = 'Address is required';
+    if (!address.trim()) newErrors.address = 'Street address is required';
+    if (!addressNumber.trim()) {
+        newErrors.addressNumber = 'Number is required';
+    } else if (!/^\d+$/.test(addressNumber.trim())) {
+        newErrors.addressNumber = 'Number must contain only digits';
+    }
     if (!selectedCity) newErrors.city = 'City is required';
     if (!selectedStateAbbr) newErrors.state = 'State is required';
     if (!postalCode.trim()) newErrors.postalCode = 'Postal code is required';
@@ -140,42 +150,79 @@ export function CheckoutComponent() {
 
   const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (validateForm()) {
-      console.log("Submitting checkout with:", { email, firstName, lastName, address, selectedCity, selectedStateAbbr, postalCode, selectedCountry });
-      try {
-        const response = await fetch('/api/checkout/session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            email,
-            firstName,
-            lastName,
-            address,
-            city: selectedCity,
-            state: selectedStateAbbr,
-            postalCode,
-            country: selectedCountry,
-            cartItems
-          })
-        });
-
-        if (response.ok) {
-          console.log("Checkout session created successfully.");
-          setCheckoutStep('shipping');
-        } else {
-           const errorData = await response.text();
-           console.error('Checkout session API error:', response.status, errorData);
-           setErrors({ form: `Failed to proceed (${response.status}). Please try again.` });
-        }
-      } catch (error) {
-        console.error('Error creating checkout session:', error);
-        setErrors({ form: "An unexpected error occurred. Please try again." });
-      }
-    } else {
+    setErrors({});
+    if (!validateForm()) {
        console.log("Form validation failed:", errors);
+       return;
+    }
+
+    // Verificar se o usuário está "logado" (tem um token) localmente antes de tentar
+    // O interceptor lida com a *adição* do token, mas é bom verificar se ele existe primeiro.
+    const localToken = localStorage.getItem('authToken'); // Ou obter do useAuth se ele expõe o token bruto
+    if (!localToken || localToken === 'undefined') {
+        setErrors({ form: "Authentication error. Please log in again." });
+        console.error("Authentication token is missing locally.");
+        setIsSubmitting(false); // Certifique-se de resetar o estado de submissão
+        return;
+    }
+
+    setIsSubmitting(true);
+    console.log("Form validated. Attempting to save address via API...");
+
+    const addressPayload = {
+        street: address,
+        number: parseInt(addressNumber, 10),
+        city: selectedCity,
+        state: selectedStateAbbr,
+        zip_code: postalCode,
+        complement: apartment || null
+    };
+
+    try {
+        // 1. Chamar a API usando a instância axios importada
+        console.log("Sending address data via axios:", addressPayload);
+        // O '/address/create' será anexado ao baseURL definido em api.ts
+        // Headers 'Content-Type' e 'Authorization' são tratados pelo axios e interceptor
+        const response = await api.post('/address/create', addressPayload); // <<< SUBSTITUIR FETCH POR API.POST
+
+        // Axios trata respostas não-2xx como erros, então se chegarmos aqui, foi sucesso (status 2xx)
+        console.log("Address saved successfully via API:", response.data); // Dados estão em response.data
+        const savedAddress = response.data; // A resposta já vem parseada
+
+        // 2. Preparar dados para confirmação (como antes)
+        const orderDataForConfirmation = {
+            orderNumber: `SIM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+            customerEmail: email,
+            shippingAddress: {
+                name: `${firstName} ${lastName}`,
+                address1: `${address}, ${addressNumber}`,
+                address2: apartment || '',
+                city: selectedCity,
+                state: selectedStateAbbr,
+                zip: postalCode,
+                country: selectedCountry
+            },
+            items: cartItems,
+        };
+
+        console.log("Address saved. Proceeding to order confirmation simulation.");
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // 3. Redirecionar (como antes)
+        navigate('/order-confirmation', { state: { orderDetails: orderDataForConfirmation } });
+
+    } catch (error: any) { // Especificar 'any' ou um tipo de erro Axios se preferir
+        console.error('Error during checkout process (API call):', error);
+
+        // Acessar detalhes do erro Axios (conforme configurado no interceptor)
+        const errorMessage = error.response?.data?.error || // Tenta pegar a msg de erro da API
+                           error.message || // Mensagem de erro genérica do Axios/rede
+                           "An unexpected error occurred."; // Fallback
+
+        setErrors({ form: `Error saving address: ${errorMessage}` });
+
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -276,19 +323,35 @@ export function CheckoutComponent() {
                           </div>
                         </div>
 
-                        <div>
-                          <Input 
-                            placeholder="Address" 
-                            value={address} 
-                            onChange={(e) => setAddress(e.target.value)}
-                            className={`font-aleo ${errors.address ? 'border-red-500' : ''}`}
-                          />
-                          {errors.address && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.address}</p>}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-2">
+                              <Input
+                                placeholder="Street address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                className={`font-aleo ${errors.address ? 'border-red-500' : ''}`}
+                              />
+                              {errors.address && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.address}</p>}
+                          </div>
+                          <div>
+                               <Input
+                                 placeholder="Number"
+                                 type="text"
+                                 inputMode="numeric"
+                                 pattern="[0-9]*"
+                                 value={addressNumber}
+                                 onChange={(e) => setAddressNumber(e.target.value)}
+                                 className={`font-aleo ${errors.addressNumber ? 'border-red-500' : ''}`}
+                               />
+                               {errors.addressNumber && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.addressNumber}</p>}
+                           </div>
                         </div>
 
-                        <Input 
-                          placeholder="Apartment, suite, etc. (optional)" 
+                        <Input
+                          placeholder="Apartment, suite, etc. (optional)"
                           className="font-aleo"
+                          value={apartment}
+                          onChange={(e) => setApartment(e.target.value)}
                         />
 
                         <div className="grid grid-cols-3 gap-4">
@@ -378,8 +441,12 @@ export function CheckoutComponent() {
                     </Card>
 
                     {errors.form && <p className="text-red-500 text-center font-bold mt-4">{errors.form}</p>}
-                    <Button type="submit" className="w-full bg-black text-white font-aleo text-lg font-bold">
-                      Continue to shipping
+                    <Button
+                      type="submit"
+                      className="w-full bg-black text-white font-aleo text-lg font-bold"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Processing...' : 'Continue & Simulate Order'}
                     </Button>
                   </form>
                 </div>
