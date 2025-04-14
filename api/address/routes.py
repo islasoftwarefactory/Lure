@@ -30,13 +30,15 @@ def create(current_user_id):
     }), 201
 
 # Read
-@blueprint.route("/read/<int:id>", methods=["GET"])
+@blueprint.route("/read/<int:address_id>", methods=["GET"])
 @token_required
-def read(current_user_id, id):
-    address = get_address(id)
-    if address is None or address.user_id != current_user_id:
+def read(current_user_id, address_id):
+    # Busca o endereço e verifica se pertence ao usuário atual
+    address = Address.query.filter_by(id=address_id, user_id=current_user_id).first()
+    
+    if not address:
         return jsonify({"error": "Address not found or not authorized"}), 404
-
+    
     return jsonify({
         "data": address.serialize(),
         "message": "Address retrieved successfully."

@@ -99,9 +99,16 @@ def verify_jwt():
         '/contact/create',
         '/scraping/create'
     ]
-
+ 
+ 
+    if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
+         current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is public. Skipping token check.")
+         return None # Não verifica token para rotas públicas
+    else:
+          current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is NOT public. Proceeding with token check.")
+ 
     # Log para debug do endpoint sendo verificado
-
+### erro aqui facil de resolver só ver no git e arrumar
     token = request.headers.get("Authorization")
     if not token:
         current_app.logger.warning(f"verify_jwt: Token ausente para endpoint protegido '{request.endpoint}'.")

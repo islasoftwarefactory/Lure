@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'; // Removed useEffect, useState
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'; // Adicionado useState, useEffect
+import { useLocation, useNavigate, Link } from 'react-router-dom'; // Adicionado useLocation
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
@@ -10,6 +10,20 @@ import { useCart } from '../context/CartContext'; // Still needed for SideCart s
 import { useAuth } from '../context/AuthContext'; // Potentially needed for user context/logout in future
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import api from '../services/api'; // Adicionada importação da API
+
+// Interface para os dados do endereço que esperamos da API
+interface FetchedAddress {
+    id: number;
+    user_id: number;
+    street: string;
+    number: number;
+    city: string;
+    state: string;
+    zip_code: string;
+    created_at: string;
+    updated_at: string;
+}
 
 // Interface para o tipo de dados que *seriam* exibidos (opcional, mas bom para clareza)
 interface OrderDetailsData {
@@ -44,13 +58,47 @@ interface OrderDetailsData {
 
 // Renomeando para refletir o propósito de exibir detalhes de UM pedido
 export function OrderDetailsDisplay() { // Renomeado de MyOrdersPage
+  const location = useLocation(); // Hook para acessar o estado da navegação
   const navigate = useNavigate();
   // Obtém estado do SideCart apenas para passá-lo
   const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
   const auth = useAuth(); // Mantido caso precise de info do usuário ou logout
 
-  // REMOVIDO: Estados para orders, isLoading, error
-  // REMOVIDO: useEffect para buscar pedidos
+  // --- NOVOS ESTADOS ---
+  const [shippingAddressDetails, setShippingAddressDetails] = useState<FetchedAddress | null>(null);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+  const [addressError, setAddressError] = useState<string | null>(null);
+
+  const orderDetailsFromState = location.state?.orderDetails;
+
+  // --- NOVO useEffect PARA BUSCAR ENDEREÇO ---
+  useEffect(() => {
+    const addressId = orderDetailsFromState?.addressId;
+
+    if (addressId) {
+      setIsLoadingAddress(true);
+      setAddressError(null);
+      setShippingAddressDetails(null);
+
+      api.get<any, { data: { data: FetchedAddress } }>(`/address/read/${addressId}`)
+        .then(response => {
+          if (response.data && response.data.data) {
+            setShippingAddressDetails(response.data.data);
+          } else {
+             throw new Error("Invalid data structure received for address.");
+          }
+        })
+        .catch(error => {
+          const message = error.response?.data?.error || error.message || "Failed to load shipping address details.";
+          setAddressError(message);
+        })
+        .finally(() => {
+          setIsLoadingAddress(false);
+        });
+    } else {
+      setAddressError("Could not retrieve address details (ID missing).");
+    }
+  }, [orderDetailsFromState?.addressId]);
 
   // --- ESTRUTURA VISUAL SEM DADOS HARDCODED ---
   // Os dados viriam de props ou de um fetch específico para esta página no futuro
@@ -127,13 +175,30 @@ export function OrderDetailsDisplay() { // Renomeado de MyOrdersPage
              <div className="grid md:grid-cols-2 gap-6 text-sm border-t pt-4">
                 <div>
                     <h4 className="font-semibold mb-1">Shipping Address:</h4>
-                    <address className="not-italic text-gray-600">
-                        [Name Placeholder]<br />
-                        [Address Line 1 Placeholder]<br />
-                        {/* Linha 2 Opcional */}
-                        [City Placeholder], [State Placeholder] [Zip Placeholder]<br />
-                        [Country Placeholder]
-                    </address>
+                    {/* Condicional para Loading */}
+                    {isLoadingAddress && (
+                         <p className="text-gray-500 italic">Loading address details...</p>
+                    )}
+                    {/* Condicional para Erro */}
+                    {addressError && !isLoadingAddress && (
+                        <p className="text-red-600 italic">{addressError}</p>
+                    )}
+                    {/* Condicional para Dados Carregados */}
+                    {shippingAddressDetails && !isLoadingAddress && !addressError && (
+                        <address className="not-italic text-gray-600">
+                            {/* Nome ainda vem do estado da navegação */}
+                            {orderDetailsFromState?.shippingAddress?.name || '[Name Placeholder]'}<br />
+                            {/* Dados do endereço vêm da API */}
+                            {shippingAddressDetails.street}, {shippingAddressDetails.number}<br />
+                            {shippingAddressDetails.city}, {shippingAddressDetails.state} {shippingAddressDetails.zip_code}<br />
+                            {/* País ainda vem do estado da navegação */}
+                            {orderDetailsFromState?.shippingAddress?.country || '[Country Placeholder]'}
+                        </address>
+                    )}
+                     {/* Fallback se nada carregar */}
+                     {!isLoadingAddress && !addressError && !shippingAddressDetails && (
+                          <p className="text-gray-500 italic">Address details unavailable.</p>
+                     )}
                 </div>
                  <div>
                     <h4 className="font-semibold mb-1">Payment Method:</h4>

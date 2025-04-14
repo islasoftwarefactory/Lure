@@ -189,10 +189,14 @@ export function CheckoutComponent() {
         console.log("Address saved successfully via API:", response.data); // Dados estão em response.data
         const savedAddress = response.data; // A resposta já vem parseada
 
+        const newAddressId = savedAddress.data.id; // <<< ACESSANDO O ID
+        console.log("Newly created address ID:", newAddressId);
+
         // 2. Preparar dados para confirmação (como antes)
         const orderDataForConfirmation = {
             orderNumber: `SIM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
             customerEmail: email,
+            addressId: newAddressId, // Adicionar o ID aos dados de confirmação
             shippingAddress: {
                 name: `${firstName} ${lastName}`,
                 address1: `${address}, ${addressNumber}`,
