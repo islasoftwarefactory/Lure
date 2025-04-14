@@ -14,10 +14,10 @@ class Purchase(db.Model):
     shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=False)
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
-    total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.0) # subtotal + shipping
+    taxes = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
+    total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.0) # subtotal + shipping + taxes
     estimated_delivery_date = db.Column(db.Date, nullable=True)
     tracking_number = db.Column(db.String(100), nullable=True)
-    notes = db.Column(db.Text, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -34,8 +34,8 @@ class Purchase(db.Model):
     def calculate_totals(self):
         """Calculates subtotal and total based on items"""
         self.subtotal = sum(item.total_price for item in self.items)
-        # Add logic for shipping_cost if applicable
-        self.total_amount = self.subtotal + self.shipping_cost
+        # Add logic for shipping_cost and taxes if applicable
+        self.total_amount = self.subtotal + self.shipping_cost + self.taxes
 
     def serialize(self, include_items=True, include_history=False, include_transactions=False) -> Dict:
         data = {
@@ -44,13 +44,14 @@ class Purchase(db.Model):
             "shipping_address_id": self.shipping_address_id,
             "subtotal": float(self.subtotal),
             "shipping_cost": float(self.shipping_cost),
+            "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
             "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
             "tracking_number": self.tracking_number,
-            "notes": self.notes,
+            # "notes": self.notes, # REMOVIDO
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "shipping_address": self.address_rel.serialize() if self.address_rel else None # Include serialized address
+            "shipping_address": self.address_rel.serialize() if self.address_rel else None
         }
         if include_items:
              data["items"] = [item.serialize() for item in self.items]
@@ -68,16 +69,13 @@ class Purchase(db.Model):
             purchase = cls(
                 user_id=data["user_id"],
                 shipping_address_id=data["shipping_address_id"],
-                # Totals will be calculated later or passed in
                 subtotal=data.get("subtotal", 0.0),
                 shipping_cost=data.get("shipping_cost", 0.0),
+                taxes=data.get("taxes", 0.0),
                 total_amount=data.get("total_amount", 0.0),
-                notes=data.get("notes")
+                # notes=data.get("notes") # REMOVIDO
             )
-            # Add validation if needed
             db.session.add(purchase)
-            # We might commit later after adding items and calculating totals
-            # db.session.commit()
             current_app.logger.info(f"Purchase {purchase.id} created for user {purchase.user_id}")
             return purchase
         except Exception as e:
@@ -101,15 +99,12 @@ class Purchase(db.Model):
         purchase = cls.get_by_id(purchase_id)
         if purchase:
             try:
-                # Update specific fields like status (if added), tracking, notes, etc.
                 if "tracking_number" in data:
                     purchase.tracking_number = data["tracking_number"]
                 if "estimated_delivery_date" in data:
-                    purchase.estimated_delivery_date = data["estimated_delivery_date"] # Needs date parsing
-                if "notes" in data:
-                    purchase.notes = data["notes"]
-                # Recalculate totals if items change (handled separately)
-                # Add validation if needed
+                    purchase.estimated_delivery_date = data["estimated_delivery_date"]
+                # if "notes" in data: # REMOVIDO
+                #     purchase.notes = data["notes"] # REMOVIDO
                 db.session.commit()
                 current_app.logger.info(f"Purchase ID {purchase_id} updated.")
                 return purchase

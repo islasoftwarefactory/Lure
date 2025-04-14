@@ -16,6 +16,8 @@ class Address(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
+    purchase_history_entries = db.relationship('PurchaseHistory', back_populates='shipping_address_rel', lazy='dynamic')
+
     def __repr__(self):
         return f"<Address {self.id}, User_id: {self.user_id}, Street: {self.street}>"
 
