@@ -3,7 +3,7 @@ from api.currency.model import Currency
 from api.utils.jwt.decorators import token_required
 import traceback
 
-currency_bp = Blueprint('currency', __name__, url_prefix='/currencies')
+currency_bp = Blueprint('currency', __name__)
 
 @currency_bp.route("", methods=["POST"])
 @token_required

@@ -3,7 +3,7 @@ from api.transaction.method.model import TransactionMethod
 from api.utils.jwt.decorators import token_required
 import traceback
 
-transaction_method_bp = Blueprint('transaction_method', __name__, url_prefix='/transaction-methods')
+transaction_method_bp = Blueprint('transaction_method', __name__)
 
 @transaction_method_bp.route("", methods=["POST"])
 @token_required

@@ -5,7 +5,7 @@ from api.utils.jwt.decorators import token_required
 import traceback
 import uuid
 
-purchase_history_bp = Blueprint('purchase_history', __name__, url_prefix='/purchase-history')
+purchase_history_bp = Blueprint('purchase_history', __name__)
 
 # POST is less common for history as it's usually created internally by other actions
 # Included for CRUD completeness based on request.

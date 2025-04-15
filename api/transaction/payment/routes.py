@@ -9,7 +9,7 @@ import traceback
 import uuid
 
 # Manter o nome do blueprint como definido no alias em blueprints.py
-transaction_bp = Blueprint('transaction', __name__, url_prefix='/transactions')
+transaction_bp = Blueprint('transaction', __name__)
 
 @transaction_bp.route("", methods=["POST"])
 @token_required
