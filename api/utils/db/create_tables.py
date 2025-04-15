@@ -2,16 +2,22 @@ from flask_sqlalchemy import SQLAlchemy
 from api.address.model import Address
 from api.cart.model import Cart
 from api.category.model import Category
-from api.discount.model import Discount
 from api.gender.model import Gender
 from api.image_category.model import ImageCategory
-from api.payment.model import Payment
-from api.payment_method.model import PaymentMethod
 from api.product.model import Product
 from api.size.model import Size
 from api.user.model import User
 from api.scraping.model import Scraping
 from api.scraping.type.model import ContactType
+from api.purchases.history.model import PurchaseHistory
+from api.purchases.product.model import PurchaseItem
+from api.purchases.purchase.model import Purchase
+from api.transaction.payment.model import Transaction
+from api.transaction.method.model import TransactionMethod
+from api.payment_status.model import PaymentStatus
+from api.currency.model import Currency
+
+
 from api.utils.db.connection import db
 from sqlalchemy import inspect
 

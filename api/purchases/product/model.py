@@ -4,15 +4,6 @@ import pytz
 from typing import Dict, Optional
 from flask import current_app
 
-# Importar modelos relacionados
-# Assume Purchase model exists in api.purchases.model
-# from api.purchases.model import Purchase
-# Assume Product model exists in api.product.model
-# from api.product.model import Product
-# Assume Size model exists in api.size.model
-# from api.size.model import Size
-
-
 class PurchaseItem(db.Model):
     __tablename__ = "purchase_items"
 
@@ -49,7 +40,8 @@ class PurchaseItem(db.Model):
             "size_id": self.size_id,
             "quantity": self.quantity,
             "unit_price_at_purchase": float(self.unit_price_at_purchase),
-            "total_price": float(seli
+            "total_price": float(self.total_price)
+        }
 
     @classmethod
     def create(cls, data: Dict) -> 'PurchaseItem':

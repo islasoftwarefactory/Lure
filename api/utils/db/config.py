@@ -1,5 +1,8 @@
-import os
 from flask import abort
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 def database_uri():
     required_vars = ["MYSQL_HOST", "MYSQL_PORT", "MYSQL_DATABASE", 
