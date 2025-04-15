@@ -4,24 +4,30 @@ import pytz
 from typing import Dict, Optional, List
 from flask import current_app
 import uuid # Importar UUID
+from api.currency.model import Currency # Importar a classe Currency
+from api.user.model import User # Importar User
 
 class Transaction(db.Model):
     __tablename__ = "transactions"
 
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     purchase_id = db.Column(db.String(36), db.ForeignKey('purchases.id'), nullable=False) # UUID é string
     method_id = db.Column(db.Integer, db.ForeignKey('transaction_methods.id'), nullable=False)
     amount = db.Column(db.Numeric(10, 2), nullable=False)
     currency = db.Column(db.String(3), nullable=False, default='BRL')
+    currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
     gateway_payment_id = db.Column(db.String(255), nullable=True, index=True) # ID da transação no gateway (ex: pi_xxxx no Stripe)
     payment_status_id = db.Column(db.Integer, db.ForeignKey('payment_statuses.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
     # Relacionamentos
+    user_rel = db.relationship('User', back_populates='transactions')
     purchase_rel = db.relationship('Purchase', back_populates='transactions')
     method_rel = db.relationship('TransactionMethod', back_populates='transactions')
     status_rel = db.relationship('PaymentStatus', back_populates='transactions')
+    currency_rel = db.relationship('Currency', back_populates='transactions')
 
     def __repr__(self):
         return f"<Transaction {self.id} for Purchase {self.purchase_id}>"
@@ -29,16 +35,19 @@ class Transaction(db.Model):
     def serialize(self) -> Dict:
         return {
             "id": self.id,
+            "user_id": self.user_id,
             "purchase_id": self.purchase_id,
             "method_id": self.method_id,
             "amount": float(self.amount),
             "currency": self.currency,
+            "currency_id": self.currency_id,
             "gateway_payment_id": self.gateway_payment_id,
             "payment_status_id": self.payment_status_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "status": self.status_rel.serialize() if self.status_rel else None,
             "method": self.method_rel.serialize() if self.method_rel else None,
+            "currency": self.currency_rel.serialize() if self.currency_rel else None,
         }
 
     @classmethod
@@ -51,11 +60,16 @@ class Transaction(db.Model):
             if not initial_status:
                 raise ValueError("Initial 'pending' payment status not found.")
 
+            if "user_id" not in data:
+                raise ValueError("Missing 'user_id' for transaction creation.")
+
             transaction = cls(
+                user_id=data["user_id"],
                 purchase_id=data["purchase_id"],
                 method_id=data["method_id"],
                 amount=data["amount"],
                 currency=data.get("currency", "BRL"),
+                currency_id=data.get("currency_id"),
                 gateway_payment_id=data.get("gateway_payment_id"),
                 payment_status_id=data.get("payment_status_id", initial_status.id) # Default to pending
             )

@@ -7,14 +7,14 @@ from api.scraping.routes import blueprint as scraping_blueprint
 from api.user.routes import blueprint as user_blueprint
 from api.product.routes import blueprint as product_blueprint
 from api.scraping.type.routes import blueprint as scraping_type_blueprint
-frmo api.payment_status.routes import blueprint as payment_status
+from api.payment_status.routes import payment_status_blueprint
 from api.contact.routes import blueprint as contact_blueprint
-from api.currency.routes import blueprint as currency_blueprint
-from api.purchases.history import blueprint as purchase_history_blueprint
-from api.purchases.product import blueprint as purchase_item_blueprint
-from api.purchases.purchase import blueprint as purchase_blueprint
-from api.transaction.payment import blueprint as transaction_blueprint
-from api.transaction.method import blueprint as transaction_method_blueprint
+from api.currency.routes import currency_bp as currency_blueprint
+from api.purchases.history.routes import purchase_history_bp as purchase_history_blueprint
+from api.purchases.product.routes import purchase_item_bp as purchase_item_blueprint
+from api.purchases.purchase.routes import purchase_bp as purchase_blueprint
+from api.transaction.payment.routes import transaction_bp as transaction_blueprint
+from api.transaction.method.routes import transaction_method_bp as transaction_method_blueprint
 
 def register_blueprints(app):
     app.register_blueprint(address_blueprint, url_prefix='/address')
@@ -27,10 +27,10 @@ def register_blueprints(app):
     app.register_blueprint(scraping_blueprint, url_prefix='/scraping')
     app.register_blueprint(scraping_type_blueprint, url_prefix='/contact_type')
     app.register_blueprint(contact_blueprint, url_prefix='/contact')  
-    app.register_blueprint(payment_status, url_prefix='/payment-statuses')
+    app.register_blueprint(payment_status_blueprint, url_prefix='/payment-status')
     app.register_blueprint(currency_blueprint, url_prefix='/currencies')
-    app.register_blueprint(purchase_history_blueprint, url_prefix='/purchase_history')
-    app.register_blueprint(purchase_item_blueprint, url_prefix='/purchase_item')
+    app.register_blueprint(purchase_history_blueprint, url_prefix='/purchase-history')
+    app.register_blueprint(purchase_item_blueprint, url_prefix='/purchase-item')
     app.register_blueprint(purchase_blueprint, url_prefix='/purchase')
-    app.register_blueprint(transaction_blueprint, url_prefix='/purchase')
-    app.register_blueprint(transaction_method_blueprint, url_prefix='/purchase')
+    app.register_blueprint(transaction_blueprint, url_prefix='/transaction-purchase')
+    app.register_blueprint(transaction_method_blueprint, url_prefix='/ttransaction-method-purchase')

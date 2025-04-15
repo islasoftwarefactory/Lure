@@ -1,7 +1,7 @@
 from api.utils.db.connection import db  # Add this import
 from datetime import datetime
 import pytz
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 class Address(db.Model):
     __tablename__ = "addresses"
@@ -13,9 +13,12 @@ class Address(db.Model):
     city = db.Column(db.String(30), nullable=False) 
     state = db.Column(db.String(2), nullable=False) 
     zip_code = db.Column(db.String(9), nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
+    updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
+    user_rel = db.relationship('User', back_populates='addresses')
+
+    purchases = db.relationship('Purchase', back_populates='address_rel', lazy='dynamic')
     purchase_history_entries = db.relationship('PurchaseHistory', back_populates='shipping_address_rel', lazy='dynamic')
 
     def __repr__(self):
@@ -30,8 +33,8 @@ class Address(db.Model):
             "city": self.city,
             "state": self.state,
             "zip_code": self.zip_code,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
 def create_address(address_data: Dict, current_user_id: int) -> Optional[Address]:
@@ -71,7 +74,6 @@ def update_address(address_id: int, address_data: Dict) -> Optional[Address]:
         for field in ["street", "number", "city", "state", "zip_code"]:
             if field in address_data:
                 setattr(address, field, address_data[field])
-        address.updated_at = datetime.now(pytz.timezone('America/Sao_Paulo'))
         db.session.commit()
         return address
     return None
@@ -80,6 +82,8 @@ def delete_address(address_id: int) -> Optional[Address]:
     """Deletes an address"""
     address = get_address(address_id)
     if address:
+        if address.purchases.count() > 0 or address.purchase_history_entries.count() > 0:
+            raise ValueError("Cannot delete address that is currently linked to purchases or history.")
         db.session.delete(address)
         db.session.commit()
         return address

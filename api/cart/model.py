@@ -13,7 +13,6 @@ class Cart(db.Model):
     status = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
-    payment = db.relationship('Payment', backref='cart_ref', lazy=True)
 
     def __repr__(self):
         return f"<Cart {self.id}, User_id: {self.user_id}, Product_id: {self.product_id}>"
