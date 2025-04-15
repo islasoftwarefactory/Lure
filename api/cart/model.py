@@ -10,7 +10,6 @@ class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
-    discount_id = db.Column(db.Integer, db.ForeignKey('discounts.id'), nullable=True)
     status = db.Column(db.Boolean, nullable=False, default=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
@@ -24,7 +23,6 @@ class Cart(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "product_id": self.product_id,
-            "discount_id": self.discount_id,
             "status": self.status,
             "created_at": self.created_at,
             "updated_at": self.updated_at
@@ -37,7 +35,6 @@ def create_cart(cart_data: Dict) -> Optional[Cart]:
         new_cart = Cart(
             user_id=cart_data["user_id"],
             product_id=cart_data["product_id"],
-            discount_id=cart_data.get("discount_id"),
             status=cart_data["status"]
         )
         db.session.add(new_cart)
@@ -71,7 +68,7 @@ def update_cart(cart_id: int, cart_data: Dict) -> Optional[Cart]:
             current_app.logger.warning(f"Cart ID {cart_id} not found")
             return None
 
-        updatable_fields = ["user_id", "product_id", "discount_id", "status"]
+        updatable_fields = ["user_id", "product_id", "status"]
         
         for field in updatable_fields:
             if field in cart_data:

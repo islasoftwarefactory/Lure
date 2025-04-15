@@ -18,7 +18,6 @@ def create(current_user_id=None):
         cart_data = {
             "user_id": current_user_id,  # Pode ser None para usuários anônimos
             "product_id": data["product_id"],
-            "discount_id": data.get("discount_id"),
             "status": True
         }
         
@@ -104,7 +103,6 @@ def migrate_anonymous_cart(current_user_id):
             cart_data = {
                 "user_id": current_user_id,
                 "product_id": item["product_id"],
-                "discount_id": item.get("discount_id"),
                 "status": True
             }
             cart = create_cart(cart_data)
