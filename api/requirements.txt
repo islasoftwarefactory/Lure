@@ -9,3 +9,4 @@ flask-cors
 flask-jwt-extended
 flask-sqlalchemy
 Flask-Mail
+stripe

@@ -3,6 +3,8 @@ from datetime import datetime
 import pytz
 from typing import Dict, Optional, List
 from flask import current_app
+from api.transaction.payment.model import Transaction
+from api.purchases.history.model import PurchaseHistory
 import uuid # Importar UUID
 
 class Purchase(db.Model):

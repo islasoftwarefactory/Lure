@@ -17,6 +17,11 @@ class Currency(db.Model):
     # Relacionamento: Uma moeda pode ser usada em muitas transações
     transactions = db.relationship('Transaction', back_populates='currency_rel', lazy='dynamic')
 
+    # --- NOVO RELACIONAMENTO REVERSO COM PRODUCT ---
+    # Uma moeda pode estar associada a muitos produtos
+    products = db.relationship('Product', back_populates='currency_rel', lazy='dynamic')
+    # --- FIM NOVO RELACIONAMENTO ---
+
     def __repr__(self):
         return f"<Currency {self.id}: {self.code}>"
 

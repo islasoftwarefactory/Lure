@@ -5,6 +5,7 @@ from typing import Dict, Optional, List
 from flask import current_app
 import uuid # Importar UUID
 from api.currency.model import Currency # Importar a classe Currency
+from api.payment_status.model import PaymentStatus
 from api.user.model import User # Importar User
 
 class Transaction(db.Model):

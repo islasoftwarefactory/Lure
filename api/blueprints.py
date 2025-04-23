@@ -32,5 +32,5 @@ def register_blueprints(app):
     app.register_blueprint(purchase_history_blueprint, url_prefix='/purchase-history')
     app.register_blueprint(purchase_item_blueprint, url_prefix='/purchase-item')
     app.register_blueprint(purchase_blueprint, url_prefix='/purchase')
-    app.register_blueprint(transaction_blueprint, url_prefix='/transaction-purchase')
-    app.register_blueprint(transaction_method_blueprint, url_prefix='/ttransaction-method-purchase')
+    app.register_blueprint(transaction_blueprint, url_prefix='/purchase-transaction')
+    app.register_blueprint(transaction_method_blueprint, url_prefix='/transaction-method-purchase')
