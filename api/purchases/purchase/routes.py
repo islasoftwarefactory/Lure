@@ -131,7 +131,7 @@ def handle_create_purchase(current_user_id):
         current_app.logger.info("Etapa 6: Criando PurchaseHistory...")
         history_data = {
             "purchase_id": new_purchase.id,
-            "event_description": "Purchase created, transaction pending",
+            "shipping_address_id": new_purchase.shipping_address_id,
             "created_by": f"user:{current_user_id}"
         }
         current_app.logger.debug(f"Dados para PurchaseHistory.create: {history_data}")
