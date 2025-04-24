@@ -62,21 +62,22 @@ def handle_create_purchase(current_user_id):
          return jsonify({"error": "Invalid or missing product data in items to determine currency."}), 400
     # --- LOG: Fim Determinação Moeda ---
 
+    # --- ADICIONAR ESTA LINHA ---
+    # Adicionar o currency_id determinado ao dicionário 'data' ANTES de criar Purchase
+    data['currency_id'] = determined_currency_id
+    current_app.logger.debug(f"Adicionado currency_id={determined_currency_id} ao dict 'data' para criação.")
+    # --- FIM ADIÇÃO ---
+
     try:
         # --- LOG: Início Criação Purchase ---
         current_app.logger.info("Etapa 2: Criando objeto Purchase...")
+        # Agora 'data' contém a currency_id que o Purchase.create espera
         current_app.logger.debug(f"Dados para Purchase.create: {data}")
         new_purchase = Purchase.create(data)
         db.session.add(new_purchase)
         db.session.flush() # Garante ID
         current_app.logger.info(f"Purchase criada na sessão com ID provisório/final: {new_purchase.id}")
         # --- LOG: Fim Criação Purchase ---
-
-        # --- LOG: Definindo Currency na Purchase ---
-        current_app.logger.debug(f"Definindo currency_id={determined_currency_id} na Purchase {new_purchase.id}")
-        new_purchase.currency_id = determined_currency_id
-        db.session.add(new_purchase) # Adiciona atualização
-        # --- LOG: Fim Definição Currency ---
 
         # --- LOG: Início Criação Itens ---
         current_app.logger.info(f"Etapa 3: Criando PurchaseItems ({len(items_data)} itens)...")

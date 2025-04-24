@@ -59,15 +59,33 @@ def handle_get_transaction(current_user_id, transaction_id):
 @transaction_bp.route("/gateway/<string:gateway_id>", methods=["GET"])
 @token_required
 def handle_get_transaction_by_gateway_id(current_user_id, gateway_id):
-    # Chamar método da classe
+    current_app.logger.info(f"--- Rota GET /gateway/{gateway_id} INICIADA ---")
+    current_app.logger.debug(f"Buscando transação com gateway_id: {gateway_id}")
     transaction = Transaction.get_by_gateway_id(gateway_id)
+
     if not transaction:
+        current_app.logger.warning(f"<<< FALHA 404: Transação não encontrada para gateway_id: {gateway_id}")
         return jsonify({"error": f"Transaction with gateway ID '{gateway_id}' not found"}), 404
+    current_app.logger.info(f"Transação encontrada: ID={transaction.id}, PurchaseID={transaction.purchase_id}")
 
+    current_app.logger.debug(f"Buscando Purchase com ID: {transaction.purchase_id}")
     purchase = Purchase.get_by_id(transaction.purchase_id)
-    if not purchase or purchase.user_id != current_user_id:
-        return jsonify({"error": "Not authorized to view this transaction"}), 403
 
+    # --- LOGS DE DEPURAÇÃO CRÍTICOS ---
+    if purchase:
+        current_app.logger.info(f"Purchase encontrada: ID={purchase.id}, UserID DENTRO DA PURCHASE={purchase.user_id}")
+    else:
+        current_app.logger.warning(f"Purchase com ID {transaction.purchase_id} NÃO foi encontrada no banco de dados!")
+
+    current_app.logger.info(f"Verificando autorização: UserID da Purchase ({purchase.user_id if purchase else 'N/A'}) vs UserID do Token ({current_user_id})")
+    # --- FIM LOGS DE DEPURAÇÃO ---
+
+    if not purchase or purchase.user_id != current_user_id:
+         current_app.logger.warning(f"<<< FALHA 403: Usuário {current_user_id} não autorizado para Purchase com UserID {purchase.user_id if purchase else 'N/A'}.")
+         return jsonify({"error": "Not authorized to view this transaction"}), 403
+
+    current_app.logger.info(f"Autorização OK. Retornando dados da transação {transaction.id}.")
+    current_app.logger.info(f"--- Rota GET /gateway/{gateway_id} FINALIZADA COM SUCESSO ---")
     return jsonify({"data": transaction.serialize()}), 200
 
 @transaction_bp.route("/purchase/<string:purchase_id>", methods=["GET"])

@@ -14,6 +14,7 @@ class Purchase(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=False)
+    currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     taxes = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
@@ -26,12 +27,13 @@ class Purchase(db.Model):
     # Relacionamentos
     user_rel = db.relationship('User', back_populates='purchases')
     address_rel = db.relationship('Address', back_populates='purchases')
+    currency_rel = db.relationship('Currency', back_populates='purchases')
     items = db.relationship('PurchaseItem', back_populates='purchase_rel', cascade="all, delete-orphan", lazy='dynamic')
     history = db.relationship('PurchaseHistory', back_populates='purchase_rel', cascade="all, delete-orphan", lazy='dynamic')
     transactions = db.relationship('Transaction', back_populates='purchase_rel', lazy='dynamic')
 
     def __repr__(self):
-        return f"<Purchase {self.id} by User {self.user_id}>"
+        return f"<Purchase {self.id} by User {self.user_id} (Currency ID: {self.currency_id})>"
 
     def calculate_totals(self):
         """Calculates subtotal and total based on items"""
@@ -44,13 +46,13 @@ class Purchase(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "shipping_address_id": self.shipping_address_id,
+            "currency_id": self.currency_id,
             "subtotal": float(self.subtotal),
             "shipping_cost": float(self.shipping_cost),
             "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
             "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
             "tracking_number": self.tracking_number,
-            # "notes": self.notes, # REMOVIDO
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "shipping_address": self.address_rel.serialize() if self.address_rel else None
@@ -71,11 +73,11 @@ class Purchase(db.Model):
             purchase = cls(
                 user_id=data["user_id"],
                 shipping_address_id=data["shipping_address_id"],
+                currency_id=data["currency_id"],
                 subtotal=data.get("subtotal", 0.0),
                 shipping_cost=data.get("shipping_cost", 0.0),
                 taxes=data.get("taxes", 0.0),
                 total_amount=data.get("total_amount", 0.0),
-                # notes=data.get("notes") # REMOVIDO
             )
             db.session.add(purchase)
             current_app.logger.info(f"Purchase {purchase.id} created for user {purchase.user_id}")
@@ -105,8 +107,6 @@ class Purchase(db.Model):
                     purchase.tracking_number = data["tracking_number"]
                 if "estimated_delivery_date" in data:
                     purchase.estimated_delivery_date = data["estimated_delivery_date"]
-                # if "notes" in data: # REMOVIDO
-                #     purchase.notes = data["notes"] # REMOVIDO
                 db.session.commit()
                 current_app.logger.info(f"Purchase ID {purchase_id} updated.")
                 return purchase

@@ -55,15 +55,16 @@ def verify_token(token):
             algorithms=['HS256']
         )
         # Return user_id directly upon success, consistent with decorator usage
-        return payload['sub']
+        user_id_from_token = payload['sub']
+        return int(user_id_from_token)
     except jwt.ExpiredSignatureError:
         current_app.logger.warning("Token verification failed: ExpiredSignatureError")
         # Raise an exception or return None/False as needed by the calling code (decorator)
         # The decorator expects verify_token to return user_id on success or raise error/return None on failure
-        raise jwt.ExpiredSignatureError('Token expired. Please log in again.')
+        return None
     except jwt.InvalidTokenError as e:
         current_app.logger.warning(f"Token verification failed: InvalidTokenError - {str(e)}")
-        raise jwt.InvalidTokenError('Invalid token. Please log in again.')
+        return None
 
 
 def decode_token(token):
