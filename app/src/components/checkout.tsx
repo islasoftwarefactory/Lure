@@ -32,9 +32,26 @@ interface LocationData {
   states: USStateWithCities[];
 }
 
+// Interface local CartItem - Verificar se ainda é necessária ou se podemos confiar
+// na estrutura que vem do location.state agora que ProductPage envia corretamente.
+// Mantê-la por enquanto para tipagem forte.
+interface CartItem {
+  id?: number | string; // ID do item no carrinho (pode não existir no fluxo "Buy Now")
+  cart_item_id?: number; // ID do item no carrinho do backend (pode não existir no fluxo "Buy Now")
+  productId: number;
+  sizeId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  size: string;
+  image?: string;
+}
+
 export function CheckoutComponent() {
   const location = useLocation();
   const cartItems: CartItem[] = location.state?.items || [];
+  console.log('--- CHECKOUT: cartItems recebidos do location.state (Após correção):', JSON.stringify(cartItems, null, 2)); // Verificar se agora tem productId/sizeId
+
   const navigate = useNavigate();
   const { token } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -128,6 +145,8 @@ export function CheckoutComponent() {
   }, [selectedStateAbbr, locationStates]);
 
   const validateForm = () => {
+    // Reset errors antes de validar novamente
+    setErrors({});
     const newErrors: Record<string, string> = {};
     
     if (!email.trim()) newErrors.email = 'Email is required';
@@ -148,26 +167,24 @@ export function CheckoutComponent() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitInitial = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePlaceOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // Resetar erros ANTES de validar
     setErrors({});
     if (!validateForm()) {
-       console.log("Form validation failed:", errors);
+       console.log("Form validation failed:", errors); // Logar os erros de validação
        return;
     }
 
-    // Verificar se o usuário está "logado" (tem um token) localmente antes de tentar
-    // O interceptor lida com a *adição* do token, mas é bom verificar se ele existe primeiro.
-    const localToken = localStorage.getItem('authToken'); // Ou obter do useAuth se ele expõe o token bruto
+    const localToken = localStorage.getItem('authToken');
     if (!localToken || localToken === 'undefined') {
         setErrors({ form: "Authentication error. Please log in again." });
         console.error("Authentication token is missing locally.");
-        setIsSubmitting(false); // Certifique-se de resetar o estado de submissão
-        return;
+        return; // Sair se não houver token
     }
 
     setIsSubmitting(true);
-    console.log("Form validated. Attempting to save address via API...");
+    console.log("Form validated. Attempting to save address...");
 
     const addressPayload = {
         street: address,
@@ -178,52 +195,59 @@ export function CheckoutComponent() {
         complement: apartment || null
     };
 
+    let newAddressId: number | null = null;
+
     try {
-        // 1. Chamar a API usando a instância axios importada
-        console.log("Sending address data via axios:", addressPayload);
-        // O '/address/create' será anexado ao baseURL definido em api.ts
-        // Headers 'Content-Type' e 'Authorization' são tratados pelo axios e interceptor
-        const response = await api.post('/address/create', addressPayload); // <<< SUBSTITUIR FETCH POR API.POST
+        console.log("Sending address data:", addressPayload);
+        const addressResponse = await api.post<{data: {id: number}}>('/address/create', addressPayload);
+        newAddressId = addressResponse.data.data.id;
+        console.log("Address saved successfully. Address ID:", newAddressId);
 
-        // Axios trata respostas não-2xx como erros, então se chegarmos aqui, foi sucesso (status 2xx)
-        console.log("Address saved successfully via API:", response.data); // Dados estão em response.data
-        const savedAddress = response.data; // A resposta já vem parseada
+        if (!newAddressId) {
+             throw new Error("Failed to get address ID after creation.");
+        }
 
-        const newAddressId = savedAddress.data.id; // <<< ACESSANDO O ID
-        console.log("Newly created address ID:", newAddressId);
-
-        // 2. Preparar dados para confirmação (como antes)
-        const orderDataForConfirmation = {
-            orderNumber: `SIM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-            customerEmail: email,
-            addressId: newAddressId, // Adicionar o ID aos dados de confirmação
-            shippingAddress: {
-                name: `${firstName} ${lastName}`,
-                address1: `${address}, ${addressNumber}`,
-                address2: apartment || '',
-                city: selectedCity,
-                state: selectedStateAbbr,
-                zip: postalCode,
-                country: selectedCountry
-            },
-            items: cartItems,
+        const purchasePayload = {
+            shipping_address_id: newAddressId,
+            shipping_cost: 0.0,
+            taxes: 0.0,
+            items: cartItems.map(item => {
+                console.log('--- CHECKOUT: Mapeando item do carrinho (Após correção):', JSON.stringify(item, null, 2));
+                if (item.productId === undefined || item.sizeId === undefined) {
+                     console.error("Item inválido recebido no checkout:", item);
+                     throw new Error(`Invalid item data received in checkout: Missing productId or sizeId.`);
+                }
+                return {
+                    product_id: item.productId,
+                    size_id: item.sizeId,
+                    quantity: item.quantity,
+                    unit_price_at_purchase: item.price
+                };
+            })
         };
+        console.log('--- CHECKOUT: purchasePayload pronto para envio (Após correção):', JSON.stringify(purchasePayload, null, 2));
 
-        console.log("Address saved. Proceeding to order confirmation simulation.");
-        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log("Attempting to create purchase...");
+        const purchaseResponse = await api.post<{data: any}>('/purchase/create', purchasePayload);
+        const createdPurchase = purchaseResponse.data.data;
+        console.log("Purchase created successfully:", createdPurchase);
 
-        // 3. Redirecionar (como antes)
-        navigate('/order-confirmation', { state: { orderDetails: orderDataForConfirmation } });
+        const purchaseId = createdPurchase.id;
+        if(purchaseId) {
+             navigate('/order-confirmation', { state: { orderDetails: createdPurchase } });
+        } else {
+             console.error("Purchase ID not found in response. Cannot navigate.");
+             navigate('/');
+        }
 
-    } catch (error: any) { // Especificar 'any' ou um tipo de erro Axios se preferir
+    } catch (error: any) {
         console.error('Error during checkout process (API call):', error);
-
-        // Acessar detalhes do erro Axios (conforme configurado no interceptor)
-        const errorMessage = error.response?.data?.error || // Tenta pegar a msg de erro da API
-                           error.message || // Mensagem de erro genérica do Axios/rede
-                           "An unexpected error occurred."; // Fallback
-
-        setErrors({ form: `Error saving address: ${errorMessage}` });
+        const errorMessage = error.response?.data?.error || error.message || "An unexpected error occurred.";
+        if (errorMessage.startsWith("Invalid item data")) {
+             setErrors({ form: errorMessage });
+        } else {
+             setErrors({ form: `Checkout failed: ${errorMessage}` });
+        }
 
     } finally {
         setIsSubmitting(false);
@@ -256,7 +280,7 @@ export function CheckoutComponent() {
                     </Button>
                   </div>
 
-                  <form onSubmit={handleSubmitInitial} className="space-y-6">
+                  <form onSubmit={handlePlaceOrder} className="space-y-6">
                     <Card className="bg-white">
                       <CardHeader>
                         <CardTitle className="font-aleo text-2xl font-bold">Contact</CardTitle>
@@ -329,13 +353,13 @@ export function CheckoutComponent() {
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="md:col-span-2">
-                              <Input
+                          <Input 
                                 placeholder="Street address"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                className={`font-aleo ${errors.address ? 'border-red-500' : ''}`}
-                              />
-                              {errors.address && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.address}</p>}
+                            value={address} 
+                            onChange={(e) => setAddress(e.target.value)}
+                            className={`font-aleo ${errors.address ? 'border-red-500' : ''}`}
+                          />
+                          {errors.address && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.address}</p>}
                           </div>
                           <div>
                                <Input
@@ -351,8 +375,8 @@ export function CheckoutComponent() {
                            </div>
                         </div>
 
-                        <Input
-                          placeholder="Apartment, suite, etc. (optional)"
+                        <Input 
+                          placeholder="Apartment, suite, etc. (optional)" 
                           className="font-aleo"
                           value={apartment}
                           onChange={(e) => setApartment(e.target.value)}
@@ -424,9 +448,9 @@ export function CheckoutComponent() {
                             {errors.city && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.city}</p>}
                           </div>
                           <div>
-                            <Input
-                              placeholder="ZIP code"
-                              value={postalCode}
+                            <Input 
+                              placeholder="ZIP code" 
+                              value={postalCode} 
                               onChange={(e) => setPostalCode(e.target.value)}
                               className={`font-aleo ${errors.postalCode ? 'border-red-500' : ''}`}
                               maxLength={5}
@@ -450,7 +474,7 @@ export function CheckoutComponent() {
                       className="w-full bg-black text-white font-aleo text-lg font-bold"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? 'Processing...' : 'Continue & Simulate Order'}
+                      {isSubmitting ? 'Processing Order...' : 'Place Order'}
                     </Button>
                   </form>
                 </div>

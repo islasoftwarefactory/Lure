@@ -3,8 +3,9 @@ import { CartItem, getCart, addToCart as utilAddToCart, removeFromCart as utilRe
 import api from '@/services/api';
 
 export interface CartItem {
-  id: number;
   cart_item_id: number;
+  productId: number;
+  sizeId: number;
   name: string;
   price: number;
   size: string;
@@ -12,11 +13,20 @@ export interface CartItem {
   image: string;
 }
 
+interface InitialCartItemData {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  size: string;
+  image?: string;
+}
+
 interface CartContextType {
   cartItems: CartItem[];
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
-  addToCart: (item: CartItem) => Promise<void>;
+  addToCart: (itemData: InitialCartItemData) => Promise<void>;
   removeFromCart: (cartItemId: number) => Promise<void>;
   updateQuantity: (cartItemId: number, newQuantity: number) => Promise<void>;
   clearCart: () => void;
@@ -53,44 +63,59 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const handleAddToCart = async (newItemData: Omit<CartItem, 'cart_item_id'>) => {
-    console.log("CartContext: handleAddToCart called with product data:", newItemData);
+  const handleAddToCart = async (itemDataToAdd: InitialCartItemData) => {
+    console.log("CartContext: handleAddToCart called with initial item data:", itemDataToAdd);
     try {
       const response = await api.post('/cart/create', {
-        product_id: newItemData.id,
-        quantity: newItemData.quantity,
-        size: newItemData.size
+        product_id: itemDataToAdd.productId,
+        size: itemDataToAdd.size,
+        quantity: itemDataToAdd.quantity,
       });
 
       console.log("CartContext: RAW API Response for /cart/create:", response);
-      if (response?.data?.data) {
-        console.log("CartContext: API response.data.data:", response.data.data);
-      } else {
-        console.error("CartContext: API response missing expected structure (response.data.data).");
-      }
 
-      if (response.status === 201 && response.data?.data?.id) {
+      if (response.status === 201 && response.data?.data?.id && response.data?.data?.size_id !== undefined) {
         const backendCartItem = response.data.data;
-        const createdCartItem: CartItem = {
-          name: newItemData.name,
-          price: newItemData.price,
-          image: newItemData.image,
-          size: newItemData.size,
-          quantity: newItemData.quantity,
-          id: backendCartItem.product_id || newItemData.id,
+
+        const createdCartItemForState: CartItem = {
           cart_item_id: backendCartItem.id,
+          productId: backendCartItem.product_id,
+          sizeId: backendCartItem.size_id,
+          name: itemDataToAdd.name,
+          price: itemDataToAdd.price,
+          quantity: backendCartItem.quantity,
+          size: itemDataToAdd.size,
+          image: itemDataToAdd.image || '',
         };
 
-        console.log("CartContext: Object prepared to be added to state:", createdCartItem);
+        console.log("CartContext: Object prepared to be added to state:", createdCartItemForState);
 
-        setCartItems(prevItems => [...prevItems, createdCartItem]);
-        console.log("CartContext: State updated with new item.");
+        setCartItems(prevItems => {
+          const existingItemIndex = prevItems.findIndex(
+            item => item.productId === createdCartItemForState.productId && item.sizeId === createdCartItemForState.sizeId
+          );
+          if (existingItemIndex > -1) {
+            const updatedItems = [...prevItems];
+            updatedItems[existingItemIndex].quantity += createdCartItemForState.quantity;
+            updatedItems[existingItemIndex].cart_item_id = createdCartItemForState.cart_item_id;
+            console.log("CartContext: Updated quantity for existing item in state.");
+            return updatedItems;
+          } else {
+            console.log("CartContext: Added new item to state.");
+            return [...prevItems, createdCartItemForState];
+          }
+        });
+
       } else {
-        console.error("CartContext: Failed to add item via API or missing 'id' in response.data.data.", response);
-        throw new Error("Failed to add item to cart on server (invalid response or missing ID).");
+        const errorReason = !response.data?.data?.id ? "missing 'id'" : !response.data?.data?.size_id ? "missing 'size_id'" : "unknown reason";
+        console.error(`CartContext: Failed to add item via API. Response status: ${response.status}, Reason: ${errorReason}. Response data:`, response.data);
+        throw new Error(`Failed to add item to cart on server (${errorReason}).`);
       }
     } catch (error) {
       console.error("CartContext: Error in handleAddToCart API call:", error);
+      if ((error as any).response?.data?.error) {
+         throw new Error((error as any).response.data.error);
+      }
       throw error;
     }
   };

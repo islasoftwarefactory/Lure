@@ -217,13 +217,6 @@ export function ProductPage() {
   };
 
   const handleAddToCart = async () => {
-    // --- DEBUG LOGS ---
-    console.log("handleAddToCart called. Checking values:");
-    console.log("  - product:", product);
-    console.log("  - auth.token:", auth.token);
-    console.log("  - addToCart function:", addToCart);
-    // --- END DEBUG LOGS ---
-
     if (!product || !auth.token || !addToCart) {
       console.error("Não é possível adicionar ao carrinho: Produto, token ou função addToCart ausentes.");
       return;
@@ -231,61 +224,66 @@ export function ProductPage() {
 
     console.log(`🛒 Tentando adicionar ao carrinho: Produto ID ${product.id}, Qtd: ${quantity}, Tamanho: ${selectedSize}`);
 
-    try {
-      console.log("🚀 Enviando requisição para POST /cart/create");
-      const response = await api.post('/cart/create', {
-        product_id: product.id,
+    // --- EDIT 1: Preparar dados para o Context (SEM sizeId aqui) ---
+    // O CartContext agora só precisa dos dados que o frontend CONHECE
+    const itemDataForContext: Omit<CartItem, 'cart_item_id' | 'sizeId'> & { productId: number } = {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
         quantity: quantity,
-        size: selectedSize
-      });
+        size: selectedSize, // <<< ENVIAR O NOME DO TAMANHO
+        image: productImage || hoodieImage,
+    };
+    // --- FIM EDIT 1 ---
 
-      console.log("✅ Resposta da API /cart/create:", response.data);
-
-      if (response.status === 201 && response.data.data) {
-        const newItem: CartItem = {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          quantity: quantity,
-          size: selectedSize,
-          image: productImage || hoodieImage
-        };
-
-        addToCart(newItem);
-        console.log("🛒 Item adicionado ao estado do carrinho local.");
-
-        setIsCartOpen(true);
-      } else {
-        console.error("Erro ao adicionar ao carrinho: Resposta da API inesperada.", response);
-      }
+    try {
+       // --- EDIT 2: Chamar addToCart do Context ---
+       await addToCart(itemDataForContext); // Passa o objeto SEM sizeId inicial
+       // --- FIM EDIT 2 ---
+       console.log("🛒 Chamada para CartContext.addToCart concluída.");
+       setIsCartOpen(true);
 
     } catch (error: any) {
-      console.error('❌ Erro ao adicionar ao carrinho via API:', error);
+      console.error('❌ Erro ao chamar CartContext.addToCart:', error);
+      // Mostrar erro para o usuário se necessário
     }
   };
 
   const handleBuyNow = () => {
     if (!product) {
       console.error("Cannot buy now: Product data is missing.");
-      // Pode exibir uma mensagem de erro para o usuário
       return;
     }
+    // --- GARANTIR QUE TEMOS O sizeId ---
+    // Usar o size_id que veio com os dados do produto da API
+    // Se você tiver uma seleção de tamanho que muda o ID, precisa buscar esse ID selecionado.
+    const sizeIdToUse = product.size_id;
+    if (sizeIdToUse === undefined || sizeIdToUse === null) {
+        console.error("Cannot buy now: Product size ID is missing.");
+        // Adicionar feedback para usuário se necessário
+        return;
+    }
+    // --- FIM GARANTIR sizeId ---
 
-    // Cria um objeto 'CartItem' temporário para este item específico
-    // Note: Não precisa de cart_item_id aqui, pois não vem do carrinho existente
-    const itemToCheckout: Omit<CartItem, 'cart_item_id'> & { id: number } = {
-      id: product.id,
+
+    // --- AJUSTAR A CRIAÇÃO DO OBJETO ---
+    // Usar a interface CartItem definida no Checkout para garantir consistência
+    // Omitir 'cart_item_id' e 'id' (ID do carrinho) pois não são relevantes aqui
+    const itemForCheckout: Omit<CartItem, 'cart_item_id' | 'id'> & {productId: number, sizeId: number} = {
+      productId: product.id, // <<< Usar chave 'productId' com o valor de product.id
+      sizeId: sizeIdToUse,    // <<< Usar chave 'sizeId' com o ID numérico do tamanho
       name: product.name,
       price: product.price,
-      quantity: quantity, // Usa a quantidade selecionada
-      size: selectedSize, // Usa o tamanho selecionado
-      image: productImage || hoodieImage // Usa a imagem carregada ou fallback
+      quantity: quantity,
+      size: selectedSize,      // Manter o nome do tamanho para exibição se necessário
+      image: productImage || hoodieImage
     };
+    // --- FIM AJUSTE CRIAÇÃO ---
 
-    console.log("Navigating to checkout with single item:", itemToCheckout);
+    console.log("Navigating to checkout with single item (Corrected Keys):", itemForCheckout);
 
-    // Navega para a página de checkout, passando o item em um array no estado
-    navigate('/checkout', { state: { items: [itemToCheckout] } });
+    // Navega para a página de checkout, passando o item formatado corretamente
+    navigate('/checkout', { state: { items: [itemForCheckout] } });
   };
 
   return (
