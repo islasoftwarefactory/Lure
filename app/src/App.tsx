@@ -12,7 +12,7 @@ import { ProductPage } from './components/ProductPage';
 import { LoginComponent } from './components/LoginComponent';
 import { ProfilePage } from './components/ProfilePage';
 import { CheckoutComponent } from './components/checkout';
-import { OrderDetailsDisplay } from './components/MyOrdersPage';
+import { MyOrdersPage } from './components/MyOrdersPage';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import { AuthProvider } from './context/AuthContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -66,7 +66,7 @@ export default function App() {
   }; */
 
   // Mostra um indicador enquanto a sessão está sendo verificada
-  /* if (loading) {
+  /* if (loading) {d
     return <div>Verificando sessão...</div>; // Use um componente de Spinner se preferir
   } */
 
@@ -86,9 +86,7 @@ export default function App() {
                 <Route path="/login" element={<LoginComponent />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/checkout" element={<CheckoutComponent />} />
-                <Route path="/order-confirmation" element={<OrderDetailsDisplay />} />
-                {/* Adicionar rota para MyOrdersPage (ainda não adicionada) */}
-                {/* <Route path="/my-orders" element={<MyOrdersPage />} /> */}
+                {<Route path="/my-orders" element={<MyOrdersPage />} />}
                 
                 {/* Rota catch-all redireciona para a raiz */}
                 <Route path="*" element={<Navigate to="/" replace />} />

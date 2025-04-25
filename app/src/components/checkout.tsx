@@ -232,13 +232,9 @@ export function CheckoutComponent() {
         const createdPurchase = purchaseResponse.data.data;
         console.log("Purchase created successfully:", createdPurchase);
 
-        const purchaseId = createdPurchase.id;
-        if(purchaseId) {
-             navigate('/order-confirmation', { state: { orderDetails: createdPurchase } });
-        } else {
-             console.error("Purchase ID not found in response. Cannot navigate.");
-             navigate('/');
-        }
+        console.log("CheckoutComponent: Navigating to /my-orders with state:", { justCompletedOrder: createdPurchase });
+
+        navigate('/my-orders', { state: { justCompletedOrder: createdPurchase } });
 
     } catch (error: any) {
         console.error('Error during checkout process (API call):', error);
