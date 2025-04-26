@@ -33,14 +33,19 @@ class PurchaseItem(db.Model):
              self.total_price = 0.0 # Or handle error
 
     def serialize(self) -> Dict:
+        serialized_product = self.product_rel.serialize() if self.product_rel else None
+        serialized_size = self.size_rel.serialize() if self.size_rel else None
+
         return {
             "id": self.id,
-            "purchase_id": self.purchase_id,
+            "purchase_id": self.purchase_id, 
             "product_id": self.product_id,
             "size_id": self.size_id,
             "quantity": self.quantity,
             "unit_price_at_purchase": float(self.unit_price_at_purchase),
-            "total_price": float(self.total_price)
+            "total_price": float(self.total_price),
+            "product": serialized_product,
+            "size": serialized_size
         }
 
     @classmethod

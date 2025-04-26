@@ -195,24 +195,27 @@ export function MyOrdersPage() {
                             <h3 className="text-lg font-semibold mb-3 border-b pb-2">Items Ordered</h3>
                             <div className="space-y-3">
                                 {orderDetails.items && orderDetails.items.length > 0 ? (
-                                    orderDetails.items.map(item => (
-                                        <div key={item.id} className="flex justify-between items-center text-sm border-b pb-3">
-                                            <div className="flex items-center">
-                                                <img
-                                                    src={item.product?.image_url || 'default_product_image.png'} // Adicione uma imagem padrão
-                                                    alt={item.product?.name || 'Product'}
-                                                    className="w-12 h-12 bg-gray-200 rounded mr-3 object-cover flex-shrink-0" // Evitar que a imagem encolha
-                                                    onError={(e) => (e.currentTarget.src = 'default_product_image.png')} // Fallback se a imagem falhar
-                                                />
-                                                <div className="flex-grow"> {/* Permitir que o texto cresça */}
-                                                    <p className="font-medium">{item.product?.name || 'N/A'}</p>
-                                                    <p className="text-xs text-gray-500">Size: {item.size?.name || 'N/A'} | Qty: {item.quantity}</p>
+                                    orderDetails.items.map(item => {
+                                        console.log("MyOrdersPage: Detalhes do item sendo renderizado:", item);
+                                        return (
+                                            <div key={item.id} className="flex justify-between items-center text-sm border-b pb-3">
+                                                <div className="flex items-center">
+                                                    <img
+                                                        src={item.product?.image_url || 'default_product_image.png'}
+                                                        alt={item.product?.name || 'Product'}
+                                                        className="w-12 h-12 bg-gray-200 rounded mr-3 object-cover flex-shrink-0"
+                                                        onError={(e) => (e.currentTarget.src = 'default_product_image.png')}
+                                                    />
+                                                    <div className="flex-grow"> {/* Permitir que o texto cresça */}
+                                                        <p className="font-medium">{item.product?.name || 'N/A'}</p>
+                                                        <p className="text-xs text-gray-500">Size: {item.size?.name || 'N/A'} | Qty: {item.quantity}</p>
+                                                    </div>
                                                 </div>
+                                                {/* Calcular e formatar preço */}
+                                                <span className="font-medium ml-2">${(item.quantity * item.unit_price_at_purchase).toFixed(2)}</span>
                                             </div>
-                                            {/* Calcular e formatar preço */}
-                                            <span className="font-medium ml-2">${(item.quantity * item.unit_price_at_purchase).toFixed(2)}</span>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
                                     <p className="text-xs text-center text-gray-400 pt-2">No items found.</p>
                                 )}
@@ -245,16 +248,16 @@ export function MyOrdersPage() {
                         <div className="grid md:grid-cols-2 gap-6 text-sm border-t pt-4">
                             <div>
                                 <h4 className="font-semibold mb-1">Shipping Address:</h4>
-                                {/* Verifica se existe o endereço */}
-                                {orderDetails.address ? (
+                                {/* --- ACESSAR USANDO shipping_address --- */}
+                                {orderDetails.shipping_address ? (
                                     <address className="not-italic text-gray-600">
-                                        {orderDetails.address.street}, {orderDetails.address.number}<br />
-                                        {orderDetails.address.city}, {orderDetails.address.state} {orderDetails.address.zip_code}<br />
-                                        {/* País precisaria ser adicionado se existir */}
+                                        {orderDetails.shipping_address.street}, {orderDetails.shipping_address.number}<br />
+                                        {orderDetails.shipping_address.city}, {orderDetails.shipping_address.state} {orderDetails.shipping_address.zip_code}<br />
                                     </address>
                                 ) : (
                                     <p className="text-gray-500 italic">Address not available.</p>
                                 )}
+                                {/* --- FIM DA MUDANÇA --- */}
                             </div>
                             <div>
                                 <h4 className="font-semibold mb-1">Payment Method:</h4>
