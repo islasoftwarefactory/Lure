@@ -10,6 +10,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext'; // Importa o useAuth correto
 import api from '@/services/api'; // Importa a instância da API
 import { Button } from "@/components/ui/button"; // Para o botão de logout
+import { Link } from "react-router-dom";
 
 // Interface para os dados do usuário (ajuste conforme o retorno do seu backend)
 interface UserData {
@@ -78,6 +79,12 @@ export function ProfilePage() {
     auth.logout(); // Chama a função de logout do contexto
     navigate('/login'); // Redireciona para a página de login
   };
+
+  // --- EDIT 1: Adicionar handler para o botão "My Orders" ---
+  const handleGoToMyOrders = () => {
+      navigate('/my-orders-list'); // Navega para a nova rota da lista de pedidos
+  };
+  // --- FIM EDIT 1 ---
 
   // Renderização condicional durante o carregamento ou erro
   if (isLoading) {
@@ -175,14 +182,15 @@ export function ProfilePage() {
               Logout
             </Button>
 
-            {/* --- Botão "My Orders" Adicionado Abaixo --- */}
+            {/* --- EDIT 2: Adicionar onClick ao botão "My Orders" --- */}
             <Button
               variant="outline"
               className="mt-2"
+              onClick={handleGoToMyOrders} // Chama o handler de navegação
             >
               My Orders
             </Button>
-            {/* --- Fim da Adição --- */}
+             {/* --- FIM EDIT 2 --- */}
 
           </div>
         </div>
