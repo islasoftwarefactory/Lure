@@ -169,11 +169,21 @@ export function ProfilePage() {
             {/* Botão de Logout */}
             <Button
               onClick={handleLogout}
-              variant="destructive" // Estilo de botão destrutivo/vermelho (se definido no seu tema)
+              variant="destructive"
               className="mt-6"
             >
               Logout
             </Button>
+
+            {/* --- Botão "My Orders" Adicionado Abaixo --- */}
+            <Button
+              variant="outline"
+              className="mt-2"
+            >
+              My Orders
+            </Button>
+            {/* --- Fim da Adição --- */}
+
           </div>
         </div>
       </main>
