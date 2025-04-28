@@ -325,7 +325,42 @@ export function MyOrdersPage() {
 
   // --- Lógica para lidar com clique nos detalhes da lista ---
   const handleViewDetailsClick = (orderId: string) => {
-    navigate(`/order-page/${orderId}`); // Navega para a página de detalhes específica
+    console.log(`MyOrdersPage: Redirecting to OrderPage for order ID ${orderId}`);
+    
+    // Obtenha os dados do pedido do estado atual de orderItemsMap e orderTransactionsMap
+    const orderItems = orderItemsMap[orderId] || [];
+    const orderTransactions = orderTransactionsMap[orderId] || [];
+    
+    // Encontre o objeto do pedido completo no array de orders
+    const orderDetails = orders.find(order => order.id === orderId);
+    
+    if (!orderDetails) {
+      console.error(`MyOrdersPage: Order with ID ${orderId} not found in orders array.`);
+      // Navegue mesmo sem dados completos - OrderPage buscará os dados pelo ID
+      navigate(`/order-page/${orderId}`);
+      return;
+    }
+    
+    // Construa um objeto simplificado do pedido para passar via state
+    // Semelhante à estrutura que vem após o checkout
+    const orderData = {
+      id: orderId,
+      items: orderItems,
+      transactions: orderTransactions,
+      // Adicione outros campos que possam ser úteis
+      created_at: orderDetails.created_at,
+      total_amount: orderDetails.total_amount,
+      shipping_address: orderDetails.shipping_address
+    };
+    
+    // Navegue para OrderPage com os dados disponíveis
+    navigate(`/order-page/${orderId}`, {
+      state: { 
+        justCompletedOrder: orderData,
+        // Flag para indicar que viemos da lista de pedidos, não do checkout
+        fromOrdersList: true
+      }
+    });
   }
 
   // --- RENDERIZAÇÃO ---
@@ -389,14 +424,26 @@ export function MyOrdersPage() {
 
               // Acesso à moeda da transação a partir do novo estado
               let currencyCode = null;
+              let paymentStatus = null; // Nova variável para armazenar o status do pagamento
               
               console.log(`MyOrdersPage (Render): Order ID ${order.id.substring(0,8)}... | Local Transactions:`, transactionsForThisOrder);
               
-              if (transactionsForThisOrder && transactionsForThisOrder.length > 0 && transactionsForThisOrder[0].currency) {
-                currencyCode = transactionsForThisOrder[0].currency.code;
-                console.log(`MyOrdersPage (Render): SUCCESS! Currency code from state: ${currencyCode}`);
+              if (transactionsForThisOrder && transactionsForThisOrder.length > 0) {
+                // Extrair o código da moeda, se disponível
+                if (transactionsForThisOrder[0].currency) {
+                  currencyCode = transactionsForThisOrder[0].currency.code;
+                  console.log(`MyOrdersPage (Render): SUCCESS! Currency code from state: ${currencyCode}`);
+                }
+                
+                // Extrair o status de pagamento, se disponível
+                if (transactionsForThisOrder[0].status) {
+                  paymentStatus = transactionsForThisOrder[0].status.name;
+                  // Capitalize a primeira letra para exibição
+                  paymentStatus = paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1);
+                  console.log(`MyOrdersPage (Render): Payment status from transaction: ${paymentStatus}`);
+                }
               } else {
-                console.log(`MyOrdersPage (Render): No currency data in state for this order`);
+                console.log(`MyOrdersPage (Render): No transaction data in state for this order`);
               }
 
               return (
@@ -413,8 +460,12 @@ export function MyOrdersPage() {
                         Estimated arrival: {order.estimated_delivery_date ? new Date(order.estimated_delivery_date).toLocaleDateString() : "Not available"}
                       </div>
                       {/* Exibindo status real ou fallback */}
-                      <span className={`inline-block mt-1 px-3 py-1 ${order.status_name ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'} rounded-full text-sm`}>
-                        {order.status_name || "Processing"}
+                      <span className={`inline-block mt-1 px-3 py-1 ${
+                        paymentStatus 
+                          ? (paymentStatus === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600') 
+                          : 'bg-gray-100 text-gray-500'
+                      } rounded-full text-sm`}>
+                        {paymentStatus || "Processing"}
                       </span>
                     </div>
                   </div>
