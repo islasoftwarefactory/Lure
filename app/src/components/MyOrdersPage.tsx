@@ -117,6 +117,61 @@ export function MyOrdersPage() {
   const [loadingItemsState, setLoadingItemsState] = useState<Set<string>>(new Set()); // <<< NOVO: Conjunto de IDs de pedidos carregando itens
   const [orderTransactionsMap, setOrderTransactionsMap] = useState<{ [orderId: string]: TransactionSummaryStub[] }>({});
 
+  // 1. Mantemos o estado para armazenar as URLs das imagens
+  const [productImages, setProductImages] = useState<{[key: number]: string}>({});
+
+  // 2. Novo useEffect com carregamento em lote
+  useEffect(() => {
+    // Função para buscar uma única imagem
+    const fetchSingleImage = async (imageId: number) => {
+      try {
+        const response = await api.get(`/image-category/read/${imageId}`);
+        if (response.data && response.data.data) {
+          setProductImages(prev => ({
+            ...prev,
+            [imageId]: response.data.data.url
+          }));
+          console.log(`MyOrdersPage: Image URL fetched for ID ${imageId}:`, response.data.data.url);
+        }
+      } catch (error) {
+        console.error(`MyOrdersPage: Error fetching image ${imageId}:`, error);
+      }
+    };
+
+    // Função para coletar todos os IDs de imagem únicos e carregá-los
+    const loadAllUniqueImages = () => {
+      // Conjunto para armazenar IDs únicos
+      const uniqueImageIds = new Set<number>();
+      
+      // Percorre todos os pedidos e seus itens para coletar IDs únicos
+      Object.values(orderItemsMap).forEach(items => {
+        if (items && items.length > 0) {
+          items.forEach(item => {
+            if (item.product && item.product.image_category_id) {
+              // Só adiciona ao conjunto se ainda não temos esta imagem carregada
+              if (!productImages[item.product.image_category_id]) {
+                uniqueImageIds.add(item.product.image_category_id);
+              }
+            }
+          });
+        }
+      });
+      
+      // Exibe log de quantas imagens serão carregadas
+      console.log(`MyOrdersPage: Loading ${uniqueImageIds.size} unique images in batch`);
+      
+      // Carrega cada imagem única
+      uniqueImageIds.forEach(imageId => {
+        fetchSingleImage(imageId);
+      });
+    };
+
+    // Se temos dados de pedidos, inicia o carregamento em lote
+    if (Object.keys(orderItemsMap).length > 0) {
+      loadAllUniqueImages();
+    }
+  }, [orderItemsMap, productImages]); // Dependências mantidas
+
   // useEffect for justCompletedOrderId logic (remains unchanged)
   useEffect(() => {
     const fetchOrders = async () => {
@@ -395,7 +450,7 @@ export function MyOrdersPage() {
                          <div key={item.id} className="flex gap-3">
                             <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
                                 <img
-                                    src={item.product?.image_url || 'default_product_image.png'}
+                                    src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
                                     alt={item.product?.name || 'Product'}
                                     width={80}
                                     height={80}

@@ -97,6 +97,7 @@ export function OrderPage() {
     const [orderDetails, setOrderDetails] = useState<DetailedPurchase | null>(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState<boolean>(false);
     const [orderDetailsError, setOrderDetailsError] = useState<string | null>(null);
+    const [productImages, setProductImages] = useState<{[key: number]: string}>({});
     // --- FIM ESTADOS ---
 
     // Verifica se viemos do checkout com dados de um pedido recém-concluído
@@ -158,6 +159,33 @@ export function OrderPage() {
     }, [justCompletedOrderId, navigate]); // Adicionado navigate como dependência por causa do navigate opcional no finally
     // --- FIM useEffect ---
 
+    // Adicione esta função de busca de imagem no componente OrderPage
+    useEffect(() => {
+        // Função para buscar imagem de um produto pelo seu image_category_id
+        const fetchProductImage = async (imageId: number) => {
+            try {
+                const response = await api.get(`/image-category/read/${imageId}`);
+                if (response.data && response.data.data) {
+                    setProductImages(prev => ({
+                        ...prev,
+                        [imageId]: response.data.data.url
+                    }));
+                    console.log(`Image URL fetched for ID ${imageId}:`, response.data.data.url);
+                }
+            } catch (error) {
+                console.error(`Error fetching image ${imageId}:`, error);
+            }
+        };
+
+        // Quando os detalhes do pedido são carregados, buscamos imagens para todos os produtos
+        if (orderDetails && orderDetails.items) {
+            orderDetails.items.forEach(item => {
+                if (item.product && item.product.image_category_id) {
+                    fetchProductImage(item.product.image_category_id);
+                }
+            });
+        }
+    }, [orderDetails]); // Executar quando orderDetails mudar
 
     // --- RENDERIZAÇÃO DO CONTEÚDO ---
     // Esta função decidirá o que mostrar: loading, erro, detalhes do pedido recente, ou a futura lista de pedidos.
@@ -201,7 +229,7 @@ export function OrderPage() {
                                             <div key={item.id} className="flex justify-between items-center text-sm border-b pb-3">
                                                 <div className="flex items-center">
                                                     <img
-                                                        src={item.product?.image_url || 'default_product_image.png'}
+                                                        src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
                                                         alt={item.product?.name || 'Product'}
                                                         className="w-12 h-12 bg-gray-200 rounded mr-3 object-cover flex-shrink-0"
                                                         onError={(e) => (e.currentTarget.src = 'default_product_image.png')}

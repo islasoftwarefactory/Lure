@@ -230,11 +230,30 @@ export function CheckoutComponent() {
         console.log("Attempting to create purchase...");
         const purchaseResponse = await api.post<{data: any}>('/purchase/create', purchasePayload);
         const createdPurchase = purchaseResponse.data.data;
-        console.log("Purchase created successfully:", createdPurchase);
+        console.log("Purchase created successfully. Data:", createdPurchase);
+        console.log("Purchase ID:", createdPurchase.id);
 
-        console.log("CheckoutComponent: Navigating to /my-orders with state:", { justCompletedOrder: createdPurchase });
+        if (!createdPurchase || !createdPurchase.id) {
+          console.error("Error: Created purchase has no valid ID:", createdPurchase);
+          setErrors({ form: "Order was created but we couldn't get the order ID. Please check your orders page." });
+          return;
+        }
 
-        navigate('/my-orders', { state: { justCompletedOrder: createdPurchase } });
+        try {
+          console.log(`CheckoutComponent: Attempting to navigate to /order-page/${createdPurchase.id}`);
+          navigate(`/order-page/${createdPurchase.id}`, { 
+            state: { justCompletedOrder: createdPurchase },
+            replace: true // Usar replace para evitar problemas de histórico
+          });
+        } catch (error) {
+          console.error("Navigation error:", error);
+          // Fallback para a rota anterior se a primeira falhar
+          console.log("CheckoutComponent: Fallback - navigating to /my-orders");
+          navigate('/my-orders', { 
+            state: { justCompletedOrder: createdPurchase },
+            replace: true
+          });
+        }
 
     } catch (error: any) {
         console.error('Error during checkout process (API call):', error);
