@@ -17,24 +17,30 @@ interface OrderShippingAddress {
   // Outros campos do endereço não usados na lista
 }
 
-// Definindo a interface para os dados da API de LISTA
+// Interface mínima para moeda na lista
+interface CurrencyDetailsStub { code: string; }
+
+// Interface mínima para transação na lista
+interface TransactionSummaryStub { currency?: CurrencyDetailsStub; }
+
+// Interface principal para a lista de pedidos
 interface Order {
   id: string;
   created_at: string;
   total_amount: number;
-  status_name?: string | null; // Pode ser null ou não existir
+  status_name?: string | null;
   shipping_address: OrderShippingAddress;
-  estimated_delivery_date?: string | null; // Pode ser null ou não existir
+  estimated_delivery_date?: string | null;
+  transactions?: TransactionSummaryStub[];
 }
 
-// Definindo novas interfaces para DETALHES do pedido
 interface AddressDetails { street: string; number: number; city: string; state: string; zip_code: string; }
 interface ProductDetails { name: string; image_url?: string; }
 interface SizeDetails { name: string; }
 interface PurchaseItemDetails { id: number; product_id: number; size_id: number; quantity: number; unit_price_at_purchase: number; product: ProductDetails; size: SizeDetails;}
 interface TransactionMethodDetails { name: string; }
 interface PaymentStatusDetails { name: string; }
-interface TransactionDetails { id: number; method_id: number; status_id: number; amount: number; currency_id: number; created_at: string; method: TransactionMethodDetails; status: PaymentStatusDetails;}
+interface TransactionDetails { id: number; method_id: number; status_id: number; amount: number; currency_id: number; created_at: string; method: TransactionMethodDetails; status: PaymentStatusDetails; currency?: CurrencyDetailsStub;}
 interface DetailedPurchase { id: string; user_id: number; shipping_address_id: number; shipping_cost: number; taxes: number; created_at: string; updated_at: string; address: AddressDetails; items: PurchaseItemDetails[]; transactions: TransactionDetails[];}
 
 export function MyOrdersPage() {
@@ -70,13 +76,16 @@ export function MyOrdersPage() {
       setOrderDetailsError(null);
       setOrderDetails(null);
 
-      const apiUrl = `/purchase/${justCompletedOrderId}?include_items=true&include_transactions=true&include_address=true`;
+      const apiUrl = `/purchase/${justCompletedOrderId}?include_items=true&include_address=true&include_transactions=true`;
       // --- Log 5: URL da API a ser chamada ---
       console.log(`MyOrdersPage: Calling API GET ${apiUrl}`);
       // --- Fim Log 5 ---
 
       api.get<{ data: DetailedPurchase }>(apiUrl)
         .then((response: { data: { data: DetailedPurchase } }) => { // Explicit type for response
+          // --- Log 6: Resposta da API ---
+          console.log(`MyOrdersPage: Response received for order ${justCompletedOrderId}:`, response);
+          // --- Fim Log 6 ---
           if (response.data?.data) {
             console.log("MyOrdersPage: Detalhes recebidos:", response.data.data);
             setOrderDetails(response.data.data);
@@ -106,6 +115,7 @@ export function MyOrdersPage() {
   // Novo estado para armazenar detalhes dos itens por ID do pedido
   const [orderItemsMap, setOrderItemsMap] = useState<{ [orderId: string]: PurchaseItemDetails[] }>({});
   const [loadingItemsState, setLoadingItemsState] = useState<Set<string>>(new Set()); // <<< NOVO: Conjunto de IDs de pedidos carregando itens
+  const [orderTransactionsMap, setOrderTransactionsMap] = useState<{ [orderId: string]: TransactionSummaryStub[] }>({});
 
   // useEffect for justCompletedOrderId logic (remains unchanged)
   useEffect(() => {
@@ -113,7 +123,7 @@ export function MyOrdersPage() {
       try {
         setLoadingList(true)
         console.log("MyOrdersPage (fetchOrders): Iniciando busca de pedidos em /purchase/user/me");
-        const response = await api.get("/purchase/user/me")
+        const response = await api.get("/purchase/user/me?include_transactions=true")
         // --- Log Detalhado da Resposta ---
         console.log("MyOrdersPage (fetchOrders): Resposta completa da API:", JSON.stringify(response.data, null, 2));
         // --- Fim Log Detalhado ---
@@ -150,58 +160,74 @@ export function MyOrdersPage() {
 
   // --- Função para buscar itens de UM pedido específico ---
   const fetchOrderItems = useCallback(async (orderId: string) => {
-    // Adiciona ao set de loading
     setLoadingItemsState(prev => new Set(prev).add(orderId));
-    console.log(`MyOrdersPage (fetchItems): Buscando itens para pedido ${orderId}...`);
+    console.log(`MyOrdersPage (fetchItems): Fetching details for Order ID ${orderId} with include_transactions=true...`);
     try {
-      const response = await api.get<{ data: { items: PurchaseItemDetails[] } }>(`/purchase/${orderId}?include_items=true&include_address=false&include_transactions=false`);
-      const items = response.data?.data?.items; // Extrai os itens
+      const response = await api.get<{ data: { items: PurchaseItemDetails[], transactions?: TransactionSummaryStub[] } }>(
+        `/purchase/${orderId}?include_items=true&include_address=false&include_transactions=true`
+      );
 
-      if (items) { // Verifica se os itens existem na resposta
-        console.log(`MyOrdersPage (fetchItems): Itens recebidos para ${orderId}:`, items.length);
-        // --- EDIT 2: Usar forma funcional de atualização de estado ---
-        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: items }));
-        // --- FIM EDIT 2 ---
-      } else {
-        console.warn(`MyOrdersPage (fetchItems): Estrutura de itens inválida ou vazia para ${orderId}.`);
-        // --- EDIT 3: Usar forma funcional aqui também ---
-        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] })); // Marca como vazio
-        // --- FIM EDIT 3 ---
+      const data = response.data?.data;
+      const items = data?.items;
+      const transactions = data?.transactions;
+
+      console.log(`MyOrdersPage (fetchItems): TRANSACTION DATA STRUCTURE for ${orderId}:`, JSON.stringify(transactions, null, 2));
+      
+      // NOVO LOG: Verificar se há moeda e extrair o código
+      if (transactions && transactions.length > 0) {
+        console.log(`MyOrdersPage (fetchItems): Currency object:`, transactions[0].currency);
+        if (transactions[0].currency) {
+          console.log(`MyOrdersPage (fetchItems): Currency CODE extracted: ${transactions[0].currency.code}`);
+          
+          // ADICIONANDO: Salvar as transações no estado
+          setOrderTransactionsMap(prevMap => ({ ...prevMap, [orderId]: transactions }));
+          console.log(`MyOrdersPage (fetchItems): Transactions saved to state for order ${orderId}`);
+        } else {
+          console.log(`MyOrdersPage (fetchItems): No currency object found in transaction`);
+        }
       }
+
+      if (items) {
+        console.log(`MyOrdersPage (fetchItems): Items received for ${orderId}:`, items.length);
+        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: items }));
+      } else {
+        console.warn(`MyOrdersPage (fetchItems): Invalid or empty items structure for ${orderId}.`);
+        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
+      }
+
     } catch (error: any) {
-      console.error(`MyOrdersPage (fetchItems): Erro ao buscar itens para ${orderId}:`, error);
-      // --- EDIT 4: Usar forma funcional aqui também ---
-      setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] })); // Marca como vazio em erro
-      // --- FIM EDIT 4 ---
+      console.error(`MyOrdersPage (fetchItems): Error fetching details for ${orderId}:`, error);
+      setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
     } finally {
-      // Remove do set de loading
       setLoadingItemsState(prev => {
-          const next = new Set(prev);
-          next.delete(orderId);
-          return next;
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
       });
     }
-  }, []); // <<< Array de dependências VAZIO para useCallback
+  }, []);
 
   // --- useEffect 1: Buscar APENAS a lista de pedidos ---
   useEffect(() => {
     // Só busca a lista se não veio do checkout
     if (!justCompletedOrderId) {
-        console.log("MyOrdersPage: useEffect [list] triggered. Fetching order list...");
+        console.log("MyOrdersPage: useEffect [list] triggered. Fetching order list including transactions...");
         setLoadingList(true);
         setListError(null);
-        setOrderItemsMap({}); // Limpa itens ao buscar nova lista
-        setLoadingItemsState(new Set()); // Limpa loading de itens
+        setOrderItemsMap({});
+        setLoadingItemsState(new Set());
 
-        api.get<{ data: Order[] }>("/purchase/user/me")
+        api.get<{ data: Order[] }>("/purchase/user/me?include_transactions=true")
           .then(response => {
             const ordersData = response.data?.data || [];
+            console.log("MyOrdersPage (fetchOrders List): Dados recebidos da lista (com transactions):", JSON.stringify(ordersData[0], null, 2));
             setOrders(ordersData);
             console.log(`MyOrdersPage: Lista de ${ordersData.length} pedidos recebida.`);
           })
           .catch(error => {
             const message = error.response?.data?.error || error.message || "Failed to load order list.";
             console.error("MyOrdersPage: Erro ao buscar lista de pedidos:", error);
+            console.error("Error details:", error.response?.data);
             setListError(message);
             setOrders([]);
           })
@@ -209,9 +235,9 @@ export function MyOrdersPage() {
             setLoadingList(false);
           });
     } else {
-        setLoadingList(false); // Garante que loading da lista é false se não buscamos
+        setLoadingList(false);
     }
-  }, [justCompletedOrderId]); // Depende apenas de justCompletedOrderId
+  }, [justCompletedOrderId]);
 
   // --- useEffect 2: Buscar ITENS quando a lista 'orders' mudar ---
   useEffect(() => {
@@ -301,11 +327,22 @@ export function MyOrdersPage() {
           <div className="text-center py-20 text-gray-500">No orders found in this category.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredOrders.map((order: Order, index: number) => {
-              // Pega os itens para este pedido específico do nosso mapa de estado
+            {filteredOrders.map((order: Order) => {
               const itemsForThisOrder = orderItemsMap[order.id];
-              // Verifica se itens para ESTE pedido específico estão carregando
+              const transactionsForThisOrder = orderTransactionsMap[order.id];
               const isLoadingItemsForThisOrder = loadingItemsState.has(order.id);
+
+              // Acesso à moeda da transação a partir do novo estado
+              let currencyCode = null;
+              
+              console.log(`MyOrdersPage (Render): Order ID ${order.id.substring(0,8)}... | Local Transactions:`, transactionsForThisOrder);
+              
+              if (transactionsForThisOrder && transactionsForThisOrder.length > 0 && transactionsForThisOrder[0].currency) {
+                currencyCode = transactionsForThisOrder[0].currency.code;
+                console.log(`MyOrdersPage (Render): SUCCESS! Currency code from state: ${currencyCode}`);
+              } else {
+                console.log(`MyOrdersPage (Render): No currency data in state for this order`);
+              }
 
               return (
                 <div key={order.id} className="border rounded-xl p-6 bg-white shadow-sm">
@@ -390,14 +427,23 @@ export function MyOrdersPage() {
 
                   <div className="flex justify-between items-center border-t pt-4 mt-4">
                     <div>
-                      {/* Exibindo total real */}
-                      <span className="font-medium">Rp{order.total_amount.toLocaleString()}</span>
-                      {/* Contagem de itens (se disponível nos itens buscados) */}
-                       {itemsForThisOrder && (
-                           <span className="text-gray-500 text-sm ml-1">({itemsForThisOrder.length} Items)</span>
-                       )}
+                      <span className="font-medium">
+                        {currencyCode ? (
+                          <>
+                            <span className="text-gray-700">{currencyCode}</span>{' '}
+                          </>
+                        ) : ''}
+                        {order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      {itemsForThisOrder && (
+                        <span className="text-gray-500 text-sm ml-1">
+                          ({itemsForThisOrder.length} Items)
+                        </span>
+                      )}
                     </div>
-                    <Button onClick={() => handleViewDetailsClick(order.id)} className="px-4 py-2 text-sm">Details</Button>
+                    <Button onClick={() => handleViewDetailsClick(order.id)} className="px-4 py-2 text-sm">
+                      Details
+                    </Button>
                   </div>
                 </div>
               )

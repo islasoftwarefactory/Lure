@@ -96,7 +96,7 @@ export function CheckoutComponent() {
       setAvailableCities([]);
       setSelectedCity('');
 
-      const gistUrl = 'https://gist.githubusercontent.com/Migguell/f1da1cf08e555a0c3c75c78ab8fe91f2/raw/ec08c5ae38728ed432128a3ab1ebfe4feec5a5ec/StatesEUA';
+      const gistUrl = 'https://gist.githubusercontent.com/Migguell/f1da1cf08e555a0c3c75c78ab8fe91f2/raw/8f0ed4accf94de2f14dcd3a344b6b2f33e230426/StatesEUA';
       console.log(`Fetching location data for ${countryIdentifier} from: ${gistUrl}`);
       try {
         const response = await fetch(gistUrl);
