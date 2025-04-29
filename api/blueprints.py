@@ -15,6 +15,8 @@ from api.purchases.product.routes import purchase_item_bp as purchase_item_bluep
 from api.purchases.purchase.routes import purchase_bp as purchase_blueprint
 from api.transaction.payment.routes import transaction_bp as transaction_blueprint
 from api.transaction.method.routes import transaction_method_bp as transaction_method_blueprint
+from api.shippings.status.routes import status_bp as shipping_status_blueprint
+from api.shippings.conclusion.routes import conclusion_bp as shipping_conclusion_blueprint
 
 def register_blueprints(app):
     app.register_blueprint(address_blueprint, url_prefix='/address')
@@ -34,3 +36,5 @@ def register_blueprints(app):
     app.register_blueprint(purchase_blueprint, url_prefix='/purchase')
     app.register_blueprint(transaction_blueprint, url_prefix='/purchase-transaction')
     app.register_blueprint(transaction_method_blueprint, url_prefix='/transaction-method-purchase')
+    app.register_blueprint(shipping_status_blueprint, url_prefix='/shipping-status')
+    app.register_blueprint(shipping_conclusion_blueprint, url_prefix='/shipping-conclusion')
