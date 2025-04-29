@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
-import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
 import { useRef } from 'react';
 import { Plus } from 'lucide-react';
 import ProductCard from "@/components/ProductCard";
@@ -232,7 +231,7 @@ export function ProductPage() {
         price: product.price,
         quantity: quantity,
         size: selectedSize, // <<< ENVIAR O NOME DO TAMANHO
-        image: productImage || hoodieImage,
+        image: productImage,
     };
     // --- FIM EDIT 1 ---
 
@@ -270,13 +269,13 @@ export function ProductPage() {
     // Usar a interface CartItem definida no Checkout para garantir consistência
     // Omitir 'cart_item_id' e 'id' (ID do carrinho) pois não são relevantes aqui
     const itemForCheckout: Omit<CartItem, 'cart_item_id' | 'id'> & {productId: number, sizeId: number} = {
-      productId: product.id, // <<< Usar chave 'productId' com o valor de product.id
-      sizeId: sizeIdToUse,    // <<< Usar chave 'sizeId' com o ID numérico do tamanho
+      productId: product.id,
+      sizeId: sizeIdToUse,
       name: product.name,
       price: product.price,
       quantity: quantity,
-      size: selectedSize,      // Manter o nome do tamanho para exibição se necessário
-      image: productImage || hoodieImage
+      size: selectedSize,
+      image: productImage,
     };
     // --- FIM AJUSTE CRIAÇÃO ---
 
@@ -296,7 +295,7 @@ export function ProductPage() {
           {/* Imagem principal */}
           <div className="w-[600px] h-[600px] flex items-center justify-center">
             <img 
-              src={productImage || hoodieImage} 
+              src={productImage} 
               alt={product?.name}
               className="w-full h-full object-contain"
             />
@@ -433,7 +432,7 @@ export function ProductPage() {
                   key={recProduct.id}
                   title={recProduct.name}
                   subtitle={recProduct.description || "Check it out!"}
-                  imageUrl={recommendedImages[recProduct.image_category_id] || hoodieImage}
+                  imageUrl={recommendedImages[recProduct.image_category_id] || productImage}
                   price={recProduct.price}
                   onClick={() => handleProductClick(recProduct.id.toString())}
                 />

@@ -16,6 +16,8 @@ from api.transaction.payment.model import Transaction
 from api.transaction.method.model import TransactionMethod
 from api.payment_status.model import PaymentStatus
 from api.currency.model import Currency
+from api.shippings.status.model import ShippingStatus
+from api.shippings.conclusion.model import ShippingConclusion
 
 
 from api.utils.db.connection import db

@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, ReactNode, useEffect } from 'react'
 import { SideCart } from "./SideCart.tsx"
-import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg'
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
 import { useNavigate } from 'react-router-dom';
@@ -144,7 +143,7 @@ export function HomePage() {
                   key={product.id}
                   title={product.name}
                   subtitle={product.description}
-                  imageUrl={productImages[product.image_category_id] || hoodieImage}
+                  imageUrl={productImages[product.image_category_id]}
                   price={product.price}
                   onClick={() => handleProductClick(product.id.toString())}
                 />
