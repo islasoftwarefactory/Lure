@@ -68,6 +68,9 @@ def handle_create_purchase(current_user_id):
     current_app.logger.debug(f"Adicionado currency_id={determined_currency_id} ao dict 'data' para criação.")
     # --- FIM ADIÇÃO ---
 
+    # Add shipping_status_id to the data dictionary
+    data['shipping_status_id'] = data.get('shipping_status_id')  # Allow it to be passed in the payload
+
     try:
         # --- LOG: Início Criação Purchase ---
         current_app.logger.info("Etapa 2: Criando objeto Purchase...")
@@ -229,6 +232,10 @@ def handle_update_purchase(current_user_id, purchase_id):
          return jsonify({"error": "Purchase not found"}), 404
     if purchase_to_update.user_id != current_user_id:
          return jsonify({"error": "Not authorized to update this purchase"}), 403
+
+    # Allow shipping_status_id to be updated
+    if 'shipping_status_id' in data:
+        current_app.logger.debug(f"Updating shipping_status_id to {data['shipping_status_id']} for purchase ID {purchase_id}")
 
     try:
         # Chamar método da classe

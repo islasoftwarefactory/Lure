@@ -38,3 +38,4 @@ def register_blueprints(app):
     app.register_blueprint(transaction_method_blueprint, url_prefix='/transaction-method-purchase')
     app.register_blueprint(shipping_status_blueprint, url_prefix='/shipping-status')
     app.register_blueprint(shipping_conclusion_blueprint, url_prefix='/shipping-conclusion')
+    
