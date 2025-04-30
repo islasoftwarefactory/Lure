@@ -15,14 +15,14 @@ def create(current_user_id):
         return jsonify({"error": "Request body must be JSON"}), 400
 
     try:
-        # Add user tracking
-        data['user_id'] = current_user_id
+        # Add user tracking (commented out for user_id removal)
+        # data['user_id'] = current_user_id
         
         # Validate address_id if provided
         if 'address_id' in data:
             address = Address.query.get(data['address_id'])
-            if not address or address.user_id != current_user_id:
-                return jsonify({"error": "Invalid or unauthorized address"}), 400
+            if not address:
+                return jsonify({"error": "Invalid address"}), 400
         
         shipping_status = create_shipping_status(data)
         return jsonify({
@@ -41,10 +41,7 @@ def read(current_user_id, id):
     if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
 
-    # Verify ownership
-    if shipping_status.user_id != current_user_id:
-        return jsonify({"error": "Not authorized to view this shipping status"}), 403
-
+    # Removed user verification (was previously user-specific)
     return jsonify({
         "data": shipping_status.serialize(),
         "message": "Shipping status retrieved successfully."
@@ -62,16 +59,12 @@ def update(current_user_id, id):
     if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
 
-    # Verify ownership
-    if shipping_status.user_id != current_user_id:
-        return jsonify({"error": "Not authorized to update this shipping status"}), 403
-
     try:
         # Validate address_id if being updated
         if 'address_id' in data:
             address = Address.query.get(data['address_id'])
-            if not address or address.user_id != current_user_id:
-                return jsonify({"error": "Invalid or unauthorized address"}), 400
+            if not address:
+                return jsonify({"error": "Invalid address"}), 400
 
         updated = update_shipping_status(id, data)
         return jsonify({
@@ -86,14 +79,10 @@ def update(current_user_id, id):
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
 @token_required
 def delete(current_user_id, id):
-    # First check ownership
+    # Removed ownership check (was previously user-specific)
     shipping_status = find_shipping_status_by_id(id)
     if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
-        
-    # Check authorization
-    if shipping_status.user_id != current_user_id:
-        return jsonify({"error": "Not authorized to delete this shipping status"}), 403
 
     deleted = delete_shipping_status(id)
     if not deleted:
@@ -111,14 +100,10 @@ def handle_update_shipping_details(current_user_id, status_id):
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
 
-    # First check ownership
+    # First check if status exists
     shipping_status = find_shipping_status_by_id(status_id)
     if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
-        
-    # Check authorization
-    if shipping_status.user_id != current_user_id:
-        return jsonify({"error": "Not authorized to update this shipping status"}), 403
 
     tracking_number = data.get("tracking_number")
     estimated_delivery_date = data.get("estimated_delivery_date")
@@ -127,8 +112,7 @@ def handle_update_shipping_details(current_user_id, status_id):
         if estimated_delivery_date:
             estimated_delivery_date = datetime.fromisoformat(estimated_delivery_date)
 
-        # Add audit information
-        data['updated_by'] = current_user_id
+        # Add audit information (can still track who updated it)
         data['updated_at'] = datetime.now()
 
         shipping_status = update_shipping_details(status_id, tracking_number, estimated_delivery_date)

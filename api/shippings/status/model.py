@@ -17,13 +17,11 @@ class ShippingStatus(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
     # Update relationship
     purchase = db.relationship('Purchase', back_populates='shipping_status_rel')
     conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses')
     address = db.relationship('Address', back_populates='shipping_statuses')
-    user = db.relationship('User', back_populates='shipping_statuses')
 
     def __repr__(self):
         return f"<ShippingStatus id={self.id}>"
@@ -38,8 +36,7 @@ class ShippingStatus(db.Model):
             "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "address_id": self.address_id,
-            "user_id": self.user_id
+            "address_id": self.address_id
         }
 
 def find_shipping_status_by_id(status_id: int) -> Optional[ShippingStatus]:
@@ -58,8 +55,7 @@ def create_shipping_status(status_data: Dict) -> ShippingStatus:
             purchase_id=status_data["purchase_id"],  # Add purchase_id
             description=status_data.get("description"),
             conclusion_id=status_data.get("conclusion_id"),
-            address_id=status_data.get("address_id"),
-            user_id=status_data.get("user_id")
+            address_id=status_data.get("address_id")
         )
         db.session.add(shipping_status)
         db.session.commit()
