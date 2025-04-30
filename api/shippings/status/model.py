@@ -15,7 +15,8 @@ class ShippingStatus(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
-    conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses', lazy='dynamic')
+    conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses')
+    purchases = db.relationship('Purchase', back_populates='shipping_status_rel', lazy='dynamic')
 
     def __repr__(self):
         return f"<ShippingStatus id={self.id}>"
@@ -100,3 +101,22 @@ def delete_shipping_status(status_id: int) -> bool:
             raise
     current_app.logger.warning(f"Tentativa de deletar status de envio inexistente: ID {status_id}")
     return False
+
+def update_shipping_details(status_id: int, tracking_number: str, estimated_delivery_date: Optional[datetime]) -> Optional[ShippingStatus]:
+    """Updates tracking number and estimated delivery date for a shipping status."""
+    shipping_status = find_shipping_status_by_id(status_id)
+    if not shipping_status:
+        current_app.logger.warning(f"Tentativa de atualizar status de envio inexistente: ID {status_id}")
+        return None
+
+    current_app.logger.info(f"Atualizando detalhes de envio ID {status_id}")
+    try:
+        shipping_status.tracking_number = tracking_number
+        shipping_status.estimated_delivery_date = estimated_delivery_date
+        db.session.commit()
+        current_app.logger.info(f"Detalhes de envio ID {status_id} atualizados com sucesso.")
+        return shipping_status
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao atualizar detalhes de envio ID {status_id}: {str(e)}")
+        raise
