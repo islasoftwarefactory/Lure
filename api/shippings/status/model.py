@@ -8,23 +8,25 @@ class ShippingStatus(db.Model):
     __tablename__ = "shipping_status"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
     description = db.Column(db.String(256), nullable=True)
     conclusion_id = db.Column(db.Integer, db.ForeignKey('shipping_conclusion.id'), nullable=True)
+    tracking_number = db.Column(db.String(100), nullable=True)
+    estimated_delivery_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
     conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses', lazy='dynamic')
 
     def __repr__(self):
-        return f"<ShippingStatus id={self.id} name='{self.name}'>"
+        return f"<ShippingStatus id={self.id}>"
 
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
             "description": self.description,
             "conclusion_id": self.conclusion_id,
+            "tracking_number": self.tracking_number,
+            "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
@@ -35,25 +37,24 @@ def find_shipping_status_by_id(status_id: int) -> Optional[ShippingStatus]:
 
 def create_shipping_status(status_data: Dict) -> ShippingStatus:
     """Cria um novo status de envio."""
-    current_app.logger.info(f"Iniciando criação de status de envio: {status_data.get('name')}")
+    current_app.logger.info(f"Iniciando criação de status de envio.")
 
-    required_fields = ['name']
+    required_fields = []
     if not all(field in status_data for field in required_fields):
         raise ValueError(f"Dados incompletos para criar status de envio. Campos necessários: {required_fields}")
 
     try:
         shipping_status = ShippingStatus(
-            name=status_data["name"],
             description=status_data.get("description"),
             conclusion_id=status_data.get("conclusion_id")
         )
         db.session.add(shipping_status)
         db.session.commit()
-        current_app.logger.info(f"Status de envio criado com sucesso: {shipping_status.name}")
+        current_app.logger.info(f"Status de envio criado com sucesso.")
         return shipping_status
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro ao criar status de envio {status_data.get('name')}: {str(e)}")
+        current_app.logger.error(f"Erro ao criar status de envio: {str(e)}")
         raise
 
 def update_shipping_status(status_id: int, status_data: Dict) -> Optional[ShippingStatus]:
@@ -65,7 +66,7 @@ def update_shipping_status(status_id: int, status_data: Dict) -> Optional[Shippi
 
     current_app.logger.info(f"Atualizando status de envio ID {status_id}")
     try:
-        allowed_updates = ['name', 'description', 'conclusion_id']
+        allowed_updates = ['description', 'conclusion_id', 'tracking_number', 'estimated_delivery_date']
         updated = False
         for key, value in status_data.items():
             if key in allowed_updates:

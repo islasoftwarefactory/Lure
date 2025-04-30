@@ -218,49 +218,55 @@ export function MyOrdersPage() {
     setLoadingItemsState(prev => new Set(prev).add(orderId));
     console.log(`MyOrdersPage (fetchItems): Fetching details for Order ID ${orderId} with include_transactions=true...`);
     try {
-      const response = await api.get<{ data: { items: PurchaseItemDetails[], transactions?: TransactionSummaryStub[] } }>(
-        `/purchase/${orderId}?include_items=true&include_address=false&include_transactions=true`
-      );
+        const response = await api.get<{ data: { items: PurchaseItemDetails[], transactions?: TransactionSummaryStub[], shipping_status?: ShippingStatus } }>(
+            `/purchase/${orderId}?include_items=true&include_address=false&include_transactions=true&include_shipping=true`
+        );
 
-      const data = response.data?.data;
-      const items = data?.items;
-      const transactions = data?.transactions;
+        const data = response.data?.data;
+        const items = data?.items;
+        const transactions = data?.transactions;
+        const shippingStatus = data?.shipping_status;
 
-      console.log(`MyOrdersPage (fetchItems): TRANSACTION DATA STRUCTURE for ${orderId}:`, JSON.stringify(transactions, null, 2));
-      
-      // NOVO LOG: Verificar se há moeda e extrair o código
-      if (transactions && transactions.length > 0) {
-        console.log(`MyOrdersPage (fetchItems): Currency object:`, transactions[0].currency);
-        if (transactions[0].currency) {
-          console.log(`MyOrdersPage (fetchItems): Currency CODE extracted: ${transactions[0].currency.code}`);
-          
-          // ADICIONANDO: Salvar as transações no estado
-          setOrderTransactionsMap(prevMap => ({ ...prevMap, [orderId]: transactions }));
-          console.log(`MyOrdersPage (fetchItems): Transactions saved to state for order ${orderId}`);
-        } else {
-          console.log(`MyOrdersPage (fetchItems): No currency object found in transaction`);
+        console.log(`MyOrdersPage (fetchItems): TRANSACTION DATA STRUCTURE for ${orderId}:`, JSON.stringify(transactions, null, 2));
+        
+        // NOVO LOG: Verificar se há moeda e extrair o código
+        if (transactions && transactions.length > 0) {
+            console.log(`MyOrdersPage (fetchItems): Currency object:`, transactions[0].currency);
+            if (transactions[0].currency) {
+                console.log(`MyOrdersPage (fetchItems): Currency CODE extracted: ${transactions[0].currency.code}`);
+                
+                // ADICIONANDO: Salvar as transações no estado
+                setOrderTransactionsMap(prevMap => ({ ...prevMap, [orderId]: transactions }));
+                console.log(`MyOrdersPage (fetchItems): Transactions saved to state for order ${orderId}`);
+            } else {
+                console.log(`MyOrdersPage (fetchItems): No currency object found in transaction`);
+            }
         }
-      }
 
-      if (items) {
-        console.log(`MyOrdersPage (fetchItems): Items received for ${orderId}:`, items.length);
-        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: items }));
-      } else {
-        console.warn(`MyOrdersPage (fetchItems): Invalid or empty items structure for ${orderId}.`);
-        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
-      }
+        if (items) {
+            console.log(`MyOrdersPage (fetchItems): Items received for ${orderId}:`, items.length);
+            setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: items }));
+        } else {
+            console.warn(`MyOrdersPage (fetchItems): Invalid or empty items structure for ${orderId}.`);
+            setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
+        }
+
+        // Map the shipping status
+        if (shippingStatus) {
+            setOrderShippingStatusMap(prevMap => ({ ...prevMap, [orderId]: shippingStatus }));
+        }
 
     } catch (error: any) {
-      console.error(`MyOrdersPage (fetchItems): Error fetching details for ${orderId}:`, error);
-      setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
+        console.error(`MyOrdersPage (fetchItems): Error fetching details for ${orderId}:`, error);
+        setOrderItemsMap(prevMap => ({ ...prevMap, [orderId]: [] }));
     } finally {
-      setLoadingItemsState(prev => {
-        const next = new Set(prev);
-        next.delete(orderId);
-        return next;
-      });
+        setLoadingItemsState(prev => {
+            const next = new Set(prev);
+            next.delete(orderId);
+            return next;
+        });
     }
-  }, []);
+}, []);
 
   // --- useEffect 1: Buscar APENAS a lista de pedidos ---
   useEffect(() => {

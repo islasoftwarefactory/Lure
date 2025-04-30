@@ -195,11 +195,13 @@ def handle_get_purchase(current_user_id, purchase_id):
     include_items = request.args.get('include_items', 'true').lower() == 'true'
     include_history = request.args.get('include_history', 'false').lower() == 'true'
     include_transactions = request.args.get('include_transactions', 'false').lower() == 'true'
+    include_shipping = request.args.get('include_shipping', 'false').lower() == 'true'
 
     return jsonify({"data": purchase.serialize(
         include_items=include_items,
         include_history=include_history,
-        include_transactions=include_transactions
+        include_transactions=include_transactions,
+        include_shipping=include_shipping
     )}), 200
 
 @purchase_bp.route("/user/me", methods=["GET"]) # Rota alternativa para pegar compras do usuário logado
@@ -208,7 +210,8 @@ def handle_get_all_user_purchases(current_user_id):
     try:
         # Chamar método da classe
         purchases = Purchase.get_all_for_user(current_user_id)
-        return jsonify({"data": [p.serialize(include_items=False) for p in purchases]}), 200
+        include_shipping = request.args.get('include_shipping', 'false').lower() == 'true'
+        return jsonify({"data": [p.serialize(include_items=False, include_shipping=include_shipping) for p in purchases]}), 200
     except Exception as e:
         current_app.logger.error(f"Failed to retrieve purchases for user {current_user_id}: {str(e)}")
         current_app.logger.error(traceback.format_exc())

@@ -20,8 +20,6 @@ class Purchase(db.Model):
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     taxes = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     total_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.0) # subtotal + shipping + taxes
-    estimated_delivery_date = db.Column(db.Date, nullable=True)
-    tracking_number = db.Column(db.String(100), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -43,7 +41,7 @@ class Purchase(db.Model):
         # Add logic for shipping_cost and taxes if applicable
         self.total_amount = self.subtotal + self.shipping_cost + self.taxes
 
-    def serialize(self, include_items=True, include_history=False, include_transactions=False) -> Dict:
+    def serialize(self, include_items=True, include_history=False, include_transactions=False, include_shipping=False) -> Dict:
         data = {
             "id": self.id,
             "user_id": self.user_id,
@@ -53,8 +51,6 @@ class Purchase(db.Model):
             "shipping_cost": float(self.shipping_cost),
             "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
-            "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
-            "tracking_number": self.tracking_number,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "shipping_address": self.address_rel.serialize() if self.address_rel else None
@@ -65,6 +61,9 @@ class Purchase(db.Model):
              data["history"] = [hist.serialize() for hist in self.history.order_by(PurchaseHistory.created_at.asc())]
         if include_transactions:
              data["transactions"] = [trans.serialize() for trans in self.transactions.order_by(Transaction.created_at.asc())]
+        if include_shipping and self.shipping_status_rel:
+             data["shipping_status"] = self.shipping_status_rel.serialize()
+
         return data
 
     @classmethod
@@ -105,10 +104,18 @@ class Purchase(db.Model):
         purchase = cls.get_by_id(purchase_id)
         if purchase:
             try:
-                if "tracking_number" in data:
-                    purchase.tracking_number = data["tracking_number"]
-                if "estimated_delivery_date" in data:
-                    purchase.estimated_delivery_date = data["estimated_delivery_date"]
+                if "shipping_address_id" in data:
+                    purchase.shipping_address_id = data["shipping_address_id"]
+                if "currency_id" in data:
+                    purchase.currency_id = data["currency_id"]
+                if "subtotal" in data:
+                    purchase.subtotal = data["subtotal"]
+                if "shipping_cost" in data:
+                    purchase.shipping_cost = data["shipping_cost"]
+                if "taxes" in data:
+                    purchase.taxes = data["taxes"]
+                if "total_amount" in data:
+                    purchase.total_amount = data["total_amount"]
                 db.session.commit()
                 current_app.logger.info(f"Purchase ID {purchase_id} updated.")
                 return purchase
@@ -117,8 +124,3 @@ class Purchase(db.Model):
                 current_app.logger.error(f"Error updating purchase ID {purchase_id}: {str(e)}")
                 raise
         return None
-
-    # Delete might be complex due to relationships (items, history, transactions)
-    # Consider soft delete (e.g., setting a 'canceled' status) instead.
-    # @classmethod
-    # def delete(cls, purchase_id: str) -> bool: ... 
