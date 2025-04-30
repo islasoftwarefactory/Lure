@@ -9,21 +9,16 @@ class PurchaseHistory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     purchase_id = db.Column(db.String(36), db.ForeignKey('purchases.id'), nullable=False)
-    # Add new user_id column with foreign key
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_by = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
-    # Relationships
+    # Relacionamentos
     purchase_rel = db.relationship('Purchase', back_populates='history')
-    # Add new user relationship
-    user_rel = db.relationship('User', back_populates='purchase_history')
 
     def serialize(self) -> Dict:
         return {
             "id": self.id,
             "purchase_id": self.purchase_id,
-            "user_id": self.user_id,
             "created_by": self.created_by,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
@@ -35,7 +30,6 @@ class PurchaseHistory(db.Model):
         try:
             history_entry = cls(
                 purchase_id=data["purchase_id"],
-                user_id=data["user_id"],  # Add user_id to creation
                 created_by=data.get("created_by")
             )
             db.session.add(history_entry)

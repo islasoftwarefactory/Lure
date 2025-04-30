@@ -1,5 +1,6 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.shippings.status.model import create_shipping_status, update_shipping_status, delete_shipping_status, find_shipping_status_by_id, update_shipping_details
+from api.address.model import Address
 from api.utils.jwt.decorators import token_required
 from datetime import datetime
 
@@ -16,7 +17,12 @@ def create(current_user_id):
     try:
         # Add user tracking
         data['user_id'] = current_user_id
-        data['created_by'] = current_user_id
+        
+        # Validate address_id if provided
+        if 'address_id' in data:
+            address = Address.query.get(data['address_id'])
+            if not address or address.user_id != current_user_id:
+                return jsonify({"error": "Invalid or unauthorized address"}), 400
         
         shipping_status = create_shipping_status(data)
         return jsonify({
@@ -32,10 +38,10 @@ def create(current_user_id):
 @token_required
 def read(current_user_id, id):
     shipping_status = find_shipping_status_by_id(id)
-    if shipping_status is None:
+    if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
-        
-    # Check authorization
+
+    # Verify ownership
     if shipping_status.user_id != current_user_id:
         return jsonify({"error": "Not authorized to view this shipping status"}), 403
 
@@ -52,23 +58,24 @@ def update(current_user_id, id):
     if not data:
         return jsonify({"error": "Request body must be JSON"}), 400
 
+    shipping_status = find_shipping_status_by_id(id)
+    if not shipping_status:
+        return jsonify({"error": "Shipping status not found"}), 404
+
+    # Verify ownership
+    if shipping_status.user_id != current_user_id:
+        return jsonify({"error": "Not authorized to update this shipping status"}), 403
+
     try:
-        # First get the shipping status to check ownership
-        shipping_status = find_shipping_status_by_id(id)
-        if shipping_status is None:
-            return jsonify({"error": "Shipping status not found"}), 404
-            
-        # Check if the current user has permission
-        if shipping_status.user_id != current_user_id:
-            return jsonify({"error": "Not authorized to update this shipping status"}), 403
+        # Validate address_id if being updated
+        if 'address_id' in data:
+            address = Address.query.get(data['address_id'])
+            if not address or address.user_id != current_user_id:
+                return jsonify({"error": "Invalid or unauthorized address"}), 400
 
-        # Add audit information
-        data['updated_by'] = current_user_id
-        data['updated_at'] = datetime.now()
-
-        updated_status = update_shipping_status(id, data)
+        updated = update_shipping_status(id, data)
         return jsonify({
-            "data": updated_status.serialize(),
+            "data": updated.serialize(),
             "message": "Shipping status updated successfully."
         }), 200
     except Exception as e:
@@ -136,4 +143,4 @@ def handle_update_shipping_details(current_user_id, status_id):
         current_app.logger.warning(f"Validation error: {str(ve)}")
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
-        return jsonify({"error": "Failed to update shipping details due to an internal error."}), 500        
+        return jsonify({"error": "Failed to update shipping details due to an internal error."}), 500

@@ -8,22 +8,20 @@ class ShippingStatus(db.Model):
     __tablename__ = "shipping_status"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Add purchase_id column
+    purchase_id = db.Column(db.String(36), db.ForeignKey('purchases.id'), unique=True, nullable=False)
     description = db.Column(db.String(256), nullable=True)
     conclusion_id = db.Column(db.Integer, db.ForeignKey('shipping_conclusion.id'), nullable=True)
     tracking_number = db.Column(db.String(100), nullable=True)
     estimated_delivery_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
-    
-    # New columns
-    address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)  # tabela 'addresses' em vez de 'address'
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # tabela 'users' em vez de 'user'
+    address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
 
-    # Existing relationships
+    # Update relationship
+    purchase = db.relationship('Purchase', back_populates='shipping_status_rel')
     conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses')
-    purchases = db.relationship('Purchase', back_populates='shipping_status_rel', lazy='dynamic')
-    
-    # Mantenha os relacionamentos com os nomes corretos das classes
     address = db.relationship('Address', back_populates='shipping_statuses')
     user = db.relationship('User', back_populates='shipping_statuses')
 
@@ -33,6 +31,7 @@ class ShippingStatus(db.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "purchase_id": self.purchase_id,  # Add to serialization
             "description": self.description,
             "conclusion_id": self.conclusion_id,
             "tracking_number": self.tracking_number,
@@ -44,25 +43,27 @@ class ShippingStatus(db.Model):
         }
 
 def find_shipping_status_by_id(status_id: int) -> Optional[ShippingStatus]:
-    """Busca um status de envio pelo ID."""
     return ShippingStatus.query.get(status_id)
 
 def create_shipping_status(status_data: Dict) -> ShippingStatus:
-    """Cria um novo status de envio."""
     current_app.logger.info(f"Iniciando criação de status de envio.")
 
-    required_fields = []
+    # Add purchase_id to required fields
+    required_fields = ['purchase_id']
     if not all(field in status_data for field in required_fields):
         raise ValueError(f"Dados incompletos para criar status de envio. Campos necessários: {required_fields}")
 
     try:
         shipping_status = ShippingStatus(
+            purchase_id=status_data["purchase_id"],  # Add purchase_id
             description=status_data.get("description"),
-            conclusion_id=status_data.get("conclusion_id")
+            conclusion_id=status_data.get("conclusion_id"),
+            address_id=status_data.get("address_id"),
+            user_id=status_data.get("user_id")
         )
         db.session.add(shipping_status)
         db.session.commit()
-        current_app.logger.info(f"Status de envio criado com sucesso.")
+        current_app.logger.info(f"Status de envio criado com sucesso para purchase {status_data['purchase_id']}.")
         return shipping_status
     except Exception as e:
         db.session.rollback()
@@ -70,7 +71,6 @@ def create_shipping_status(status_data: Dict) -> ShippingStatus:
         raise
 
 def update_shipping_status(status_id: int, status_data: Dict) -> Optional[ShippingStatus]:
-    """Atualiza um status de envio existente."""
     shipping_status = find_shipping_status_by_id(status_id)
     if not shipping_status:
         current_app.logger.warning(f"Tentativa de atualizar status de envio inexistente: ID {status_id}")
@@ -98,7 +98,6 @@ def update_shipping_status(status_id: int, status_data: Dict) -> Optional[Shippi
         raise
 
 def delete_shipping_status(status_id: int) -> bool:
-    """Deleta um status de envio pelo ID."""
     shipping_status = find_shipping_status_by_id(status_id)
     if shipping_status:
         try:
@@ -114,7 +113,6 @@ def delete_shipping_status(status_id: int) -> bool:
     return False
 
 def update_shipping_details(status_id: int, tracking_number: str, estimated_delivery_date: Optional[datetime]) -> Optional[ShippingStatus]:
-    """Updates tracking number and estimated delivery date for a shipping status."""
     shipping_status = find_shipping_status_by_id(status_id)
     if not shipping_status:
         current_app.logger.warning(f"Tentativa de atualizar status de envio inexistente: ID {status_id}")

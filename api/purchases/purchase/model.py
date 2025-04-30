@@ -13,7 +13,7 @@ class Purchase(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
-    shipping_status_id = db.Column(db.Integer, db.ForeignKey('shipping_status.id'), nullable=True)
+
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     taxes = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
@@ -24,7 +24,10 @@ class Purchase(db.Model):
     # Relacionamentos
     user_rel = db.relationship('User', back_populates='purchases')
     currency_rel = db.relationship('Currency', back_populates='purchases')
-    shipping_status_rel = db.relationship('ShippingStatus', back_populates='purchases')
+    
+    # 1:1 com ShippingStatus
+    shipping_status_rel = db.relationship('ShippingStatus', back_populates='purchase', uselist=False)
+
     items = db.relationship('PurchaseItem', back_populates='purchase_rel', cascade="all, delete-orphan", lazy='dynamic')
     history = db.relationship('PurchaseHistory', back_populates='purchase_rel', cascade="all, delete-orphan", lazy='dynamic')
     transactions = db.relationship('Transaction', back_populates='purchase_rel', lazy='dynamic')

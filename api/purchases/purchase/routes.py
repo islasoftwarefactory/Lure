@@ -30,6 +30,7 @@ def handle_create_purchase(current_user_id):
         current_app.logger.warning("<<< FALHA: shipping_address_id faltando ou JSON inválido.")
         return jsonify({"error": "Missing required field: shipping_address_id"}), 400
 
+    # Remove shipping_address validation
     data['user_id'] = current_user_id
     items_data = data.pop('items', [])
     # --- LOG: Itens Extraídos ---
@@ -134,7 +135,7 @@ def handle_create_purchase(current_user_id):
         current_app.logger.info("Etapa 6: Criando PurchaseHistory...")
         history_data = {
             "purchase_id": new_purchase.id,
-            "shipping_address_id": new_purchase.shipping_address_id,
+            "user_id": current_user_id,  # Add user_id
             "created_by": f"user:{current_user_id}"
         }
         current_app.logger.debug(f"Dados para PurchaseHistory.create: {history_data}")
@@ -263,4 +264,4 @@ def handle_update_purchase(current_user_id, purchase_id):
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to update purchase due to an internal error."}), 500
 
-# No DELETE route as delete method is commented out in model 
+# No DELETE route as delete method is commented out in model
