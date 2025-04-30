@@ -9,29 +9,23 @@ class PurchaseHistory(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     purchase_id = db.Column(db.String(36), db.ForeignKey('purchases.id'), nullable=False)
-    # Coluna 'event_description' REMOVIDA
-    # Nova coluna para relacionar com Address, seguindo o padrão de Purchase
-    shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)
-    created_by = db.Column(db.String(50), nullable=True) # e.g., 'user:13', 'system', 'stripe_webhook'
+    # Add new user_id column with foreign key
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    created_by = db.Column(db.String(50), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
-    # Relacionamentos
+    # Relationships
     purchase_rel = db.relationship('Purchase', back_populates='history')
-    # Novo relacionamento com Address (usando string e nome padrão)
-    shipping_address_rel = db.relationship('Address', back_populates='purchase_history_entries') # O nome 'purchase_history_entries' deve ser adicionado ao Address model
-
-    def __repr__(self):
-        return f"<PurchaseHistory {self.id} for Purchase {self.purchase_id}>"
+    # Add new user relationship
+    user_rel = db.relationship('User', back_populates='purchase_history')
 
     def serialize(self) -> Dict:
         return {
             "id": self.id,
             "purchase_id": self.purchase_id,
-            # event_description removido
-            "shipping_address_id": self.shipping_address_id, # Adicionado
+            "user_id": self.user_id,
             "created_by": self.created_by,
-            "created_at": self.created_at.isoformat() if self.created_at else None,
-            "shipping_address": self.shipping_address_rel.serialize() if self.shipping_address_rel else None # Adicionado (opcional)
+            "created_at": self.created_at.isoformat() if self.created_at else None
         }
 
     @classmethod
@@ -41,13 +35,10 @@ class PurchaseHistory(db.Model):
         try:
             history_entry = cls(
                 purchase_id=data["purchase_id"],
-                # event_description removido
-                shipping_address_id=data.get("shipping_address_id"), # Adicionado
+                user_id=data["user_id"],  # Add user_id to creation
                 created_by=data.get("created_by")
             )
             db.session.add(history_entry)
-            # Usually committed along with the action that triggered it
-            # db.session.commit()
             current_app.logger.info(f"PurchaseHistory {history_entry.id} created.")
             return history_entry
         except Exception as e:
@@ -72,21 +63,15 @@ class PurchaseHistory(db.Model):
         current_app.logger.info(f"Updating PurchaseHistory ID {history_id}")
         updated = False
         try:
-            # Lógica para event_description removida
-            # Adicionada lógica para shipping_address_id
-            if "shipping_address_id" in data and history.shipping_address_id != data["shipping_address_id"]:
-                 history.shipping_address_id = data["shipping_address_id"]
-                 updated = True
-
             if "created_by" in data and history.created_by != data["created_by"]:
-                 history.created_by = data["created_by"]
-                 updated = True
+                history.created_by = data["created_by"]
+                updated = True
 
             if updated:
-                 db.session.commit()
-                 current_app.logger.info(f"PurchaseHistory ID {history_id} updated successfully.")
+                db.session.commit()
+                current_app.logger.info(f"PurchaseHistory ID {history_id} updated successfully.")
             else:
-                 current_app.logger.info(f"No changes detected for PurchaseHistory ID {history_id}.")
+                current_app.logger.info(f"No changes detected for PurchaseHistory ID {history_id}.")
 
             return history
         except Exception as e:
@@ -111,4 +96,4 @@ class PurchaseHistory(db.Model):
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f"Error deleting PurchaseHistory ID {history_id}: {str(e)}")
-            raise 
+            raise

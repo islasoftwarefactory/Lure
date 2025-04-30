@@ -10,10 +10,8 @@ import uuid # Importar UUID
 class Purchase(db.Model):
     __tablename__ = "purchases"
 
-    # Usando UUID como string
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=False)
     currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
     shipping_status_id = db.Column(db.Integer, db.ForeignKey('shipping_status.id'), nullable=True)
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
@@ -25,7 +23,6 @@ class Purchase(db.Model):
 
     # Relacionamentos
     user_rel = db.relationship('User', back_populates='purchases')
-    address_rel = db.relationship('Address', back_populates='purchases')
     currency_rel = db.relationship('Currency', back_populates='purchases')
     shipping_status_rel = db.relationship('ShippingStatus', back_populates='purchases')
     items = db.relationship('PurchaseItem', back_populates='purchase_rel', cascade="all, delete-orphan", lazy='dynamic')
@@ -45,15 +42,13 @@ class Purchase(db.Model):
         data = {
             "id": self.id,
             "user_id": self.user_id,
-            "shipping_address_id": self.shipping_address_id,
             "currency_id": self.currency_id,
             "subtotal": float(self.subtotal),
             "shipping_cost": float(self.shipping_cost),
             "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-            "shipping_address": self.address_rel.serialize() if self.address_rel else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
         if include_items:
              data["items"] = [item.serialize() for item in self.items]
@@ -73,7 +68,6 @@ class Purchase(db.Model):
         try:
             purchase = cls(
                 user_id=data["user_id"],
-                shipping_address_id=data["shipping_address_id"],
                 currency_id=data["currency_id"],
                 subtotal=data.get("subtotal", 0.0),
                 shipping_cost=data.get("shipping_cost", 0.0),
@@ -104,8 +98,6 @@ class Purchase(db.Model):
         purchase = cls.get_by_id(purchase_id)
         if purchase:
             try:
-                if "shipping_address_id" in data:
-                    purchase.shipping_address_id = data["shipping_address_id"]
                 if "currency_id" in data:
                     purchase.currency_id = data["currency_id"]
                 if "subtotal" in data:

@@ -14,9 +14,18 @@ class ShippingStatus(db.Model):
     estimated_delivery_date = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
+    
+    # New columns
+    address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)  # tabela 'addresses' em vez de 'address'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # tabela 'users' em vez de 'user'
 
+    # Existing relationships
     conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses')
     purchases = db.relationship('Purchase', back_populates='shipping_status_rel', lazy='dynamic')
+    
+    # Mantenha os relacionamentos com os nomes corretos das classes
+    address = db.relationship('Address', back_populates='shipping_statuses')
+    user = db.relationship('User', back_populates='shipping_statuses')
 
     def __repr__(self):
         return f"<ShippingStatus id={self.id}>"
@@ -29,7 +38,9 @@ class ShippingStatus(db.Model):
             "tracking_number": self.tracking_number,
             "estimated_delivery_date": self.estimated_delivery_date.isoformat() if self.estimated_delivery_date else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "address_id": self.address_id,
+            "user_id": self.user_id
         }
 
 def find_shipping_status_by_id(status_id: int) -> Optional[ShippingStatus]:

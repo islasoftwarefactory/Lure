@@ -1,7 +1,7 @@
-from api.utils.db.connection import db  # Add this import
+from api.utils.db.connection import db
 from datetime import datetime
 import pytz
-from typing import Dict, Optional, List
+from typing import Dict, Optional
 
 class Address(db.Model):
     __tablename__ = "addresses"
@@ -16,11 +16,10 @@ class Address(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
+    # Manter apenas os relacionamentos necessários
     user_rel = db.relationship('User', back_populates='addresses')
-
-    purchases = db.relationship('Purchase', back_populates='address_rel', lazy='dynamic')
-    purchase_history_entries = db.relationship('PurchaseHistory', back_populates='shipping_address_rel', lazy='dynamic')
-
+    shipping_statuses = db.relationship('ShippingStatus', back_populates='address', lazy='dynamic')
+    
     def __repr__(self):
         return f"<Address {self.id}, User_id: {self.user_id}, Street: {self.street}>"
 
@@ -82,8 +81,9 @@ def delete_address(address_id: int) -> Optional[Address]:
     """Deletes an address"""
     address = get_address(address_id)
     if address:
-        if address.purchases.count() > 0 or address.purchase_history_entries.count() > 0:
-            raise ValueError("Cannot delete address that is currently linked to purchases or history.")
+        # Modificar esta validação para verificar apenas shipping_statuses
+        if address.shipping_statuses.count() > 0:
+            raise ValueError("Cannot delete address that is currently linked to shipping statuses.")
         db.session.delete(address)
         db.session.commit()
         return address

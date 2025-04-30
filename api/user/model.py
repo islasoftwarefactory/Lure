@@ -32,6 +32,12 @@ class User(db.Model):
 
     # Relacionamento com Transaction: Um usuário pode ter muitas transações (embora geralmente via Purchase)
     transactions = db.relationship('Transaction', back_populates='user_rel', lazy='dynamic')
+
+    # Modifique o relacionamento para usar string em vez da classe direta
+    shipping_statuses = db.relationship('ShippingStatus', back_populates='user', lazy='dynamic')
+
+    # Add new relationship for purchase history
+    purchase_history = db.relationship('PurchaseHistory', back_populates='user_rel', lazy='dynamic')
     # --- FIM NOVOS RELACIONAMENTOS ---
 
     def __repr__(self):
