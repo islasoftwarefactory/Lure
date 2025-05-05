@@ -31,7 +31,7 @@ def validate_contact_value_unique(contact_value: str, exclude_id: int = None) ->
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-@ddos_protection(max_requests=50)  # Limite de 50 requisições por minuto
+@ddos_protection(max_requests=1, window=1)  # Apenas 2 requests a cada 5 segundos para testar
 def create():
     data = request.get_json()
     if not data:

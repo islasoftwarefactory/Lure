@@ -17,46 +17,49 @@ load_dotenv()
 logger.info("Environment variables loaded")
 
 class CookieConfig:
-    SECRET_KEY = os.getenv('COOKIE_SECRET_KEY')
-    NAME = os.getenv('COOKIE_NAME')
-    EXPIRATION_DAYS = os.getenv('COOKIE_EXPIRATION_DAYS')
-    DOMAIN = os.getenv('COOKIE_DOMAIN')
-    PATH = os.getenv('COOKIE_PATH')
-    SECURE = os.getenv('COOKIE_SECURE')
-    HTTPONLY = os.getenv('COOKIE_HTTPONLY')
-    SAMESITE = os.getenv('COOKIE_SAMESITE')
+    #SECRET_KEY = os.getenv('COOKIE_SECRET_KEY')
+    #NAME = os.getenv('COOKIE_NAME')
+    #EXPIRATION_DAYS = os.getenv('COOKIE_EXPIRATION_DAYS')
+    #DOMAIN = os.getenv('COOKIE_DOMAIN')
+    #PATH = os.getenv('COOKIE_PATH')
+    #SECURE = os.getenv('COOKIE_SECURE')
+    #HTTPONLY = os.getenv('COOKIE_HTTPONLY')
+    #SAMESITE = os.getenv('COOKIE_SAMESITE')
 
-    @classmethod
-    def log_config(cls):
-        """Log all configuration values"""
-        logger.debug("Cookie Configuration:")
-        logger.debug(f"SECRET_KEY exists: {bool(cls.SECRET_KEY)}")
-        logger.debug(f"NAME: {cls.NAME}")
-        logger.debug(f"EXPIRATION_DAYS: {cls.EXPIRATION_DAYS}")
-        logger.debug(f"DOMAIN: {cls.DOMAIN}")
-        logger.debug(f"PATH: {cls.PATH}")
-        logger.debug(f"SECURE: {cls.SECURE}")
-        logger.debug(f"HTTPONLY: {cls.HTTPONLY}")
-        logger.debug(f"SAMESITE: {cls.SAMESITE}")
+    SECRET_KEY = "a45390548021d9dbf5e6eec82f859e514f015bcd23f184f0cc5eb367859984cd"
+    NAME = "lure_client_id"
+    EXPIRATION_DAYS = 30
+    DOMAIN = "localhost"
+    PATH="/"
+    SECURE=True
+    HTTPONLY=True
+    SAMESITE="Strict"
 
 class TrustScores:
-    HIGH = os.getenv('TRUST_SCORE_HIGH')
-    MEDIUM = os.getenv('TRUST_SCORE_MEDIUM')
-    LOW = os.getenv('TRUST_SCORE_LOW')
+    #HIGH = os.getenv('TRUST_SCORE_HIGH')
+    #MEDIUM = os.getenv('TRUST_SCORE_MEDIUM')
+    #LOW = os.getenv('TRUST_SCORE_LOW')
+
+    TRUST_SCORE_HIGH=0.8
+    TRUST_SCORE_MEDIUM=0.5
+    TRUST_SCORE_LOW=0.2
 
 class RateLimits:
-    HIGH_TRUST = os.getenv('RATE_LIMIT_HIGH_TRUST')
-    MEDIUM_TRUST = os.getenv('RATE_LIMIT_MEDIUM_TRUST')
-    LOW_TRUST = os.getenv('RATE_LIMIT_LOW_TRUST')
-    WINDOW = os.getenv('RATE_LIMIT_WINDOW')
+    #HIGH_TRUST = os.getenv('RATE_LIMIT_HIGH_TRUST')
+    #MEDIUM_TRUST = os.getenv('RATE_LIMIT_MEDIUM_TRUST')
+    #LOW_TRUST = os.getenv('RATE_LIMIT_LOW_TRUST')
+    #WINDOW = os.getenv('RATE_LIMIT_WINDOW')
+
+    HIGH_TRUST=100 
+    MEDIUM_TRUST=50
+    LOW_TRUST=10
+    WINDOW=60
 
 class CookieManager:
     def __init__(self):
         logger.info("Initializing CookieManager")
         
         # Log all environment variables
-        CookieConfig.log_config()
-        
         if not CookieConfig.SECRET_KEY:
             logger.error("COOKIE_SECRET_KEY is not set in environment variables")
             raise ValueError("COOKIE_SECRET_KEY must be set in environment variables")
