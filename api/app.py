@@ -116,7 +116,7 @@ def verify_jwt():
 
     try:
         # Assumindo que verify_token agora retorna apenas o user_id ou levanta exceção
-        from api.utils.jwt.jwt_utils import verify_token # Importar aqui ou no topo
+        from api.utils.security.jwt.jwt_utils import verify_token # Importar aqui ou no topo
         user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
         g.current_user_id = user_id # Armazena no contexto da requisição 'g'
     except Exception as e: # Captura exceções de verify_token (Expirado, Inválido)

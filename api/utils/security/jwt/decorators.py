@@ -2,7 +2,7 @@ print("=== Carregando módulo decorators.py ===", flush=True)
 
 from functools import wraps
 from flask import request, jsonify, make_response, g
-from api.utils.jwt.jwt_utils import verify_token, decode_token
+from api.utils.security.jwt.jwt_utils import verify_token, decode_token
 import jwt
 from flask import current_app
 
