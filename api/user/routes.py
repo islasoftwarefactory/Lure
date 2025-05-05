@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.user.model import User, create_user, get_user, update_user, delete_user
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 from api.utils.jwt.jwt_utils import generate_token, verify_token
 from functools import wraps
 import traceback

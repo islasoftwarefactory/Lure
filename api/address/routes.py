@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.address.model import Address, create_address, get_address, update_address, delete_address
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 
 blueprint = Blueprint('address', __name__)
 

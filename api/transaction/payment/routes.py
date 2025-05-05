@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, current_app
 from api.transaction.payment.model import Transaction
 # Importar Purchase para verificação
 from api.purchases.purchase.model import Purchase
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 from api.utils.db.connection import db # Importar db para commit
 import traceback
 import uuid

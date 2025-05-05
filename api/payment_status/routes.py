@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from api.payment_status.model import PaymentStatus
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 import traceback
 
 # Renomeado para payment_status_blueprint, nome interno 'payment_status'

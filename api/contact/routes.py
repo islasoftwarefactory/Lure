@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.contact.model import Contact, create_contact, get_contact, get_all_contacts
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 blueprint = Blueprint('contact', __name__)
 
 @blueprint.route("/create", methods=["POST"])

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from api.purchases.history.model import PurchaseHistory
 from api.purchases.purchase.model import Purchase
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 from api.utils.db.connection import db
 import traceback
 

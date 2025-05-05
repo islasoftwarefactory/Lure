@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.shippings.conclusion.model import ShippingConclusion, create_shipping_conclusion, update_shipping_conclusion, delete_shipping_conclusion, find_shipping_conclusion_by_id
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 
 blueprint = Blueprint('shipping_conclusion', __name__)
 

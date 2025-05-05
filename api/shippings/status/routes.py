@@ -1,7 +1,7 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.shippings.status.model import create_shipping_status, update_shipping_status, delete_shipping_status, find_shipping_status_by_id, update_shipping_details
 from api.address.model import Address
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 from datetime import datetime
 
 blueprint = Blueprint('shipping_status', __name__)

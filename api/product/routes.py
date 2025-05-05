@@ -1,7 +1,7 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.product.model import Product, create_product, get_product, update_product, delete_product
 from api.currency.model import Currency
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 import traceback
 
 blueprint = Blueprint('product', __name__, url_prefix='/products')

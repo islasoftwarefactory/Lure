@@ -8,7 +8,7 @@ from api.transaction.payment.model import Transaction
 from api.payment_status.model import PaymentStatus
 from api.transaction.method.model import TransactionMethod
 from api.product.model import Product
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 from api.utils.db.connection import db # Importar db para commit
 import traceback
 import uuid

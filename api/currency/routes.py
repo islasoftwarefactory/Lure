@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from api.currency.model import Currency
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 import traceback
 
 currency_bp = Blueprint('currency', __name__)

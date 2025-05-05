@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
 from api.transaction.method.model import TransactionMethod
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 import traceback
 
 transaction_method_bp = Blueprint('transaction_method', __name__)
