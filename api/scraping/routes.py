@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint
 from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
+from api.utils.security.DDOS import ddos_protection
 
 
 blueprint = Blueprint('scraping', __name__)
@@ -30,6 +31,7 @@ def validate_contact_value_unique(contact_value: str, exclude_id: int = None) ->
 
 # Create
 @blueprint.route("/create", methods=["POST"])
+@ddos_protection(max_requests=50)  # Limite de 50 requisições por minuto
 def create():
     data = request.get_json()
     if not data:
