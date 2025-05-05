@@ -23,22 +23,9 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
-    # --- NOVOS RELACIONAMENTOS ADICIONADOS ---
-    # Relacionamento com Purchase: Um usuário pode ter muitas compras
     purchases = db.relationship('Purchase', back_populates='user_rel', lazy='dynamic', order_by='Purchase.created_at.desc()')
-
-    # Relacionamento com Address: Um usuário pode ter muitos endereços
     addresses = db.relationship('Address', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
-
-    # Relacionamento com Transaction: Um usuário pode ter muitas transações (embora geralmente via Purchase)
     transactions = db.relationship('Transaction', back_populates='user_rel', lazy='dynamic')
-
-    # Modifique o relacionamento para usar string em vez da classe direta
-    shipping_statuses = db.relationship('ShippingStatus', back_populates='user', lazy='dynamic')
-
-    # Add new relationship for purchase history
-    purchase_history = db.relationship('PurchaseHistory', back_populates='user_rel', lazy='dynamic')
-    # --- FIM NOVOS RELACIONAMENTOS ---
 
     def __repr__(self):
         return f"<User id={self.id} email='{self.email}' provider='{self.auth_provider.value}' provider_id='{self.provider_id}'>"
