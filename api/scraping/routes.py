@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint, make_response
-from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping
+from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
@@ -43,6 +43,13 @@ def create():
         return jsonify({
             "error": "Contact value already exists"
         }), 400
+
+    # Email provider validation for email contacts
+    contact_value = data.get("contact_value", "")
+    if "@" in contact_value:
+        is_valid, error_message = validate_email_provider(contact_value)
+        if not is_valid:
+            return jsonify({"error": error_message}), 400
 
     try:
         if "contact_type_id" in data:
