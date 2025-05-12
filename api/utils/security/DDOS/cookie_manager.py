@@ -1,9 +1,10 @@
-from flask import request
+from flask import request, make_response
 import uuid
 from datetime import datetime, timedelta
 import os
 from dotenv import load_dotenv
 import hashlib
+import hmac  # Adicionando import necessário
 import json
 from typing import Optional, Tuple
 import logging
@@ -58,8 +59,9 @@ class RateLimits:
 class CookieManager:
     def __init__(self):
         logger.info("Initializing CookieManager")
+        logger.debug(f"Using cookie name: {CookieConfig.NAME}")
+        logger.debug(f"Domain: {CookieConfig.DOMAIN}")
         
-        # Log all environment variables
         if not CookieConfig.SECRET_KEY:
             logger.error("COOKIE_SECRET_KEY is not set in environment variables")
             raise ValueError("COOKIE_SECRET_KEY must be set in environment variables")
@@ -74,9 +76,9 @@ class CookieManager:
         ).hexdigest()
 
     def _verify_signature(self, client_id: str, timestamp: str, signature: str) -> bool:
-        """Verify cookie signature"""
+        """Verify cookie signature using hmac"""
         expected_signature = self._generate_signature(client_id, timestamp)
-        return hmac.compare_digest(signature, expected_signature)
+        return hmac.compare_digest(signature.encode(), expected_signature.encode())
 
     def create_cookie(self, response, client_id: str = None) -> str:
         """Create a new secure cookie with client_id"""
@@ -92,10 +94,12 @@ class CookieManager:
             'sig': signature
         }
         
+        logger.debug(f"Creating cookie for client_id: {client_id}")
+        
         response.set_cookie(
             CookieConfig.NAME,
             json.dumps(cookie_data),
-            max_age=timedelta(days=CookieConfig.EXPIRATION_DAYS).total_seconds(),
+            max_age=CookieConfig.EXPIRATION_DAYS * 24 * 60 * 60,
             domain=CookieConfig.DOMAIN,
             path=CookieConfig.PATH,
             secure=CookieConfig.SECURE,
@@ -103,16 +107,17 @@ class CookieManager:
             samesite=CookieConfig.SAMESITE
         )
         
+        logger.debug("Cookie created successfully")
         return client_id
 
     def validate_cookie(self) -> Tuple[Optional[str], bool]:
-        """
-        Validate cookie and return client_id if valid
-        Returns: (client_id, is_new)
-        """
+        """Validate cookie and return client_id if valid"""
         try:
             cookie = request.cookies.get(CookieConfig.NAME)
+            logger.debug(f"Validating cookie: {cookie}")
+            
             if not cookie:
+                logger.debug("No cookie found")
                 return None, True
 
             cookie_data = json.loads(cookie)
@@ -121,11 +126,14 @@ class CookieManager:
             signature = cookie_data['sig']
 
             if self._verify_signature(client_id, timestamp, signature):
+                logger.debug(f"Cookie validated successfully for client_id: {client_id}")
                 return client_id, False
             
+            logger.warning(f"Invalid cookie signature for client_id: {client_id}")
             return None, True
             
-        except (json.JSONDecodeError, KeyError):
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.error(f"Error validating cookie: {str(e)}")
             return None, True
 
 # Global instance

@@ -1,9 +1,10 @@
-from flask import request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint, make_response
 from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
-
+import uuid
+from api.utils.security.DDOS.cookie_manager import CookieManager
 
 blueprint = Blueprint('scraping', __name__)
 
@@ -31,7 +32,7 @@ def validate_contact_value_unique(contact_value: str, exclude_id: int = None) ->
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-@ddos_protection(max_requests=1, window=1)  # Apenas 2 requests a cada 5 segundos para testar
+@ddos_protection(max_requests=50, window=5)
 def create():
     data = request.get_json()
     if not data:
@@ -44,22 +45,26 @@ def create():
         }), 400
 
     try:
-        # Remover validação explícita de contact_type_id pois será determinado automaticamente
         if "contact_type_id" in data:
             del data["contact_type_id"]
 
         scraping = create_scraping(data)
+        
+        # Criar response
+        response = make_response(jsonify({
+            "data": scraping.serialize(),
+            "message": "Scraping entry created successfully with auto-detected contact type."
+        }))
+        response.status_code = 201
+        
+        return response
+        
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except IntegrityError:
         return jsonify({"error": "Contact value already exists"}), 400
     except Exception as e:
         return jsonify({"error": f"Failed to create scraping entry: {str(e)}"}), 500
-
-    return jsonify({
-        "data": scraping.serialize(),
-        "message": "Scraping entry created successfully with auto-detected contact type."
-    }), 201
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])

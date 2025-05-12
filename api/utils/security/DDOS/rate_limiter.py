@@ -147,19 +147,26 @@ def ddos_protection(max_requests: int = None, window: int = None, block_duration
             ip = request.remote_addr
             logger.debug(f"New request from IP: {ip}")
             
+            # Criar response inicial
+            response = make_response()
+            
             # Verificar bloqueio primeiro
             if rate_limiter.is_ip_blocked(ip):
                 logger.warning(f"IP {ip} is blocked")
-                return jsonify({
+                error_response = make_response(jsonify({
                     "error": "Too many requests",
                     "message": "Your IP has been temporarily blocked"
-                }), 429
+                }))
+                error_response.status_code = 429
+                return error_response
 
-            # Validar cookie
+            # Validar cookie e criar se necessário
             client_id, is_new = cookie_manager.validate_cookie()
+            if is_new:
+                client_id = cookie_manager.create_cookie(response)
             logger.debug(f"Cookie validation - Client ID: {client_id}, Is new: {is_new}")
             
-            # Adicionar request antes de verificar
+            # Adicionar request
             rate_limiter.add_request(ip, client_id)
             
             # Calcular limites
@@ -167,19 +174,38 @@ def ddos_protection(max_requests: int = None, window: int = None, block_duration
             actual_max_requests = max_requests or rate_limiter.get_rate_limit(trust_score)
             actual_window = window or RateLimits.WINDOW
             
-            # Verificar limite após adicionar
+            # Verificar limite
             if rate_limiter.check_rate_limit(ip, client_id, actual_max_requests, actual_window):
                 rate_limiter.block_ip(ip, block_duration)
                 logger.warning(f"Rate limit exceeded for IP: {ip}")
-                return jsonify({
+                error_response = make_response(jsonify({
                     "error": "Too many requests",
                     "message": f"Rate limit exceeded: {actual_max_requests} requests per {actual_window} second(s)"
-                }), 429
+                }))
+                error_response.status_code = 429
+                return error_response
 
             try:
-                response = f(*args, **kwargs)
+                # Executar função original
+                result = f(*args, **kwargs)
+                
+                # Preparar response final
+                if isinstance(result, tuple):
+                    data, status_code = result
+                    final_response = make_response(data)
+                    final_response.status_code = status_code
+                else:
+                    final_response = make_response(result)
+                
+                # Se temos cookie, copiar para response final
+                if is_new:
+                    cookie_data = response.headers.get('Set-Cookie')
+                    if cookie_data:
+                        final_response.headers['Set-Cookie'] = cookie_data
+                
                 logger.debug(f"Request completed for IP: {ip}")
-                return response
+                return final_response
+                
             except Exception as e:
                 logger.error(f"Error processing request: {str(e)}")
                 raise
