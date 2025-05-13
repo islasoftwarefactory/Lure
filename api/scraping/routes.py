@@ -1,12 +1,16 @@
 from flask import request, jsonify, Blueprint, make_response
-from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider
+from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
 import uuid
 from api.utils.security.DDOS.cookie_manager import CookieManager
+from datetime import datetime
+import pytz
+from flask_bcrypt import Bcrypt
 
 blueprint = Blueprint('scraping', __name__)
+bcrypt = Bcrypt()
 
 # Contact Type Routes
 @blueprint.route("/contact-types", methods=["GET"])
@@ -38,6 +42,10 @@ def create():
     if not data:
         return jsonify({"error": "No data provided"}), 400
 
+    # Remover accessed_at se enviado na criação
+    if "accessed_at" in data:
+        del data["accessed_at"]  # Sempre começa como NULL
+
     # Add unique validation
     if not validate_contact_value_unique(data.get("contact_value")):
         return jsonify({
@@ -55,9 +63,8 @@ def create():
         if "contact_type_id" in data:
             del data["contact_type_id"]
 
-        scraping = create_scraping(data)
+        scraping = create_scraping(data)  # password já é tratado no create_scraping
         
-        # Criar response
         response = make_response(jsonify({
             "data": scraping.serialize(),
             "message": "Scraping entry created successfully with auto-detected contact type."
@@ -65,7 +72,7 @@ def create():
         response.status_code = 201
         
         return response
-        
+    
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except IntegrityError:
@@ -100,6 +107,13 @@ def read_all():
 def update(id):
     data = request.get_json()
 
+    # Validar formato de accessed_at se fornecido
+    if "accessed_at" in data and data["accessed_at"]:
+        try:
+            datetime.fromisoformat(data["accessed_at"].replace('Z', '+00:00'))
+        except ValueError:
+            return jsonify({"error": "Invalid datetime format for accessed_at"}), 400
+
     # Add unique validation for contact_value if it's being updated
     if "contact_value" in data:
         if not validate_contact_value_unique(data["contact_value"], exclude_id=id):
@@ -119,8 +133,8 @@ def update(id):
         scraping = update_scraping(id, data)
         if scraping is None:
             return jsonify({"error": "Scraping entry not found"}), 404
-    except IntegrityError:
-        return jsonify({"error": "Contact value already exists"}), 400
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
     except Exception as e:
         return jsonify({"error": f"Failed to update scraping entry: {str(e)}"}), 500
 
@@ -142,3 +156,82 @@ def delete(id):
     return jsonify({
         "message": "Scraping entry deleted successfully."
     }), 200
+
+@blueprint.route("/login", methods=["POST"])
+def login():
+    """Authenticate user with contact_value and password"""
+    data = request.get_json()
+    
+    if not data or "contact_value" not in data or "password" not in data:
+        return jsonify({
+            "error": "Missing credentials"
+        }), 400
+    
+    try:
+        scraping = Scraping.query.filter_by(
+            contact_value=data["contact_value"]
+        ).first()
+        
+        if not scraping:
+            return jsonify({
+                "error": "Invalid credentials"
+            }), 401
+            
+        # Verificar senha com bcrypt
+        if not bcrypt.check_password_hash(scraping.password, data["password"]):
+            return jsonify({
+                "error": "Invalid credentials"
+            }), 401
+            
+        # Atualizar accessed_at
+        scraping.accessed_at = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        db.session.commit()
+        
+        return jsonify({
+            "data": scraping.serialize(),
+            "message": "Login successful"
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "error": f"Login failed: {str(e)}"
+        }), 500
+
+# Update Password
+@blueprint.route("/update-password/<int:id>", methods=["PUT"])
+def update_user_password(id):
+    """Update password for existing scraping entry"""
+    data = request.get_json()
+    
+    # Validar payload
+    if not data or "password" not in data:
+        return jsonify({
+            "error": "Missing required field: password"
+        }), 400
+        
+    # Validar senha
+    password = data["password"]
+    if not password or len(password) < 6:
+        return jsonify({
+            "error": "Password must be at least 6 characters long"
+        }), 400
+    
+    try:
+        scraping = update_password(id, password)
+        if not scraping:
+            return jsonify({
+                "error": "Scraping entry not found"
+            }), 404
+            
+        return jsonify({
+            "message": "Password updated successfully",
+            "data": {
+                "id": scraping.id,
+                "contact_value": scraping.contact_value
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "error": f"Failed to update password: {str(e)}"
+        }), 500

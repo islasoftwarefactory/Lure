@@ -5,6 +5,9 @@ from typing import Dict, Optional
 from flask import current_app
 import re
 from api.scraping.type.model import ContactType
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
 
 class Scraping(db.Model):
     __tablename__ = "scrapings"
@@ -14,6 +17,8 @@ class Scraping(db.Model):
     last_name = db.Column(db.String(40), nullable=False)
     contact_value = db.Column(db.String(256), unique=True, nullable=False)
     contact_type_id = db.Column(db.Integer, db.ForeignKey('contact_types.id'), nullable=False)
+    password = db.Column(db.String(256), nullable=True)
+    accessed_at = db.Column(db.DateTime, nullable=True)  # New column replacing status
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -27,6 +32,8 @@ class Scraping(db.Model):
             "last_name": self.last_name,
             "contact_value": self.contact_value,
             "contact_type_id": self.contact_type_id,
+            "password": self.password,
+            "accessed_at": self.accessed_at,  # Updated to use new column
             "created_at": self.created_at,
             "updated_at": self.updated_at
         }
@@ -121,7 +128,9 @@ def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
             first_name=scraping_data["first_name"],
             last_name=scraping_data["last_name"],
             contact_value=contact_value,
-            contact_type_id=contact_type_id
+            contact_type_id=contact_type_id,
+            password=scraping_data.get("password"),
+            accessed_at=scraping_data.get("accessed_at")  # Will be None by default
         )
         
         db.session.add(new_scraping)
@@ -143,12 +152,39 @@ def update_scraping(scraping_id: int, scraping_data: Dict) -> Optional[Scraping]
     """Updates an existing scraping entry"""
     scraping = get_scraping(scraping_id)
     if scraping:
-        for field in ["first_name", "last_name", "contact_type_id", "contact_value"]:
+        # Update allowed fields list to include accessed_at instead of status
+        for field in ["first_name", "last_name", "contact_type_id", "contact_value", "password", "accessed_at"]:
             if field in scraping_data:
+                if field == "accessed_at" and scraping_data[field]:
+                    # Convert string datetime to Python datetime if needed
+                    if isinstance(scraping_data[field], str):
+                        try:
+                            scraping_data[field] = datetime.fromisoformat(scraping_data[field].replace('Z', '+00:00'))
+                        except ValueError:
+                            raise ValueError("Invalid datetime format for accessed_at")
                 setattr(scraping, field, scraping_data[field])
         db.session.commit()
         return scraping
     return None
+
+def update_password(scraping_id: int, password: str) -> Optional[Scraping]:
+    """Updates the password for a scraping entry with hash"""
+    try:
+        scraping = get_scraping(scraping_id)
+        if not scraping:
+            return None
+            
+        # Gerar hash da senha
+        password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+        scraping.password = password_hash
+        
+        db.session.commit()
+        return scraping
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error updating password: {str(e)}")
+        raise
 
 def delete_scraping(scraping_id: int) -> Optional[Scraping]:
     """Deletes a scraping entry"""

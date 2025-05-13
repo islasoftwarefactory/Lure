@@ -10,3 +10,4 @@ flask-jwt-extended
 flask-sqlalchemy
 Flask-Mail
 stripe
+flask_bcrypt
