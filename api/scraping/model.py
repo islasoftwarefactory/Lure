@@ -40,13 +40,16 @@ class Scraping(db.Model):
 
 def validate_scraping_data(data: Dict) -> tuple[bool, str]:
     """Validates scraping data"""
-    # Remove contact_type_id dos campos obrigatórios já que será determinado automaticamente
-    required_fields = ["first_name", "last_name", "contact_value"]
-    
+    required_fields = ["first_name", "last_name", "contact_value", "contact_type_id"]
+
     for field in required_fields:
         if field not in data:
             return False, f"Missing required field: {field}"
-    
+
+    # Add validation to check if contact_type_id is a valid integer
+    if not isinstance(data.get("contact_type_id"), int):
+        return False, "contact_type_id must be an integer"
+
     return True, ""
 
 ALLOWED_EMAIL_PROVIDERS = {
@@ -105,40 +108,31 @@ def validate_contact_type(contact_value: str) -> int:
         raise ValueError("Contact value format not recognized as either phone or email")
 
 def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
-    """Creates a new scraping entry with automatic contact type detection"""
+    """Creates a new scraping entry."""
     current_app.logger.info("Starting scraping entry creation")
-    
+
     # Validar dados básicos
     is_valid, error_message = validate_scraping_data(scraping_data)
     if not is_valid:
         current_app.logger.error(f"Validation error: {error_message}")
         raise ValueError(error_message)
-    
+
     try:
-        # Determinar contact_type_id baseado no formato do contact_value
-        contact_value = scraping_data["contact_value"]
-        try:
-            contact_type_id = validate_contact_type(contact_value)
-            scraping_data["contact_type_id"] = contact_type_id
-        except ValueError as e:
-            current_app.logger.error(f"Contact type validation error: {str(e)}")
-            raise
-        
         new_scraping = Scraping(
             first_name=scraping_data["first_name"],
             last_name=scraping_data["last_name"],
-            contact_value=contact_value,
-            contact_type_id=contact_type_id,
+            contact_value=scraping_data["contact_value"],
+            contact_type_id=scraping_data["contact_type_id"],
             password=scraping_data.get("password"),
             accessed_at=scraping_data.get("accessed_at")  # Will be None by default
         )
-        
+
         db.session.add(new_scraping)
         db.session.commit()
-        
-        current_app.logger.info(f"Scraping entry created successfully for: {new_scraping.first_name} with contact type ID: {contact_type_id}")
+
+        current_app.logger.info(f"Scraping entry created successfully for: {new_scraping.first_name} with contact type ID: {scraping_data['contact_type_id']}")
         return new_scraping
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error creating scraping entry: {str(e)}")
@@ -194,3 +188,24 @@ def delete_scraping(scraping_id: int) -> Optional[Scraping]:
         db.session.commit()
         return scraping
     return None
+
+def login_scraping(contact_value: str, password: str) -> Optional[Scraping]:
+    """Authenticates a user with contact_value and password."""
+    try:
+        scraping = Scraping.query.filter_by(contact_value=contact_value).first()
+
+        if not scraping:
+            return None
+
+        if not bcrypt.check_password_hash(scraping.password, password):
+            return None
+
+        scraping.accessed_at = datetime.now(pytz.timezone('America/Sao_Paulo'))
+        db.session.commit()
+
+        return scraping
+
+    except Exception as e:
+        current_app.logger.error(f"Login failed: {str(e)}")
+        db.session.rollback()
+        raise

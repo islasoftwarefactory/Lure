@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint, make_response
-from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password
+from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
@@ -57,17 +57,26 @@ def create():
     if "@" in contact_value:
         is_valid, error_message = validate_email_provider(contact_value)
         if not is_valid:
-            return jsonify({"error": error_message}), 400
+            return jsonify({"error": error_message}), 400˝
+
+    # Verificar se o contact_type_id é válido
+    contact_type_id = data.get("contact_type_id")
+    if not contact_type_id:
+        return jsonify({"error": "contact_type_id is required"}), 400
+
+    contact_type = ContactType.query.get(contact_type_id)
+    if not contact_type:
+        return jsonify({"error": "Invalid contact_type_id"}), 400
+
+    if contact_type.disabled:
+        return jsonify({"error": "contact_type_id is disabled"}), 400
 
     try:
-        if "contact_type_id" in data:
-            del data["contact_type_id"]
-
         scraping = create_scraping(data)  # password já é tratado no create_scraping
         
         response = make_response(jsonify({
             "data": scraping.serialize(),
-            "message": "Scraping entry created successfully with auto-detected contact type."
+            "message": "Scraping entry created successfully with provided contact type."
         }))
         response.status_code = 201
         
@@ -168,25 +177,13 @@ def login():
         }), 400
     
     try:
-        scraping = Scraping.query.filter_by(
-            contact_value=data["contact_value"]
-        ).first()
+        scraping = login_scraping(data["contact_value"], data["password"])
         
         if not scraping:
             return jsonify({
                 "error": "Invalid credentials"
             }), 401
             
-        # Verificar senha com bcrypt
-        if not bcrypt.check_password_hash(scraping.password, data["password"]):
-            return jsonify({
-                "error": "Invalid credentials"
-            }), 401
-            
-        # Atualizar accessed_at
-        scraping.accessed_at = datetime.now(pytz.timezone('America/Sao_Paulo'))
-        db.session.commit()
-        
         return jsonify({
             "data": scraping.serialize(),
             "message": "Login successful"
@@ -199,7 +196,7 @@ def login():
 
 # Update Password
 @blueprint.route("/update-password/<int:id>", methods=["PUT"])
-def update_user_password(id):
+def update_password(id):
     """Update password for existing scraping entry"""
     data = request.get_json()
     
