@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint, make_response
-from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping, update_scraping_password
+from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping, update_scraping_password, get_email_contact_type_id
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
@@ -42,6 +42,18 @@ def create():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
+
+    # Se tiver um email, busca o contact_type_id automaticamente
+    contact_value = data.get("contact_value", "")
+    if "@" in contact_value:
+        email_type_id = get_email_contact_type_id()
+        if not email_type_id:
+            return jsonify({"error": "Email contact type not configured in system"}), 500
+        data["contact_type_id"] = email_type_id
+        
+        is_valid, error_message = validate_email_provider(contact_value)
+        if not is_valid:
+            return jsonify({"error": error_message}), 400
 
     # Remover accessed_at se enviado na criação
     if "accessed_at" in data:

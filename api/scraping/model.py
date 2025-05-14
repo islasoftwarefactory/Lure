@@ -219,3 +219,19 @@ def login_scraping(contact_value: str, password: str) -> Optional[Scraping]:
         current_app.logger.error(f"Login failed: {str(e)}")
         db.session.rollback()
         raise
+
+def get_email_contact_type_id() -> Optional[int]:
+    """
+    Busca o ID do tipo de contato 'EMAIL' na tabela contact_types
+    Returns:
+        Optional[int]: ID do tipo EMAIL ou None se não encontrado
+    """
+    email_type = ContactType.query.filter(
+        db.func.lower(ContactType.name).in_(['mail', 'email', 'e-mail', 'MAIL', 'EMAIL', 'E-MAIL', 'Email', 'E-mail'])
+    ).first()
+    
+    if not email_type:
+        current_app.logger.error("Contact type 'EMAIL' not found in database")
+        return None
+        
+    return email_type.id
