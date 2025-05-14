@@ -8,42 +8,58 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { X } from "lucide-react"
+import api from '@/services/api';
 
 interface WaitlistFormProps {
   className?: string
 }
 
+interface ScrapingResponse {
+  data: {
+    id: number;
+    contact_value: string;
+    contact_type_id: number;
+    created_at: string;
+  };
+  message: string;
+}
+
+interface ApiError {
+  error: string;
+  details?: string;
+}
+
 export default function WaitlistForm({ className }: WaitlistFormProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-  })
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the data to your backend
-    console.log("Form submitted:", formData)
+    try {
+      const response = await api.post<ScrapingResponse>('/scraping/create', {
+        contact_value: email,
+        contact_type_id: 1, // Assumindo que 1 é o ID para email
+        password: null // Opcional neste momento
+      });
 
-    // Show success message
-    setIsSubmitted(true)
-
-    // Reset form after 3 seconds and close dialog
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setIsOpen(false)
-      setFormData({ name: "", email: "" })
-    }, 3000)
-  }
+      setSuccess(true);
+      setEmail('');
+    } catch (error: any) {
+      const apiError = error.response?.data as ApiError;
+      setError(
+        apiError?.error || 
+        'Failed to join waitlist. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={className}>
@@ -73,7 +89,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
             <span className="sr-only">Close</span>
           </button>
 
-          {isSubmitted ? (
+          {success ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <div className="mb-4 rounded-full bg-green-100 p-3">
                 <svg
@@ -105,21 +121,6 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid w-full items-center gap-2">
-                  <Label htmlFor="name" className="font-recoleta">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full font-recoleta py-6"
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-2">
                   <Label htmlFor="email" className="font-recoleta">
                     Email
                   </Label>
@@ -128,17 +129,22 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
                     name="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full font-recoleta py-6"
+                    disabled={loading}
                   />
                 </div>
 
-                <Button type="submit" className="w-full font-recoleta py-6 mt-4">
-                  Submit
+                <Button type="submit" className="w-full font-recoleta py-6 mt-4" disabled={loading}>
+                  {loading ? 'Joining...' : 'Join Waitlist'}
                 </Button>
               </form>
+
+              {error && (
+                <p className="text-red-400 text-sm text-center">{error}</p>
+              )}
             </>
           )}
         </DialogContent>

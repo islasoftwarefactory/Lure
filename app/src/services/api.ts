@@ -63,6 +63,10 @@ api.interceptors.response.use(
       message: error.message,
       headers: error.config?.headers
     });
+    if (error.response?.status === 429) {
+      // DDOS Protection error
+      return Promise.reject(new Error('Too many requests. Please try again later.'));
+    }
     return Promise.reject(error);
   }
 );
