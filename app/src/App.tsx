@@ -17,6 +17,7 @@ import { MyOrdersPage } from './components/MyOrdersPage';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import { AuthProvider } from './context/AuthContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Home from './components/page';
 
 // Importe diretamente o AuthProvider do seu arquivo existente
 // import { AuthProvider } from './context/AuthContext'; 
@@ -89,8 +90,7 @@ export default function App() {
                 <Route path="/checkout" element={<CheckoutComponent />} />
                 <Route path="/order-page/:id" element={<OrderPage />} />
                 <Route path="/my-orders-list" element={<MyOrdersPage />} />
-                
-                {/* Rota catch-all redireciona para a raiz */}
+                <Route path="/locked" element={<Home />} /> {/* Nova rota */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Router>

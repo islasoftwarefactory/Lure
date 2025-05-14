@@ -3,17 +3,39 @@ export default {
 	darkMode: ["class"],
 	content: [
 	  "./src/**/*.{js,jsx,ts,tsx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "*.{js,ts,jsx,tsx,mdx}"
 	],
 	theme: {
 	  extend: {
 	    animation: {
 	      'marquee-ltr': 'marquee-ltr 30s linear infinite',
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
 	    },
 	    keyframes: {
 	      'marquee-ltr': {
 	        '0%': { transform: 'translateX(-100%)' },
 	        '100%': { transform: 'translateX(0)' },
-	      },
+  			},
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
 	    },
 	    colors: {
 	      border: "hsl(var(--border))",
@@ -49,6 +71,23 @@ export default {
 	        DEFAULT: "hsl(var(--card))",
 	        foreground: "hsl(var(--card-foreground))",
 	      },
+  			chart: {
+  				'1': 'hsl(var(--chart-1))',
+  				'2': 'hsl(var(--chart-2))',
+  				'3': 'hsl(var(--chart-3))',
+  				'4': 'hsl(var(--chart-4))',
+  				'5': 'hsl(var(--chart-5))'
+  			},
+  			sidebar: {
+  				DEFAULT: 'hsl(var(--sidebar-background))',
+  				foreground: 'hsl(var(--sidebar-foreground))',
+  				primary: 'hsl(var(--sidebar-primary))',
+  				'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+  				accent: 'hsl(var(--sidebar-accent))',
+  				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+  				border: 'hsl(var(--sidebar-border))',
+  				ring: 'hsl(var(--sidebar-ring))'
+  			}
 	    },
 	    fontFamily: {
 	      aleo: ['Aleo', 'HelveticaNeue', 'Helvetica Neue', 'sans-serif'],
@@ -56,6 +95,11 @@ export default {
 	      arbatosh: ['Arbutus Slab', 'serif'],
 	      recoleta: ['Recoleta', 'serif'],
 	    },
+  		borderRadius: {
+  			lg: 'var(--radius)',
+  			md: 'calc(var(--radius) - 2px)',
+  			sm: 'calc(var(--radius) - 4px)'
+  		},
 	    screens: {
 	      'xs': '375px',
 	      'sm': '640px',
@@ -66,5 +110,5 @@ export default {
 	    },
 	  },
 	},
-	plugins: [],
+	plugins: [require("tailwindcss-animate")],
 }
