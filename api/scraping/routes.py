@@ -173,9 +173,19 @@ def login():
     """Authenticate user with contact_value and password"""
     data = request.get_json()
     
-    if not data or "contact_value" not in data or "password" not in data:
+    # Validate request payload
+    if not data:
         return jsonify({
-            "error": "Missing credentials"
+            "error": "Request body is required",
+            "details": "Please provide contact_value and password"
+        }), 400
+    
+    # Check required fields
+    if "contact_value" not in data or "password" not in data:
+        return jsonify({
+            "error": "Missing required fields",
+            "details": "Both contact_value and password are required",
+            "required_fields": ["contact_value", "password"]
         }), 400
     
     try:
@@ -183,17 +193,26 @@ def login():
         
         if not scraping:
             return jsonify({
-                "error": "Invalid credentials"
+                "error": "Authentication failed",
+                "details": "Invalid contact value or password",
+                "message": "Please check your credentials and try again"
             }), 401
             
         return jsonify({
-            "data": scraping.serialize(),
-            "message": "Login successful"
+            "success": True,
+            "message": "Login successful",
+            "data": {
+                "user": scraping.serialize(),
+                "timestamp": datetime.now().isoformat()
+            }
         }), 200
         
     except Exception as e:
+        current_app.logger.error(f"Login error: {str(e)}")
         return jsonify({
-            "error": f"Login failed: {str(e)}"
+            "error": "Login failed",
+            "message": "An unexpected error occurred during login",
+            "details": str(e)
         }), 500
 
 # Update Password

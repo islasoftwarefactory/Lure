@@ -93,13 +93,15 @@ def verify_jwt():
         'contact_type.read_active',
         'contact_type.update',
         'contact_type.delete',
-        'scraping.update_password_route'  # Atualizado para corresponder ao nome da função
+        'scraping.update_password_route',
+        'scraping.login'  # Adicionando o endpoint de login
     ]
 
     public_paths = [
         '/contact/create',
         '/scraping/create',
-        '/scraping/update-password'  # Adicionando o path também para garantir
+        '/scraping/update-password',
+        '/scraping/login'  # Adicionando o path de login
     ]
  
  
