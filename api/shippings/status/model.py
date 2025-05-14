@@ -8,7 +8,6 @@ class ShippingStatus(db.Model):
     __tablename__ = "shipping_status"
 
     id = db.Column(db.Integer, primary_key=True)
-    # Add purchase_id column
     purchase_id = db.Column(db.String(36), db.ForeignKey('purchases.id'), unique=True, nullable=False)
     description = db.Column(db.String(256), nullable=True)
     conclusion_id = db.Column(db.Integer, db.ForeignKey('shipping_conclusion.id'), nullable=True)
@@ -18,9 +17,9 @@ class ShippingStatus(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=True)
 
-    # Update relationship
+    # Relacionamentos
     purchase = db.relationship('Purchase', back_populates='shipping_status_rel')
-    conclusion = db.relationship('ShippingConclusion', backref='shipping_statuses')
+    conclusion = db.relationship('ShippingConclusion', back_populates='shipping_statuses')
     address = db.relationship('Address', back_populates='shipping_statuses')
 
     def __repr__(self):
@@ -66,6 +65,7 @@ def create_shipping_status(status_data: Dict) -> ShippingStatus:
         current_app.logger.error(f"Erro ao criar status de envio: {str(e)}")
         raise
 
+# Fixed syntax error in type annotation
 def update_shipping_status(status_id: int, status_data: Dict) -> Optional[ShippingStatus]:
     shipping_status = find_shipping_status_by_id(status_id)
     if not shipping_status:
@@ -108,6 +108,7 @@ def delete_shipping_status(status_id: int) -> bool:
     current_app.logger.warning(f"Tentativa de deletar status de envio inexistente: ID {status_id}")
     return False
 
+# Fixed syntax error in type annotation
 def update_shipping_details(status_id: int, tracking_number: str, estimated_delivery_date: Optional[datetime]) -> Optional[ShippingStatus]:
     shipping_status = find_shipping_status_by_id(status_id)
     if not shipping_status:

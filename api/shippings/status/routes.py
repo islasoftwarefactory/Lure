@@ -1,5 +1,6 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.shippings.status.model import create_shipping_status, update_shipping_status, delete_shipping_status, find_shipping_status_by_id, update_shipping_details
+from api.shippings.conclusion.model import find_shipping_conclusion_by_id
 from api.address.model import Address
 from api.utils.security.jwt.decorators import token_required
 from datetime import datetime
@@ -15,9 +16,12 @@ def create(current_user_id):
         return jsonify({"error": "Request body must be JSON"}), 400
 
     try:
-        # Add user tracking (commented out for user_id removal)
-        # data['user_id'] = current_user_id
-        
+        # Validar conclusion_id se fornecido
+        if 'conclusion_id' in data:
+            conclusion = find_shipping_conclusion_by_id(data['conclusion_id'])
+            if not conclusion:
+                return jsonify({"error": "Invalid conclusion"}), 400
+
         # Validate address_id if provided
         if 'address_id' in data:
             address = Address.query.get(data['address_id'])
@@ -60,6 +64,12 @@ def update(current_user_id, id):
         return jsonify({"error": "Shipping status not found"}), 404
 
     try:
+        # Validar conclusion_id se fornecido
+        if 'conclusion_id' in data:
+            conclusion = find_shipping_conclusion_by_id(data['conclusion_id'])
+            if not conclusion:
+                return jsonify({"error": "Invalid conclusion"}), 400
+
         # Validate address_id if being updated
         if 'address_id' in data:
             address = Address.query.get(data['address_id'])
@@ -105,10 +115,16 @@ def handle_update_shipping_details(current_user_id, status_id):
     if not shipping_status:
         return jsonify({"error": "Shipping status not found"}), 404
 
-    tracking_number = data.get("tracking_number")
-    estimated_delivery_date = data.get("estimated_delivery_date")
-
     try:
+        # Validar conclusion_id se fornecido
+        if 'conclusion_id' in data:
+            conclusion = find_shipping_conclusion_by_id(data['conclusion_id'])
+            if not conclusion:
+                return jsonify({"error": "Invalid conclusion"}), 400
+
+        tracking_number = data.get("tracking_number")
+        estimated_delivery_date = data.get("estimated_delivery_date")
+
         if estimated_delivery_date:
             estimated_delivery_date = datetime.fromisoformat(estimated_delivery_date)
 

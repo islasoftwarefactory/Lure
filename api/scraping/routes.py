@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint, make_response
-from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping
+from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping, update_scraping_password
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
 from api.utils.security.DDOS import ddos_protection
@@ -8,6 +8,7 @@ from api.utils.security.DDOS.cookie_manager import CookieManager
 from datetime import datetime
 import pytz
 from flask_bcrypt import Bcrypt
+from api.utils.security.jwt.decorators import token_required
 
 blueprint = Blueprint('scraping', __name__)
 bcrypt = Bcrypt()
@@ -57,7 +58,7 @@ def create():
     if "@" in contact_value:
         is_valid, error_message = validate_email_provider(contact_value)
         if not is_valid:
-            return jsonify({"error": error_message}), 400˝
+            return jsonify({"error": error_message}), 400
 
     # Verificar se o contact_type_id é válido
     contact_type_id = data.get("contact_type_id")
@@ -113,7 +114,8 @@ def read_all():
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-def update(id):
+@token_required
+def update(current_user_id, id):
     data = request.get_json()
 
     # Validar formato de accessed_at se fornecido
@@ -196,30 +198,32 @@ def login():
 
 # Update Password
 @blueprint.route("/update-password/<int:id>", methods=["PUT"])
-def update_password(id):
+def update_password_route(id):
     """Update password for existing scraping entry"""
-    data = request.get_json()
-    
-    # Validar payload
-    if not data or "password" not in data:
-        return jsonify({
-            "error": "Missing required field: password"
-        }), 400
-        
-    # Validar senha
-    password = data["password"]
-    if not password or len(password) < 6:
-        return jsonify({
-            "error": "Password must be at least 6 characters long"
-        }), 400
-    
     try:
-        scraping = update_password(id, password)
+        scraping = get_scraping(id)
         if not scraping:
             return jsonify({
                 "error": "Scraping entry not found"
             }), 404
             
+        data = request.get_json()
+
+        # Validar payload
+        if not data or "password" not in data:
+            return jsonify({
+                "error": "Missing required field: password"
+            }), 400
+
+        # Validar senha
+        password = data["password"]
+        if not password or len(password) < 6:
+            return jsonify({
+                "error": "Password must be at least 6 characters long"
+            }), 400
+
+        # Alterando para usar update_scraping_password em vez de update_password
+        scraping = update_scraping_password(id, password)
         return jsonify({
             "message": "Password updated successfully",
             "data": {
@@ -227,7 +231,7 @@ def update_password(id):
                 "contact_value": scraping.contact_value
             }
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             "error": f"Failed to update password: {str(e)}"

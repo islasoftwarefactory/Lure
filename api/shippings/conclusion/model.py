@@ -14,7 +14,7 @@ class ShippingConclusion(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     
     # Relationship with ShippingStatus
-    shipping_status = db.relationship('ShippingStatus', backref='conclusions', lazy='dynamic')
+    shipping_statuses = db.relationship('ShippingStatus', back_populates='conclusion')
 
     def __repr__(self):
         return f"<ShippingConclusion id={self.id} name='{self.name}'>"

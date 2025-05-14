@@ -167,18 +167,28 @@ def update_password(scraping_id: int, password: str) -> Optional[Scraping]:
         scraping = get_scraping(scraping_id)
         if not scraping:
             return None
-            
+
         # Gerar hash da senha
         password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
         scraping.password = password_hash
-        
+
         db.session.commit()
         return scraping
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating password: {str(e)}")
         raise
+
+def update_scraping_password(scraping_id: int, new_password: str) -> Optional[Scraping]:
+    """Update password for a scraping entry"""
+    scraping = get_scraping(scraping_id)
+    if not scraping:
+        return None
+        
+    scraping.password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    db.session.commit()
+    return scraping
 
 def delete_scraping(scraping_id: int) -> Optional[Scraping]:
     """Deletes a scraping entry"""
