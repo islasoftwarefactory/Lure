@@ -14,7 +14,7 @@ class Scraping(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(40), nullable=False)
-    last_name = db.Column(db.String(40), nullable=False)
+    last_name = db.Column(db.String(40), nullable=True)
     contact_value = db.Column(db.String(256), unique=True, nullable=False)
     contact_type_id = db.Column(db.Integer, db.ForeignKey('contact_types.id'), nullable=False)
     password = db.Column(db.String(256), nullable=True)
@@ -107,9 +107,29 @@ def validate_contact_type(contact_value: str) -> int:
     else:
         raise ValueError("Contact value format not recognized as either phone or email")
 
+def process_full_name(full_name: str) -> tuple[str, Optional[str]]:
+    """
+    Processa o nome completo e retorna primeiro nome e sobrenome
+    Args:
+        full_name: Nome completo do usuário
+    Returns:
+        tuple: (primeiro_nome, sobrenome)
+    """
+    parts = full_name.strip().split(' ')
+    first_name = parts[0]
+    last_name = ' '.join(parts[1:]) if len(parts) > 1 else None
+    
+    return first_name, last_name
+
 def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
     """Creates a new scraping entry."""
     current_app.logger.info("Starting scraping entry creation")
+
+    # Processar nome completo se fornecido
+    if 'full_name' in scraping_data:
+        first_name, last_name = process_full_name(scraping_data['full_name'])
+        scraping_data['first_name'] = first_name
+        scraping_data['last_name'] = last_name
 
     # Validar dados básicos
     is_valid, error_message = validate_scraping_data(scraping_data)
@@ -124,13 +144,13 @@ def create_scraping(scraping_data: Dict) -> Optional[Scraping]:
             contact_value=scraping_data["contact_value"],
             contact_type_id=scraping_data["contact_type_id"],
             password=scraping_data.get("password"),
-            accessed_at=scraping_data.get("accessed_at")  # Will be None by default
+            accessed_at=scraping_data.get("accessed_at")
         )
 
         db.session.add(new_scraping)
         db.session.commit()
 
-        current_app.logger.info(f"Scraping entry created successfully for: {new_scraping.first_name} with contact type ID: {scraping_data['contact_type_id']}")
+        current_app.logger.info(f"Scraping entry created successfully for: {new_scraping.first_name} {new_scraping.last_name or ''}")
         return new_scraping
 
     except Exception as e:

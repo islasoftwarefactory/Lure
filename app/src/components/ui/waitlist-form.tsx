@@ -30,32 +30,41 @@ interface ApiError {
 }
 
 export default function WaitlistForm({ className }: WaitlistFormProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const validateFullName = (name: string): boolean => {
+    return name.trim().includes(' '); // Verifica se tem pelo menos um espaço
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
+    if (!validateFullName(fullName)) {
+      setError('Please enter your full name (Name and Last Name)');
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await api.post<ScrapingResponse>('/scraping/create', {
+        full_name: fullName,
         contact_value: email,
-        contact_type_id: 1, // Assumindo que 1 é o ID para email
-        password: null // Opcional neste momento
+        contact_type_id: 1
       });
 
       setSuccess(true);
       setEmail('');
+      setFullName('');
     } catch (error: any) {
       const apiError = error.response?.data as ApiError;
-      setError(
-        apiError?.error || 
-        'Failed to join waitlist. Please try again.'
-      );
+      setError(apiError?.error || 'Failed to join waitlist. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -120,6 +129,23 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid w-full items-center gap-2">
+                  <Label htmlFor="fullName" className="font-recoleta">
+                    Full Name (Name and Last Name)
+                  </Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    placeholder="Ex: John Smith"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="w-full font-recoleta py-6"
+                    disabled={loading}
+                  />
+                </div>
+
                 <div className="grid w-full items-center gap-2">
                   <Label htmlFor="email" className="font-recoleta">
                     Email
