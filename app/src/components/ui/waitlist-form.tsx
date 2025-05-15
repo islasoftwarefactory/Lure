@@ -115,63 +115,49 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
               <p className="mt-2 text-gray-500 font-recoleta">You've been added to our waitlist.</p>
             </div>
           ) : (
-            <>
-              <div className="text-sm text-gray-600 space-y-3 mb-6 font-recoleta">
-                <p>
-                  You can register any time until 06/20 to receive an exclusive password that grants you access to shop
-                  10 days before the official drop.
-                </p>
-                <p>
-                  If you register between 06/21 and 06/30, you'll still get early access — but only 5 days before the
-                  drop.
-                </p>
-                <p>Everyone else who registers after 06/30 will only receive access on the official drop date: 07/10</p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="fullName" className="font-recoleta">
+                  Full Name (Name and Last Name)
+                </Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  placeholder="Ex: John Smith"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full font-recoleta py-6"
+                  disabled={loading}
+                />
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="grid w-full items-center gap-2">
-                  <Label htmlFor="fullName" className="font-recoleta">
-                    Full Name (Name and Last Name)
-                  </Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    type="text"
-                    placeholder="Ex: John Smith"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    className="w-full font-recoleta py-6"
-                    disabled={loading}
-                  />
-                </div>
+              <div className="grid w-full items-center gap-2">
+                <Label htmlFor="email" className="font-recoleta">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full font-recoleta py-6"
+                  disabled={loading}
+                />
+              </div>
 
-                <div className="grid w-full items-center gap-2">
-                  <Label htmlFor="email" className="font-recoleta">
-                    Email
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full font-recoleta py-6"
-                    disabled={loading}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full font-recoleta py-6 mt-4" disabled={loading}>
-                  {loading ? 'Joining...' : 'Join Waitlist'}
-                </Button>
-              </form>
+              <Button type="submit" className="w-full font-recoleta py-6 mt-4" disabled={loading}>
+                {loading ? 'Joining...' : 'Join Waitlist'}
+              </Button>
 
               {error && (
                 <p className="text-red-400 text-sm text-center">{error}</p>
               )}
-            </>
+            </form>
           )}
         </DialogContent>
       </Dialog>

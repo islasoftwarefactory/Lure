@@ -8,62 +8,95 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./dialog"
 import { X, Lock } from "lucide-react"
+import api from "@/services/api"
 
 interface PasswordModalProps {
   className?: string
 }
 
+interface LoginResponse {
+  success: boolean
+  message: string
+  data: {
+    user: {
+      id: number
+      first_name: string
+      last_name: string
+      contact_value: string
+      contact_type_id: number
+      accessed_at: string
+      created_at: string
+      updated_at: string
+    }
+    timestamp: string
+  }
+}
+
 export default function PasswordModal({ className }: PasswordModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isError, setIsError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setIsError(false)
+    setErrorMessage("")
 
-    // Simulate password verification
-    setTimeout(() => {
-      // For demo purposes, let's say the password is "fashion2023"
-      if (password === "fashion2023") {
-        // Show success message instead of redirecting
+    try {
+      const response = await api.post<LoginResponse>('/scraping/login', {
+        contact_value: email,
+        password: password
+      })
+
+      if (response.data.success) {
         setIsSuccess(true)
-        setIsLoading(false)
-
-        // Close modal after showing success message for 3 seconds
-        setTimeout(() => {
-          setIsSuccess(false)
-          setIsOpen(false)
-          setPassword("")
-        }, 3000)
-      } else {
-        setIsError(true)
-        setIsLoading(false)
+        // Opcional: Salvar token/dados do usuário no localStorage ou context
+        localStorage.setItem('user', JSON.stringify(response.data.data.user))
       }
-    }, 1000)
+    } catch (error: any) {
+      setIsError(true)
+      setErrorMessage(
+        error.response?.data?.details || 
+        error.response?.data?.message || 
+        "Failed to sign in. Please try again."
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const resetForm = () => {
+    setEmail("")
+    setPassword("")
+    setIsError(false)
+    setErrorMessage("")
+    setIsLoading(false)
+    setIsSuccess(false)
   }
 
   return (
     <div className={className}>
-      {/* Secondary Button - Text link style */}
       <button
         onClick={() => setIsOpen(true)}
         className="text-white hover:text-gray-200 font-medium text-base transition-colors duration-200 font-recoleta underline underline-offset-4"
       >
-        Already have a password? Enter here
+        Already have an account? Sign in here
       </button>
 
-      {/* Password Modal */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={(open) => {
+        setIsOpen(open)
+        if (!open) resetForm()
+      }}>
         <DialogContent className="sm:max-w-md backdrop-blur-md bg-white/90 border border-white/20 shadow-lg font-recoleta p-8">
           <DialogHeader className="space-y-3">
-            <DialogTitle className="text-2xl font-bold font-recoleta">Enter Exclusive Access</DialogTitle>
+            <DialogTitle className="text-2xl font-bold font-recoleta">Sign In</DialogTitle>
             <DialogDescription className="text-base font-recoleta">
-              Enter your early access password to shop now. Enjoy a relaxed shopping experience without the pressure of
-              the official drop day.
+              Enter your credentials to access your account and exclusive collection.
             </DialogDescription>
           </DialogHeader>
 
@@ -99,26 +132,50 @@ export default function PasswordModal({ className }: PasswordModalProps) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid w-full items-center gap-2">
-                <Label htmlFor="password" className="font-recoleta">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter access password"
-                  required
-                  className={`w-full font-recoleta py-6 ${isError ? "border-red-500" : ""}`}
-                />
+              <div className="grid w-full items-center gap-4">
+                <div className="grid w-full items-center gap-2">
+                  <Label htmlFor="email" className="font-recoleta">
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    required
+                    className={`w-full font-recoleta py-6 ${isError ? "border-red-500" : ""}`}
+                  />
+                </div>
+
+                <div className="grid w-full items-center gap-2">
+                  <Label htmlFor="password" className="font-recoleta">
+                    Password
+                  </Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    className={`w-full font-recoleta py-6 ${isError ? "border-red-500" : ""}`}
+                  />
+                </div>
+
                 {isError && (
-                  <p className="text-sm text-red-500 mt-1 font-recoleta">Incorrect password. Please try again.</p>
+                  <p className="text-sm text-red-500 mt-1 text-center font-recoleta">
+                    {errorMessage}
+                  </p>
                 )}
               </div>
 
-              <Button type="submit" className="w-full font-recoleta py-6 mt-4" disabled={isLoading}>
-                {isLoading ? "Verifying..." : "Access Now"}
+              <Button 
+                type="submit" 
+                className="w-full font-recoleta py-6 mt-4" 
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           )}
