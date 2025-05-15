@@ -1,0 +1,31 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+*venv*
+*.pyc
+*.ini
+
+# production
+build
+dist
+README
+images
+
+# misc
+.DS_Store
+.env
+.env.local
+.env.test.local
+.env.production.local
+.env.development.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+yarn.lock
+
+db/mysql/
+db/redis/
+
+__pycache__/

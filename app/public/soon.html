@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador STL</title>
+    <style>
+        #viewer {
+            width: 100%;
+            height: 400px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="viewer"></div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.159.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.159.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+        let scene, camera, renderer, controls;
+        
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = null;
+
+            const container = document.getElementById('viewer');
+            camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true 
+            });
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            container.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 2.0;
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 2);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+            directionalLight.position.set(0, 1, 2);
+            scene.add(directionalLight);
+
+            const loader = new STLLoader();
+            loader.load(
+                '/fleur-de-lys.stl',
+                function (geometry) {
+                    try {
+                        const material = new THREE.MeshPhongMaterial({
+                            color: 0x000000,
+                            specular: 0x111111,
+                            shininess: 200
+                        });
+                        const mesh = new THREE.Mesh(geometry, material);
+                        
+                        // Verifica se a geometria é válida
+                        if (geometry.attributes.position.count === 0) {
+                            throw new Error('Geometria STL inválida');
+                        }
+                        
+                        geometry.center();
+                        
+                        const box = new THREE.Box3().setFromObject(mesh);
+                        const size = box.getSize(new THREE.Vector3());
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const scale = 6 / maxDim;
+                        mesh.scale.set(scale, scale, scale);
+                        
+                        scene.add(mesh);
+                    } catch (error) {
+                        console.error('Erro ao processar geometria:', error);
+                    }
+                },
+                // Progress callback
+                function (xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% carregado');
+                },
+                // Error callback
+                function (error) {
+                    console.error('Erro ao carregar STL:', error);
+                }
+            );
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('viewer');
+            camera.aspect = container.offsetWidth / container.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        init();
+        animate();
+        window.addEventListener('resize', onWindowResize, false);
+    </script>
+</body>
+</html>

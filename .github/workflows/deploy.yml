@@ -1,0 +1,54 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "pipeline" branch
+  push:
+    branches: [ "pipeline" ]
+  pull_request:
+    branches: [ "pipeline" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      - name: Start container and build application
+        run: |
+          git fetch origin pipeline
+          git checkout pipeline
+          git pull origin pipeline
+          docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
+          
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: app/dist/
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: app/dist
+
+      - name: Copy to lureclo directory
+        run: cp -r app/dist/* /var/www/lureclo/

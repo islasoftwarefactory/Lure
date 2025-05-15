@@ -1,0 +1,17 @@
+FROM node:lts
+
+WORKDIR /home/vite
+
+ENV PATH=/home/vite/node_modules/.bin:$PATH
+ENV PORT=5173
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+COPY package.json package-lock.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev"]

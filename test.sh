@@ -1,0 +1,1 @@
+cp -r app/dist/* /var/www/lureclo
