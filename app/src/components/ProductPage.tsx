@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
-import hoodieImage from '../assets/icons/pieces/hoodie_black.jpeg';
 import { useRef } from 'react';
 import { Plus } from 'lucide-react';
 import ProductCard from "@/components/ProductCard";
@@ -13,14 +12,18 @@ import { CartItem, addToCartAndShow } from '../utils/cartUtils';
 import { useCart } from '../context/CartContext';
 import { SideCart } from "./SideCart";
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import api from '@/services/api';
 
 interface Product {
-  id: string;
+  id: number;
   name: string;
   price: number;
   description: string;
-  image: string;
+  inventory: number;
+  category_id: number;
+  gender_id: number;
+  size_id: number;
+  image_category_id: number;
 }
 
 interface AccordionProps {
@@ -59,38 +62,129 @@ const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & {
 export function ProductPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
+  const { isCartOpen, setIsCartOpen, cartItems, setCartItems, addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const shippingRef = useRef<HTMLDivElement>(null);
   const faqRef = useRef<HTMLDivElement>(null);
-  const { token } = useAuth();
+  const auth = useAuth();
+  const [productImage, setProductImage] = useState<string>('');
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [recommendedImages, setRecommendedImages] = useState<Record<number, string>>({});
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      if (!token) return;
+      if (!auth.token || !id) {
+        console.log('🚫 Request cancelled:', {
+          token: auth.token ? 'Present' : 'Missing',
+          id: id || 'Missing'
+        });
+        return;
+      }
 
       try {
-        const response = await fetch(`/api/products/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        console.log('🚀 Iniciando fetch do produto:', { id });
+        
+        setIsLoading(true);
+        const response = await api.get(`/product/read/${id}`);
 
-        if (response.ok) {
-          const data = await response.json();
-          setProduct(data);
+        console.log('📥 Resposta da API:', response.data);
+
+        if (response.data && response.data.data) {
+          setProduct(response.data.data);
+          console.log('✅ Produto carregado com sucesso:', response.data.data);
         }
-      } catch (error) {
-        console.error('Error fetching product details:', error);
+      } catch (error: any) {
+        console.error('❌ Erro ao carregar produto:', error);
+        setError(error.response?.data?.message || 'Erro ao carregar dados do produto');
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProductDetails();
-  }, [id, token]);
+  }, [id, auth.token]);
+
+  useEffect(() => {
+    const fetchProductImage = async () => {
+      if (!product?.image_category_id) return;
+
+      try {
+        console.log('🖼️ Buscando imagem do produto:', { imageId: product.image_category_id });
+        const response = await api.get(`/image-category/read/${product.image_category_id}`);
+        
+        if (response.data && response.data.data) {
+          console.log('🎨 Imagem carregada:', response.data.data);
+          setProductImage(response.data.data.url);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar imagem:', error);
+      }
+    };
+
+    fetchProductImage();
+  }, [product]);
+
+  useEffect(() => {
+    const fetchRecommendedProducts = async () => {
+      if (!auth.token || !id) return;
+
+      try {
+        console.log('👍 Buscando produtos para recomendações...');
+        const response = await api.get('/product/read/all');
+
+        if (response.data && response.data.data) {
+          const allProducts: Product[] = response.data.data;
+          const filteredProducts = allProducts.filter(p => p.id !== Number(id));
+          const randomProducts = filteredProducts
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 3);
+
+          console.log('✅ Produtos recomendados selecionados:', randomProducts);
+          setRecommendedProducts(randomProducts);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao buscar produtos recomendados:', error);
+      }
+    };
+
+    fetchRecommendedProducts();
+  }, [auth.token, id]);
+
+  useEffect(() => {
+    const fetchProductImage = async (imageId: number) => {
+      if (!imageId || recommendedImages[imageId]) return;
+
+      try {
+        console.log(`🖼️ Buscando imagem recomendada: ${imageId}`);
+        const response = await api.get(`/image-category/read/${imageId}`);
+        if (response.data && response.data.data) {
+          setRecommendedImages(prev => ({
+            ...prev,
+            [imageId]: response.data.data.url
+          }));
+          console.log(`🎨 Imagem recomendada ${imageId} carregada.`);
+        }
+      } catch (error) {
+        console.error(`❌ Erro ao buscar imagem recomendada ${imageId}:`, error);
+      }
+    };
+
+    recommendedProducts.forEach(product => {
+      if (product.image_category_id) {
+        fetchProductImage(product.image_category_id);
+      }
+    });
+  }, [recommendedProducts]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!product) return <div>Product not found</div>;
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -122,38 +216,73 @@ export function ProductPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!token) return;
+    if (!product || !auth.token || !addToCart) {
+      console.error("Não é possível adicionar ao carrinho: Produto, token ou função addToCart ausentes.");
+      return;
+    }
+
+    console.log(`🛒 Tentando adicionar ao carrinho: Produto ID ${product.id}, Qtd: ${quantity}, Tamanho: ${selectedSize}`);
+
+    // --- EDIT 1: Preparar dados para o Context (SEM sizeId aqui) ---
+    // O CartContext agora só precisa dos dados que o frontend CONHECE
+    const itemDataForContext: Omit<CartItem, 'cart_item_id' | 'sizeId'> & { productId: number } = {
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: quantity,
+        size: selectedSize, // <<< ENVIAR O NOME DO TAMANHO
+        image: productImage,
+    };
+    // --- FIM EDIT 1 ---
 
     try {
-      await fetch('/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          productId: id,
-          quantity,
-          size: selectedSize
-        })
-      });
+       // --- EDIT 2: Chamar addToCart do Context ---
+       await addToCart(itemDataForContext); // Passa o objeto SEM sizeId inicial
+       // --- FIM EDIT 2 ---
+       console.log("🛒 Chamada para CartContext.addToCart concluída.");
+       setIsCartOpen(true);
 
-      // Atualiza carrinho local
-      if (product) {
-        const newItem: CartItem = {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          size: selectedSize,
-          quantity: quantity,
-          image: product.image
-        };
-        setCartItems(prev => [...prev, newItem]);
-        setIsCartOpen(true);
-      }
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+    } catch (error: any) {
+      console.error('❌ Erro ao chamar CartContext.addToCart:', error);
+      // Mostrar erro para o usuário se necessário
     }
+  };
+
+  const handleBuyNow = () => {
+    if (!product) {
+      console.error("Cannot buy now: Product data is missing.");
+      return;
+    }
+    // --- GARANTIR QUE TEMOS O sizeId ---
+    // Usar o size_id que veio com os dados do produto da API
+    // Se você tiver uma seleção de tamanho que muda o ID, precisa buscar esse ID selecionado.
+    const sizeIdToUse = product.size_id;
+    if (sizeIdToUse === undefined || sizeIdToUse === null) {
+        console.error("Cannot buy now: Product size ID is missing.");
+        // Adicionar feedback para usuário se necessário
+        return;
+    }
+    // --- FIM GARANTIR sizeId ---
+
+
+    // --- AJUSTAR A CRIAÇÃO DO OBJETO ---
+    // Usar a interface CartItem definida no Checkout para garantir consistência
+    // Omitir 'cart_item_id' e 'id' (ID do carrinho) pois não são relevantes aqui
+    const itemForCheckout: Omit<CartItem, 'cart_item_id' | 'id'> & {productId: number, sizeId: number} = {
+      productId: product.id,
+      sizeId: sizeIdToUse,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      size: selectedSize,
+      image: productImage,
+    };
+    // --- FIM AJUSTE CRIAÇÃO ---
+
+    console.log("Navigating to checkout with single item (Corrected Keys):", itemForCheckout);
+
+    // Navega para a página de checkout, passando o item formatado corretamente
+    navigate('/checkout', { state: { items: [itemForCheckout] } });
   };
 
   return (
@@ -166,8 +295,8 @@ export function ProductPage() {
           {/* Imagem principal */}
           <div className="w-[600px] h-[600px] flex items-center justify-center">
             <img 
-              src={hoodieImage} 
-              alt="Produto"
+              src={productImage} 
+              alt={product?.name}
               className="w-full h-full object-contain"
             />
           </div>
@@ -176,10 +305,13 @@ export function ProductPage() {
           <div className="w-[600px] h-[550px] bg-white rounded-[30px] shadow-lg p-8 ml-[250px]">
             <div>
               <div className="flex justify-between items-center">
-                <h1 className="text-4xl font-extrabold font-aleo">The Flower</h1>
-                <span className="text-3xl font-extrabold">$199.99</span>
+                <h1 className="text-4xl font-extrabold font-aleo">{product.name}</h1>
+                <span className="text-3xl font-extrabold">${product.price}</span>
               </div>
               
+              {/* Descrição do produto */}
+              <p className="mt-4 text-gray-700">{product.description}</p>
+
               {/* Avaliações */}
               <div className="flex items-center gap-2 mt-4">
                 <div className="flex">
@@ -198,58 +330,62 @@ export function ProductPage() {
               </div>
 
               {/* Seleção de Tamanho */}
-              <div className="mt-8">
-                <h2 className="text-lg font-extrabold mb-3">Size</h2>
-                <div className="flex gap-2">
-                  {['S', 'M', 'L', 'XL'].map((size) => (
-                    <div key={size} className="relative">
-                      <div className="absolute inset-0 bg-[#f2f2f2] rounded-full" />
+              <div className="mt-8 space-y-4">
+                <div>
+                  <span className="text-sm font-bold text-black/50">Size</span>
+                  <div className="flex items-center gap-2 mt-2">
+                    {['S', 'M', 'L', 'XL'].map((size) => (
                       <button
+                        key={size}
                         onClick={() => setSelectedSize(size)}
-                        className={`relative w-12 h-12 rounded-full border ${
-                          selectedSize === size
-                            ? 'bg-black text-white border-black'
-                            : 'bg-white text-black border-gray-300'
-                        } flex items-center justify-center font-medium transition-colors`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 hover:bg-transparent
+                          ${selectedSize === size 
+                            ? 'border-black bg-black text-white' 
+                            : 'border-black/10 text-black'}`}
                       >
                         {size}
                       </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Quantidade */}
-              <div className="mt-8">
-                <h2 className="text-lg font-extrabold mb-3">Quantity</h2>
-                <div className="flex items-center border-2 border-black rounded-full w-[120px]">
-                  <button 
-                    onClick={() => handleQuantityChange(-1)}
-                    className="w-10 h-10 flex items-center justify-center text-black"
-                  >
-                    -
-                  </button>
-                  <span className="flex-1 text-center">{quantity}</span>
-                  <button 
-                    onClick={() => handleQuantityChange(1)}
-                    className="w-10 h-10 flex items-center justify-center text-black"
-                  >
-                    +
-                  </button>
+                <div>
+                  <span className="text-sm font-bold text-black/50">Quantity</span>
+                  <div className="flex items-center border-2 border-black/10 rounded-full w-[120px] mt-2">
+                    <button 
+                      onClick={() => handleQuantityChange(-1)}
+                      className="w-10 h-10 flex items-center justify-center text-black hover:bg-transparent"
+                    >
+                      -
+                    </button>
+                    <span className="flex-1 text-center text-black">{quantity}</span>
+                    <button 
+                      onClick={() => handleQuantityChange(1)}
+                      className="w-10 h-10 flex items-center justify-center text-black hover:bg-transparent"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Botões de Ação */}
               <div className="mt-8 space-y-3 px-5">
-                {/* Botão Comprar Agora */}
-                <button className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors">
+                {/* Botão Comprar Agora - ATUALIZADO */}
+                <button
+                  onClick={handleBuyNow} // Chama a nova função
+                  className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  disabled={!product || !auth.token} // Desabilita se não houver produto ou token
+                >
                   <span>BUY NOW</span>
                 </button>
+                {/* --- FIM DA ATUALIZAÇÃO --- */}
 
-                {/* Botão Adicionar ao Carrinho */}
-                <button 
+                {/* Botão Adicionar ao Carrinho (mantido como estava) */}
+                <button
                   onClick={handleAddToCart}
                   className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  disabled={!product || !auth.token}
                 >
                   <span>ADD TO CART</span>
                 </button>
@@ -284,33 +420,26 @@ export function ProductPage() {
           </div>
         </div>
 
-        {/* You May Also Like Section */}
+        {/* You May Also Like Section - ATUALIZADO */}
         <div className="mt-48 pb-16">
           <div className="relative">
-            <h2 className="text-7xl font-extrabold text-center mb-8 tracking-[0.15em] absolute w-full top-[-38px] left-1/2 -translate-x-1/2" style={{ maxWidth: '900px' }}>You May Also Like</h2>
+            <h2 className="text-7xl font-extrabold text-center mb-8 tracking-[0.15em] absolute w-full top-[-38px] left-1/2 -translate-x-1/2" style={{ maxWidth: '900px' }}>
+              You May Also Like
+            </h2>
             <div className="flex justify-center items-center gap-0 -mx-8 pt-12">
-              <ProductCard
-                title="Hoodie Preto"
-                subtitle="Edição Limitada"
-                imageUrl={hoodieImage}
-                isLimitedEdition={true}
-                colorVariant="#000000"
-                onClick={() => handleProductClick('hoodie-preto')}
-              />
-              <ProductCard
-                title="Hoodie Branco"
-                subtitle="Clássico"
-                imageUrl={hoodieImage}
-                colorVariant="#FFFFFF"
-                onClick={() => handleProductClick('hoodie-branco')}
-              />
-              <ProductCard
-                title="Hoodie Vermelho"
-                subtitle="Nova Coleção"
-                imageUrl={hoodieImage}
-                colorVariant="#FF0000"
-                onClick={() => handleProductClick('hoodie-vermelho')}
-              />
+              {recommendedProducts.map((recProduct) => (
+                <ProductCard
+                  key={recProduct.id}
+                  title={recProduct.name}
+                  subtitle={recProduct.description || "Check it out!"}
+                  imageUrl={recommendedImages[recProduct.image_category_id] || productImage}
+                  price={recProduct.price}
+                  onClick={() => handleProductClick(recProduct.id.toString())}
+                />
+              ))}
+              {recommendedProducts.length === 0 && (
+                <p className="text-center text-gray-500 pt-12">No recommendations available.</p>
+              )}
             </div>
           </div>
         </div>

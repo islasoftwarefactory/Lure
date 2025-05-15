@@ -1,6 +1,7 @@
 from flask import request, jsonify, Blueprint
 from api.cart.model import Cart, create_cart, get_cart, update_cart, delete_cart
-from api.utils.jwt.decorators import token_required, optional_token_required
+from api.size.model import Size
+from api.utils.security.jwt.decorators import token_required, optional_token_required
 from flask import current_app
 
 blueprint = Blueprint('cart', __name__)
@@ -9,30 +10,73 @@ blueprint = Blueprint('cart', __name__)
 @blueprint.route("/create", methods=["POST"])
 @optional_token_required
 def create(current_user_id=None):
-    data = request.get_json()
-    
-    if not data or "product_id" not in data:
-        return jsonify({"error": "Missing required fields"}), 400
+    # --- Log 1: Dados recebidos ---
+    try:
+        data = request.get_json()
+        current_app.logger.info(f"[CART CREATE / START] Received data: {data}") # Log inicial
+    except Exception as e:
+        current_app.logger.error(f"[CART CREATE / ERROR] Failed to parse JSON body: {str(e)}")
+        return jsonify({"error": "Invalid JSON data"}), 400
+    # --- Fim Log 1 ---
+
+    # Validação
+    if not data or "product_id" not in data or "size" not in data:
+        error_msg = "Missing required fields (product_id, size)"
+        current_app.logger.warning(f"[CART CREATE / VALIDATION FAIL] {error_msg}. Data received: {data}")
+        return jsonify({"error": error_msg}), 400
 
     try:
+        # --- Log 2: Extraindo nome do tamanho ---
+        size_name = data['size']
+        current_app.logger.info(f"[CART CREATE / SIZE LOOKUP] Attempting to find size for name: '{size_name}'")
+        # --- Fim Log 2 ---
+
+        # Buscar Size ID
+        size_object = Size.query.filter_by(name=size_name).first()
+
+        # --- Log 3: Resultado da busca do tamanho ---
+        if not size_object:
+            error_msg = f"Invalid size provided: {size_name}"
+            current_app.logger.warning(f"[CART CREATE / SIZE NOT FOUND] {error_msg}")
+            return jsonify({"error": error_msg}), 400
+        else:
+            found_size_id = size_object.id
+            current_app.logger.info(f"[CART CREATE / SIZE FOUND] Found size '{size_name}' with ID: {found_size_id}")
+        # --- Fim Log 3 ---
+
+        # Preparar dados para o modelo
         cart_data = {
-            "user_id": current_user_id,  # Pode ser None para usuários anônimos
+            "user_id": current_user_id,
             "product_id": data["product_id"],
-            "discount_id": data.get("discount_id"),
+            "size_id": found_size_id,
+            "quantity": data.get("quantity", 1),
             "status": True
         }
-        
-        current_app.logger.info(f"Creating cart with data: {cart_data}")  # Log para debug
-        
-        cart = create_cart(cart_data)
+
+        # --- Log 4: Dados antes de chamar create_cart ---
+        current_app.logger.info(f"[CART CREATE / PREPARED DATA] Data being passed to create_cart: {cart_data}")
+        # --- Fim Log 4 ---
+
+        # Chamar a função de criação do modelo
+        cart = create_cart(cart_data) # create_cart já tem logs internos
+
+        # --- Log 5: Dados serializados antes da resposta ---
+        serialized_cart = cart.serialize()
+        current_app.logger.info(f"[CART CREATE / SUCCESS] Cart created. Serialized data for response: {serialized_cart}")
+        # --- Fim Log 5 ---
+
         return jsonify({
-            "data": cart.serialize(),
+            "data": serialized_cart,
             "message": "Cart created successfully."
         }), 201
-        
+
     except Exception as e:
-        current_app.logger.error(f"Error in cart creation: {str(e)}")  # Log para debug
-        return jsonify({"error": f"Failed to create cart: {str(e)}"}), 500
+        # --- Log 6: Erro geral no processo ---
+        # O logger dentro de create_cart deve pegar erros específicos da DB
+        # Este pega erros na lógica da rota (busca de size, etc.)
+        current_app.logger.error(f"[CART CREATE / ERROR] Unexpected error during cart creation process: {str(e)}", exc_info=True) # exc_info=True adiciona traceback
+        # --- Fim Log 6 ---
+        return jsonify({"error": f"Failed to create cart: An internal error occurred."}), 500 # Mensagem genérica para o cliente
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
@@ -50,12 +94,12 @@ def read(current_user_id, id):
 @blueprint.route("/read/all", methods=["GET"])
 @token_required
 def read_all(current_user_id):
-    carts = Cart.query.all()
+    carts = Cart.query.filter_by(user_id=current_user_id, status=True).all()
     carts_data = [cart.serialize() for cart in carts]
 
     return jsonify({
         "data": carts_data,
-        "message": "Carts retrieved successfully."
+        "message": "User cart retrieved successfully."
     }), 200
 
 # Update
@@ -104,7 +148,8 @@ def migrate_anonymous_cart(current_user_id):
             cart_data = {
                 "user_id": current_user_id,
                 "product_id": item["product_id"],
-                "discount_id": item.get("discount_id"),
+                "size_id": item["size_id"],
+                "quantity": item["quantity"],
                 "status": True
             }
             cart = create_cart(cart_data)

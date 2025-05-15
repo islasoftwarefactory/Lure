@@ -25,7 +25,7 @@ export default function ProductCard({
   const handleClick = async () => {
     try {
       // Registra visualização do produto com token
-      await fetch(`/api/products/view/${productId}`, {
+      await fetch(`/product/read/1`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -54,11 +54,11 @@ export default function ProductCard({
             </Badge>
           )}
           <div className="aspect-square bg-white p-8">
-            <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center p-8">
+            <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center">
               <img
                 src={imageUrl}
                 alt={title}
-                className="w-full h-full object-contain"
+                className="w-[90%] h-[90%] object-contain"
               />
             </div>
           </div>

@@ -1,10 +1,9 @@
-from flask import Flask, request, jsonify, g, make_response
+from flask import Flask, request, jsonify, g, make_response, current_app
 from api.utils.db.config import database_uri
 from api.utils.db.connection import connect_to_db, init_db, db
 from sqlalchemy.exc import OperationalError
 from api.blueprints import register_blueprints
 from flask_migrate import Migrate
-from api.utils.jwt.jwt_utils import verify_token, generate_token
 from flask_cors import CORS
 from api.utils.db.create_tables import create_tables
 from sqlalchemy import inspect
@@ -18,6 +17,12 @@ from datetime import datetime
 
 load_dotenv()
 application = Flask(__name__)
+
+# --- Inicializar Flask-CORS AQUI ---
+# Permitir requisições das origens do seu frontend (dev e HMR)
+# supports_credentials=True é importante para permitir envio de cookies ou cabeçalhos de autenticação
+CORS(application, resources={r"/*": {"origins": ["http://localhost:5173", "http://localhost:8081"]}}, supports_credentials=True)
+# ------------------------------------
 
 # Configuração do email iCloud
 application.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
@@ -73,48 +78,56 @@ except Exception as e:
 
 @application.before_request
 def verify_jwt():
-    # Permitir todas as requisições OPTIONS sem verificação de token
     if request.method == 'OPTIONS':
         return None
-        
-    # Lista de endpoints que não precisam de autenticação
+
     public_endpoints = [
         'health',
         'user.get_anonymous_token',
         'scraping.create',
-        'user.create',
+        'user.create_or_login_oauth',
         'static',
-        'handle_options',
         'contact_type.create',
         'contact_type.read',
         'contact_type.read_all',
         'contact_type.read_active',
         'contact_type.update',
-        'contact_type.delete'
+        'contact_type.delete',
+        'scraping.update_password_route',
+        'scraping.login'  # Adicionando o endpoint de login
     ]
-    
-    # Lista de paths públicos
+
     public_paths = [
         '/contact/create',
-        '/scraping/create'
+        '/scraping/create',
+        '/scraping/update-password',
+        '/scraping/login'  # Adicionando o path de login
     ]
-    
-    # Verifica se é um endpoint ou path público
-    if request.endpoint in public_endpoints or request.path in public_paths:
-        return None
-        
-    # Verifica o token para outras rotas
+ 
+ 
+    if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
+         current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is public. Skipping token check.")
+         return None # Não verifica token para rotas públicas
+    else:
+          current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is NOT public. Proceeding with token check.")
+ 
+    # Log para debug do endpoint sendo verificado
+### erro aqui facil de resolver só ver no git e arrumar
     token = request.headers.get("Authorization")
     if not token:
+        current_app.logger.warning(f"verify_jwt: Token ausente para endpoint protegido '{request.endpoint}'.")
         return jsonify({"message": "Token ausente!"}), 401
 
-    user_id = verify_token(
-        token.split()[1] if token.startswith("Bearer ") else token
-    )
-    if not user_id:
-        return jsonify({"message": "Token inválido ou expirado!"}), 401
-
-    g.current_user_id = user_id
+    try:
+        # Assumindo que verify_token agora retorna apenas o user_id ou levanta exceção
+        from api.utils.security.jwt.jwt_utils import verify_token # Importar aqui ou no topo
+        user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
+        g.current_user_id = user_id # Armazena no contexto da requisição 'g'
+    except Exception as e: # Captura exceções de verify_token (Expirado, Inválido)
+        # É importante que verify_token levante exceções específicas ou retorne algo
+        # que indique falha para este try/except funcionar bem.
+        # Ajuste a mensagem de erro conforme o que verify_token retorna/levanta.
+        return jsonify({"message": f"Token inválido ou expirado: {str(e)}"}), 401
 
 
 @application.before_request
@@ -125,45 +138,20 @@ def log_request_info():
     print(f"Endpoint: {request.endpoint}", flush=True)
     return None
 
+# --- REMOVER ou COMENTAR a função after_request ---
+# @application.after_request
+# def after_request(response):
+#     # ... (código removido) ...
+#     return response
+# ----------------------------------------------------
 
-@application.route('/health')
-def health():
-    return jsonify({
-        "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat()
-    }), 200
-
-
-@application.after_request
-def after_request(response):
-    # Remove headers existentes para evitar duplicação
-    response.headers.pop('Access-Control-Allow-Origin', None)
-    response.headers.pop('Access-Control-Allow-Headers', None)
-    response.headers.pop('Access-Control-Allow-Methods', None)
-    response.headers.pop('Access-Control-Allow-Credentials', None)
-    
-    origin = request.headers.get('Origin', '')
-    if origin == 'http://localhost:8081':
-        response.headers['Access-Control-Allow-Origin'] = origin
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Max-Age'] = '86400'
-    return response
-
-
-@application.route('/<path:path>', methods=['OPTIONS'])
-@application.route('/', methods=['OPTIONS'])
-def handle_options(path=''):
-    response = make_response()
-    origin = request.headers.get('Origin', '')
-    if origin == 'http://localhost:8081':
-        response.headers['Access-Control-Allow-Origin'] = origin
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
-        response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
-        response.headers['Access-Control-Allow-Credentials'] = 'true'
-        response.headers['Access-Control-Max-Age'] = '86400'
-    return response
+# --- REMOVER ou COMENTAR a rota handle_options ---
+# @application.route('/<path:path>', methods=['OPTIONS'])
+# @application.route('/', methods=['OPTIONS'])
+# def handle_options(path=''):
+#     # ... (código removido) ...
+#     return response
+# -------------------------------------------------
 
 
 print("=== Servidor Iniciando ===")

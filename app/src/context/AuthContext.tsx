@@ -1,89 +1,100 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { API_URL } from '@/config';
-import axios from 'axios';
+import api from '@/services/api'; // Importar o serviço da API
 
+// Interface que define o que estará disponível no contexto
 interface AuthContextType {
-  isLoggedIn: boolean;
+  user: any | null;
   token: string | null;
-  setToken: (token: string | null) => void;
-  login: () => Promise<void>;
+  isAuthenticated: boolean;
+  login: (token: string, userData?: any) => void; // Ajustado para aceitar dados do usuário
   logout: () => void;
-  refreshToken: () => Promise<void>;
-  getAnonymousToken: () => Promise<void>;
+  getAnonymousToken: () => Promise<void>; // Mudança: não precisa retornar, apenas define o estado
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Criando o contexto com valores padrão
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  token: null,
+  isAuthenticated: false,
+  login: () => {},
+  logout: () => {},
+  getAnonymousToken: async () => {}
+});
 
+// Hook personalizado para acessar o contexto
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
+
+// Provider do contexto
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+  // Tenta inicializar o token do localStorage
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('authToken'));
+  // Define isAuthenticated com base na existência inicial do token (simplificação)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token && token !== 'undefined'); // Verifica se token existe e não é a string 'undefined'
 
-  const getAnonymousToken = async () => {
-    try {
-      const url = `${API_URL}/user/anonymous-token`;
-      const response = await axios.get(url);
-      const newToken = response.data.token;
-      
-      setToken(newToken);
-      localStorage.setItem('jwt_token', newToken);
-    } catch (error) {
-      // Handle error silently
-    }
-  };
-
+  // Efeito para sincronizar localStorage quando o token muda
   useEffect(() => {
-    getAnonymousToken();
-  }, []);
-
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setIsLoggedIn(true);
+    if (token && token !== 'undefined') {
+      localStorage.setItem('authToken', token);
+      setIsAuthenticated(true);
+      // Idealmente, você buscaria os dados do usuário aqui se o token for real
+      // Ex: if (token is not anonymous) fetchUserData(token);
+    } else {
+      localStorage.removeItem('authToken');
+      setIsAuthenticated(false);
+      setUser(null);
     }
   }, [token]);
 
-  const refreshToken = async () => {
-    try {
-      const response = await axios.post(`${API_URL}/api/auth/refresh-token`);
-      const newToken = response.data.token;
-      setToken(newToken);
-      localStorage.setItem('jwt_token', newToken);
-    } catch (error) {
-      await getAnonymousToken();
-    }
-  };
 
-  const login = async () => {
-    setIsLoggedIn(true);
+  const login = (newToken: string, userData: any = null) => {
+    setToken(newToken);
+    // setUser(userData || { id: 'simulated', name: 'User' }); // Define o usuário recebido ou um simulado
+    console.log('Login realizado com token:', newToken ? newToken.substring(0,10) + '...' : 'None');
   };
 
   const logout = () => {
-    localStorage.removeItem('jwt_token');
-    setIsLoggedIn(false);
-    setToken(null);
+    setToken(null); // Isso vai disparar o useEffect para limpar localStorage e isAuthenticated
+    console.log('Logout realizado');
   };
 
-  const contextValue: AuthContextType = {
-    isLoggedIn,
+  // Função corrigida para buscar o token anônimo REAL da API
+  const getAnonymousToken = async (): Promise<void> => {
+    // Log inicial: a função foi chamada
+    console.log("AuthContext: getAnonymousToken function called.");
+    try {
+      // Log antes da chamada da API
+      console.log("AuthContext: >>> Sending request to API: GET /user/anonymous-token");
+      const response = await api.get('/user/anonymous-token');
+      // Log após receber a resposta da API com sucesso
+      console.log("AuthContext: <<< Received response from API: GET /user/anonymous-token", response.status, response.data);
+
+      const realAnonymousToken = response.data.token;
+      if (realAnonymousToken) {
+        console.log('AuthContext: Real anonymous token received:', realAnonymousToken ? realAnonymousToken.substring(0,10) + '...' : 'None');
+        setToken(realAnonymousToken);
+      } else {
+         // Log se a resposta não contiver o token esperado
+         console.error('AuthContext: API response successful, but token field missing in data:', response.data);
+         setToken(null); // Garante que o estado fique nulo
+      }
+    } catch (error: any) { // Tipagem 'any' ou 'unknown' para erro
+      // Log se a chamada da API falhar (erro de rede, erro 500, etc.)
+      console.error("AuthContext: XXX API call failed: GET /user/anonymous-token", error.response?.status, error.message, error.response?.data);
+      setToken(null);
+    }
+  };
+
+  const value = {
+    user,
     token,
-    setToken,
+    isAuthenticated,
     login,
     logout,
-    refreshToken,
     getAnonymousToken
   };
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

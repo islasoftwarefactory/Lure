@@ -92,7 +92,7 @@ export function Footer() {
           </span>
           <div className="border-t-2 border-gray-300 w-full"></div>
           <span className="absolute top-4 left-0 text-[#79808a] font-semibold text-sm">
-            2024 Lure® All rights reserved.
+            2025 Lure® All rights reserved.
           </span>
           <div className="absolute top-4 right-0 space-x-4 text-[#79808a] font-semibold text-sm">
             <a href="#" className="hover:text-gray-900">Manage Cookies</a>

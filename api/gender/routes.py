@@ -1,6 +1,6 @@
 from flask import request, jsonify, Blueprint
 from api.gender.model import Gender, create_gender, get_gender, update_gender, delete_gender
-from api.utils.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required
 
 blueprint = Blueprint('gender', __name__)
 

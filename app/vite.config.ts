@@ -6,6 +6,10 @@ import svgr from 'vite-plugin-svgr'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Define environment variables here
+  define: {
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://localhost:60123')
+  },
   plugins: [react(), svgr()],
   resolve: {
     alias: {
