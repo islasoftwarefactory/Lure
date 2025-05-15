@@ -1,13 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./dialog"
-import { X, Lock } from "lucide-react"
+import { X } from "lucide-react" // Remove Lock import
 import api from "@/services/api"
 
 interface PasswordModalProps {
@@ -107,12 +106,6 @@ export default function PasswordModal({ className }: PasswordModalProps) {
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </button>
-
-          <div className="flex items-center justify-center py-4">
-            <div className="rounded-full bg-gray-100 p-3">
-              <Lock className="h-6 w-6 text-gray-600" />
-            </div>
-          </div>
 
           {isSuccess ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
