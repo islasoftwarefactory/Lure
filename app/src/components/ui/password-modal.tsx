@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./dialog"
 import { X } from "lucide-react" // Remove Lock import
 import api from "@/services/api"
+import { useLock } from '@/context/LockContext';
+import { useNavigate } from 'react-router-dom';
 
 interface PasswordModalProps {
   className?: string
@@ -32,6 +34,8 @@ interface LoginResponse {
 }
 
 export default function PasswordModal({ className }: PasswordModalProps) {
+  const { unlock } = useLock();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -54,8 +58,11 @@ export default function PasswordModal({ className }: PasswordModalProps) {
 
       if (response.data.success) {
         setIsSuccess(true)
-        // Opcional: Salvar token/dados do usuário no localStorage ou context
-        localStorage.setItem('user', JSON.stringify(response.data.data.user))
+        unlock();
+        setTimeout(() => {
+          setIsOpen(false);
+          navigate('/');
+        }, 2000);
       }
     } catch (error: any) {
       setIsError(true)
