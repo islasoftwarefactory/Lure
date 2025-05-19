@@ -50,5 +50,10 @@ jobs:
           name: dist
           path: app/dist
 
-      - name: Copy to lureclo directory
-        run: cp -r app/dist/* /var/www/lureclo/
+      - name: Copy to lureclo via Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/app/dist:/dist:ro \
+            -v /var/www/lureclo:/var/www/lureclo \
+            alpine:latest \
+            sh -c "cp -r /dist/* /var/www/lureclo/"
