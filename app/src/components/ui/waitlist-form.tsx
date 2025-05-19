@@ -124,7 +124,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
                   id="fullName"
                   name="fullName"
                   type="text"
-                  placeholder="Ex: John Smith"
+                  placeholder="Ex: Phil Knigh"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required

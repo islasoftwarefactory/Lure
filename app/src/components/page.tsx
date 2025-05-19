@@ -2,20 +2,21 @@ import BackgroundImage from "./ui/background-image"
 import WaitlistForm from "./ui/waitlist-form"
 import PasswordModal from "./ui/password-modal"
 import Timeline from "./ui/timeline"
+import backgroundImg from "../assets/icons/locked/background.jpg"
 
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center font-recoleta">
       <BackgroundImage
         desktop={{
-          src: "/images/background.jpg",
+          src: backgroundImg,
           alt: "Shipping scene with delivery truck and boxes",
           position: "center",
           scaling: "cover",
           overlay: "rgba(0,0,0,0.4)", // Adding overlay for better text visibility
         }}
         mobile={{
-          src: "/images/background.jpg",
+          src: backgroundImg,
           alt: "Shipping scene with delivery truck and boxes",
           position: "75% center",
           scaling: "cover",
