@@ -1,8 +1,12 @@
 import axios from 'axios';
 
 // Configurando a API para ambiente de produção
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://lureclo.com';
+// Garantir que estamos sempre usando HTTPS
+const secureBaseUrl = apiBaseUrl.replace('http://', 'https://');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://lureclo.com',
+  baseURL: secureBaseUrl,
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
