@@ -76,8 +76,27 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
         responseStatus: error.response?.status,
         responseData: error.response?.data
       });
+      
+      console.log('>> Início do bloco de tratamento de erro');
+      console.log('>> Tipo de erro:', typeof error);
+      console.log('>> É instância de Error?', error instanceof Error);
+      console.log('>> Propriedades disponíveis no objeto error:', Object.keys(error));
+      console.log('>> error.response existe?', !!error.response);
+      
+      if (error.response) {
+        console.log('>> error.response.data:', error.response.data);
+        console.log('>> Tipo de error.response.data:', typeof error.response.data);
+      }
+      
       const apiError = error.response?.data as ApiError;
-      setError(apiError?.error || 'Failed to join waitlist. Please try again.');
+      console.log('>> apiError após cast:', apiError);
+      console.log('>> apiError?.error existe?', !!apiError?.error);
+      
+      const errorMessage = apiError?.error || 'Failed to join waitlist. Please try again.';
+      console.log('>> Mensagem de erro final:', errorMessage);
+      
+      setError(errorMessage);
+      console.log('>> Final do bloco de tratamento de erro');
     } finally {
       setLoading(false);
     }
