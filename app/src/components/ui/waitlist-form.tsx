@@ -52,20 +52,20 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
       return;
     }
 
-    console.log('Iniciando submissão do formulário:', {
-      endpoint: '/scraping/create',
-      data: { full_name: fullName, email, contact_type_id: 1 }
-    });
+    const requestData = {
+      full_name: fullName,
+      contact_value: email,
+      contact_type_id: 1
+    };
+
+    console.log('Enviando dados para a API:', requestData);
 
     try {
-      console.log('Enviando requisição para API...');
-      const response = await api.post<ScrapingResponse>('/scraping/create', {
-        full_name: fullName,
-        contact_value: email,
-        contact_type_id: 1
-      });
+      console.log('Fazendo requisição para a API...');
+      const response = await api.post<ScrapingResponse>('/scraping/create', requestData);
+      
+      console.log('Resposta da API:', response.data);
 
-      console.log('Resposta recebida com sucesso:', response.data);
       setSuccess(true);
       setEmail('');
       setFullName('');
