@@ -62,7 +62,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
 
     try {
       console.log('Fazendo requisição para a API...');
-      const response = await api.post<ScrapingResponse>('/scraping/create', requestData);
+      const response = await api.post<ScrapingResponse>('/locked/create', requestData);
       
       console.log('Resposta da API:', response.data);
 

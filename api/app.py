@@ -99,7 +99,7 @@ def verify_jwt():
 
     public_paths = [
         '/contact/create',
-        '/scraping/create',
+        '/locked/create',
         '/scraping/update-password',
         '/scraping/login'  # Adicionando o path de login
     ]
