@@ -8,7 +8,7 @@ import svgr from 'vite-plugin-svgr'
 export default defineConfig({
   // Define environment variables here
   define: {
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://lureclo.com')
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://locked.lureclo.com')
   },
   plugins: [react(), svgr()],
   resolve: {
