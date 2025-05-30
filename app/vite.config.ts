@@ -8,7 +8,7 @@ import svgr from 'vite-plugin-svgr'
 export default defineConfig({
   // Define environment variables here
   define: {
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://localhost:60123')
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://locked.lureclo.com')
   },
   plugins: [react(), svgr()],
   resolve: {
@@ -25,7 +25,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     hmr: {
-      host: 'localhost',
+      host: 'lureclo.com',
       port: 5173,
       clientPort: 8081
     }

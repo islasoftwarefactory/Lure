@@ -12,7 +12,7 @@ export default function Timeline() {
             <CalendarDays size={20} />
           </div>
           <div className="mt-4 text-center">
-            <h4 className="font-bold text-white font-recoleta text-lg">Register by 06/20</h4>
+            <h4 className="font-bold text-white font-recoleta text-lg">Register by ??/15</h4>
             <p className="text-white/90 text-sm mt-3 font-recoleta">Access 10 days before official drop</p>
           </div>
         </div>
@@ -23,7 +23,7 @@ export default function Timeline() {
             <Clock size={20} />
           </div>
           <div className="mt-4 text-center">
-            <h4 className="font-bold text-white font-recoleta text-lg">Register by 06/30</h4>
+            <h4 className="font-bold text-white font-recoleta text-lg">Register by ??/20</h4>
             <p className="text-white/90 text-sm mt-3 font-recoleta">Access 5 days before official drop</p>
           </div>
         </div>
@@ -35,7 +35,7 @@ export default function Timeline() {
           </div>
           <div className="mt-4 text-center">
             <h4 className="font-bold text-white font-recoleta text-lg">Everyone else</h4>
-            <p className="text-white/90 text-sm mt-3 font-recoleta">Access on official drop date (07/10)</p>
+            <p className="text-white/90 text-sm mt-3 font-recoleta">Access on official drop date (??/30)</p>
           </div>
         </div>
       </div>

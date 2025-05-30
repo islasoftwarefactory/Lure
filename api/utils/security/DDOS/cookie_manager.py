@@ -30,7 +30,7 @@ class CookieConfig:
     SECRET_KEY = "a45390548021d9dbf5e6eec82f859e514f015bcd23f184f0cc5eb367859984cd"
     NAME = "lure_client_id"
     EXPIRATION_DAYS = 30
-    DOMAIN = "localhost"
+    DOMAIN = "lureclo.com"
     PATH="/"
     SECURE=True
     HTTPONLY=True
