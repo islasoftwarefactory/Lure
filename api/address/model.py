@@ -2,11 +2,14 @@ from api.utils.db.connection import db
 from datetime import datetime
 import pytz
 from typing import Dict, Optional
+from api.purchases.purchase.model import Purchase
 
 class Address(db.Model):
     __tablename__ = "addresses"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Purchases that use this address for shipping
+    purchases = db.relationship('Purchase', back_populates='shipping_address_rel', lazy='dynamic')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     street = db.Column(db.String(30), nullable=False)
     number = db.Column(db.Integer, nullable=False)

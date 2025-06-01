@@ -13,6 +13,10 @@ class Purchase(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
+    # Link to shipping address
+    shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=False)
+    # ORM relationship to Address for shipping
+    shipping_address_rel = db.relationship('Address', back_populates='purchases')
 
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
@@ -72,6 +76,7 @@ class Purchase(db.Model):
             purchase = cls(
                 user_id=data["user_id"],
                 currency_id=data["currency_id"],
+                shipping_address_id=data.get("shipping_address_id"),
                 subtotal=data.get("subtotal", 0.0),
                 shipping_cost=data.get("shipping_cost", 0.0),
                 taxes=data.get("taxes", 0.0),

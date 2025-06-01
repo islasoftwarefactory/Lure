@@ -21,8 +21,8 @@ application = Flask(__name__)
 # --- Inicializar Flask-CORS AQUI ---
 # Permitir requisições das origens do seu frontend (dev e HMR)
 # supports_credentials=True é importante para permitir envio de cookies ou cabeçalhos de autenticação
-CORS(application, resources={r"/*": {"origins": ["https://lureclo.com", "https://locked.lureclo.com"]}}, supports_credentials=True)
-# ------------------------------------
+CORS(application, resources={r"/*": {"origins": ["http://localhost:5173", "http://localhost:8081"]}}, supports_credentials=True)
+
 
 # Configuração do email iCloud
 application.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
@@ -99,7 +99,7 @@ def verify_jwt():
 
     public_paths = [
         '/contact/create',
-        '/locked/create',
+        '/scraping/create',
         '/scraping/update-password',
         '/scraping/login'  # Adicionando o path de login
     ]
