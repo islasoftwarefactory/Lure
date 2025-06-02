@@ -94,14 +94,16 @@ def verify_jwt():
         'contact_type.update',
         'contact_type.delete',
         'scraping.update_password_route',
-        'scraping.login'  # Adicionando o endpoint de login
+        'scraping.login',
+        'stripe_webhook.handle_stripe_webhook'
     ]
 
     public_paths = [
         '/contact/create',
         '/scraping/create',
         '/scraping/update-password',
-        '/scraping/login'  # Adicionando o path de login
+        '/scraping/login',
+        '/webhooks/stripe/create'
     ]
  
  

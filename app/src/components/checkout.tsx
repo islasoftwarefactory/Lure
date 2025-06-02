@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import GooglePayIcon from '../assets/icons/payments/google-pay.svg'
 import ApplePayIcon from '../assets/icons/payments/apple-pay.svg'
-import { ShippingConfirmation } from './ShippingConfirmation'
 import { SideCart } from './SideCart'
 import { SocialIcons } from './SocialIcons'
 import { AnnouncementBar } from './AnnouncementBar'
@@ -253,7 +252,7 @@ export function CheckoutComponent() {
         }
         setPurchaseId(purchase_id);
         setClientSecret(client_secret);
-        setCheckoutStep('confirmation');
+        setCheckoutStep('payment');
 
     } catch (error: any) {
         console.error('Error during checkout process (API call):', error);
@@ -532,14 +531,6 @@ export function CheckoutComponent() {
                   </Card>
                 </div>
               </>
-            ) : checkoutStep === 'confirmation' ? (
-              <ShippingConfirmation
-                email={email}
-                address={fullAddress}
-                onChangeContact={() => setCheckoutStep('initial')}
-                onChangeShipping={() => setCheckoutStep('initial')}
-                onContinue={handleContinueToPayment}
-              />
             ) : (
               <>
                 {console.log('🔶 Rendering CardForm with clientSecret:', clientSecret)}
