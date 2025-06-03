@@ -181,7 +181,7 @@ def handle_create_purchase(current_user_id):
                     'user_id': str(user.id)
                 },
                 'description': f'Lure E-commerce Purchase ID: {new_purchase.id}',
-                'payment_method_types': ['card'],
+                'automatic_payment_methods': {'enabled': True},
             }
             payment_intent = stripe.PaymentIntent.create(**payment_intent_params)
             current_app.logger.info(f"PaymentIntent {payment_intent.id} criado na Stripe.")
