@@ -186,6 +186,7 @@ def handle_create_purchase(current_user_id):
             }
             payment_intent = stripe.PaymentIntent.create(**payment_intent_params)
             current_app.logger.info(f"PaymentIntent {payment_intent.id} criado na Stripe.")
+            current_app.logger.info(f"→ [Stripe] PI criado: id={payment_intent.id}, secret={payment_intent.client_secret[:5]}…")
         except stripe.error.StripeError as e:
             current_app.logger.error(f"Erro da Stripe ao criar PaymentIntent: {str(e)}")
             session.rollback()
@@ -324,20 +325,26 @@ def get_purchase_details(current_user_id, purchase_id): # Nome da função origi
 @token_required
 def get_user_purchases(current_user_id): # Nome da função original era handle_get_all_user_purchases
     try:
-        purchases = Purchase.get_all_for_user(current_user_id) # Usando o método de classe do seu modelo
+        purchases = Purchase.get_all_for_user(current_user_id)
         # Parâmetros de query opcionais para serialização
         include_shipping = request.args.get('include_shipping', 'false').lower() == 'true'
-        include_transactions = request.args.get('include_transactions', 'true').lower() == 'true' # Default para true
-        include_items = request.args.get('include_items', 'true').lower() == 'true' # Default para true
-        
-        # Atualizado para passar os parâmetros para serialize
-        serialized_purchases = [
-            p.serialize(
-                include_items=include_items, 
-                include_transactions=include_transactions, 
+        include_transactions = request.args.get('include_transactions', 'true').lower() == 'true'
+        include_items = request.args.get('include_items', 'true').lower() == 'true'
+        include_address = request.args.get('include_address', 'false').lower() == 'true'
+
+        serialized_purchases = []
+        for p in purchases:
+            data = p.serialize(
+                include_items=include_items,
+                include_transactions=include_transactions,
                 include_shipping=include_shipping
-            ) for p in purchases
-        ]
+            )
+            # Incluir endereço de entrega se solicitado
+            if include_address and p.shipping_address_id:
+                addr = Address.query.get(p.shipping_address_id)
+                if addr:
+                    data['shipping_address'] = addr.serialize()
+            serialized_purchases.append(data)
         return jsonify({"data": serialized_purchases}), 200
     except Exception as e:
         current_app.logger.error(f"Failed to retrieve purchases for user {current_user_id}: {str(e)}")
