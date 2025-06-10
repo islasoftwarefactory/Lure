@@ -6,7 +6,7 @@ from api.transaction.payment.model import Transaction
 from api.payment_status.model import PaymentStatus
 import json
 
-# Configure Stripe API key
+# Configure Stripe API key to match the purchase routes module
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # Blueprint for Stripe webhooks

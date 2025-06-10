@@ -8,9 +8,15 @@ interface LockContextType {
 const LockContext = createContext<LockContextType | undefined>(undefined);
 
 export function LockProvider({ children }: { children: ReactNode }) {
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('isUnlocked') === 'true';
+  });
 
   const unlock = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isUnlocked', 'true');
+    }
     setIsUnlocked(true);
   };
 

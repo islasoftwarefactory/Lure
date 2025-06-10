@@ -25,7 +25,8 @@ load_dotenv()
 
 # Configure a chave da API Stripe globalmente
 # Idealmente, isso é feito uma vez na inicialização do app (api/app.py)
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 # Mantendo o nome do blueprint como no seu projeto original
 purchase_bp = Blueprint('purchase', __name__,) # [ Original: purchase_bp ]
 

@@ -25,6 +25,7 @@ import {
   useStripe,
   useElements
 } from '@stripe/react-stripe-js'
+import { useCart } from '../context/CartContext'
 
 // Interface atualizada para incluir cidades
 interface USStateWithCities {
@@ -54,7 +55,7 @@ interface CartItem {
   image?: string;
 }
 
-const stripePromise = loadStripe('pk_test_51REHMUDzEsgxQFt5rH0fgwO12lzFX4ItkUZ9iFuU5ZbevLg6RMRiiIf9w9eaDspG4ISYH5kAONOlDobLjxQ8G1vE00EQWfY2O8')
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
 
 function PaymentForm({ purchaseId }: { purchaseId: string }) {
   const stripe = useStripe();
@@ -62,13 +63,15 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!stripe || !elements) return;
     setError(null);
     const { error: stripeError } = await stripe.confirmPayment({
       elements,
-      redirect: 'if_required'
+      confirmParams: {
+        return_url: `${window.location.origin}/order-page/${purchaseId}`,
+      },
+      redirect: 'if_required',
     });
     if (stripeError) {
       setError(stripeError.message);
@@ -81,20 +84,32 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
+    <div className="space-y-4">
+      <PaymentElement
+        onReady={() => console.log('PaymentElement ready')}
+        onLoadError={(event) => {
+          const err = event.error || event;
+          console.error('PaymentElement loaderror', err);
+          setError(err.message || 'Error loading payment form');
+        }}
+      />
       {error && <p className="text-red-500">{error}</p>}
-      <button type="submit" className="w-full bg-black text-white font-aleo text-lg font-bold">
-        Pagar
+      <button type="button" onClick={handleSubmit} className="w-full bg-black text-white font-aleo text-lg font-bold">
+        Pay Now
       </button>
-    </form>
+    </div>
   );
 }
 
 export function CheckoutComponent() {
   const location = useLocation();
-  const cartItems: CartItem[] = location.state?.items || [];
-  console.log('--- CHECKOUT: cartItems recebidos do location.state (Após correção):', JSON.stringify(cartItems, null, 2)); // Verificar se agora tem productId/sizeId
+  const { cartItems: contextCartItems } = useCart();
+  const cartItems: CartItem[] =
+    Array.isArray(location.state?.items) && location.state.items.length > 0
+      ? location.state.items
+      : contextCartItems;
+
+  console.log('--- CHECKOUT: cartItems recebidos:', JSON.stringify(cartItems));
 
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -134,6 +149,23 @@ export function CheckoutComponent() {
       console.log('🚀 Entered payment step. purchaseId:', purchaseId, 'clientSecret:', clientSecret);
     }
   }, [checkoutStep, purchaseId, clientSecret]);
+
+  // Mount Stripe Payment Method Messaging Element on payment step
+  useEffect(() => {
+    if (checkoutStep === 'payment' && clientSecret) {
+      stripePromise.then((stripe) => {
+        const elementsMsg = stripe.elements();
+        const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        const options = {
+          amount: Math.round(cartTotal * 100),
+          currency: 'USD',
+          countryCode: 'US'
+        };
+        const messaging = elementsMsg.create('paymentMethodMessaging', options);
+        messaging.mount('#payment-method-messaging-element');
+      });
+    }
+  }, [checkoutStep, clientSecret, cartItems]);
 
   // Busca dados de país, estados e cidades do Gist
   useEffect(() => {
@@ -295,6 +327,7 @@ export function CheckoutComponent() {
         }
         setPurchaseId(purchase_id);
         setClientSecret(client_secret);
+        // Move to payment step and let Pay Now button handle confirmation
         setCheckoutStep('payment');
 
     } catch (error: any) {
@@ -522,6 +555,7 @@ export function CheckoutComponent() {
                       <CardTitle>Payment</CardTitle>
                     </CardHeader>
                     <CardContent>
+                      <div id="payment-method-messaging-element" className="mb-4"></div>
                       <Elements stripe={stripePromise} options={{ clientSecret }}>
                         <PaymentForm purchaseId={purchaseId!} />
                       </Elements>
@@ -552,7 +586,7 @@ export function CheckoutComponent() {
                  </CardHeader>
                  <CardContent className="space-y-4">
                    {cartItems.map((item: any) => (
-                     <div key={item.id} className="flex justify-between items-center">
+                     <div key={`${item.productId}-${item.size}`} className="flex justify-between items-center">
                        <div className="flex items-center space-x-4">
                          <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
                          <div>
