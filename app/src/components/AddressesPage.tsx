@@ -16,6 +16,7 @@ import { PlusCircle, MapPin, Pencil, Trash2 } from 'lucide-react';
 import { EditAddressModal } from './EditAddressModal';
 
 // Interface for Address data based on the backend model
+// The 'country' field is removed as it's a frontend-only concept now.
 interface Address {
   id: number;
   street: string;
@@ -23,7 +24,6 @@ interface Address {
   city: string;
   state: string;
   zip_code: string;
-  country: string;
 }
 
 // Interface for User data, to get the user ID
@@ -95,15 +95,19 @@ export function AddressesPage() {
   };
 
   const handleSaveAddress = async (updatedAddress: Address) => {
+    // This function now implicitly returns a promise that the modal can await.
+    // The try/catch block will handle success and error states.
+    // If an error is thrown, the modal's catch block will be triggered.
     try {
       const response = await api.put(`/address/update/${updatedAddress.id}`, updatedAddress);
       setAddresses(prev => prev.map(addr => 
         addr.id === updatedAddress.id ? response.data.data : addr
       ));
-      setIsEditModalOpen(false);
+      // No longer need to close modal from here; the modal closes itself on success.
     } catch (err) {
       console.error("Failed to update address:", err);
-      // Optionally, show an error to the user
+      // Re-throw the error to be caught by the modal's handleSubmit
+      throw err;
     }
   };
 
@@ -204,7 +208,7 @@ export function AddressesPage() {
                             </div>
                             <div className="p-3 bg-gray-50 rounded-lg border">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Country</label>
-                                <p className="text-gray-900 font-medium">{address.country}</p>
+                                <p className="text-gray-900 font-medium">United States</p>
                             </div>
                         </div>
                     </CardContent>
