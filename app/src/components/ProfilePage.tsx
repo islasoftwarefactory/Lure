@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
@@ -139,81 +140,83 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow bg-[#f7f7f7] py-12 sm:py-16">
+      <main className="flex-grow bg-[#f7f7f7] pt-32 sm:pt-36 pb-32 sm:pb-40">
         <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-6 sm:p-8 md:flex md:items-start md:gap-8">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden"
+            >
+            <div className="p-8 sm:p-10 md:flex md:gap-10">
               
               {/* Coluna do Avatar */}
-              <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/3">
-                <div className="relative">
-                  {userData.photo && (
+              <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4">
+                <div className="relative group">
+                  {userData.photo ? (
                     <img
                       src={userData.photo}
                       alt="User profile"
-                      className="w-32 h-32 rounded-full object-cover ring-4 ring-offset-2 ring-indigo-500"
+                      className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-md"
                       onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => (e.currentTarget.style.display = 'none')}
                     />
-                  )}
-                  {!userData.photo && (
-                     <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold ring-4 ring-offset-2 ring-gray-300">
+                  ) : (
+                     <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold ring-4 ring-white shadow-md">
                         {userData.name ? userData.name.charAt(0).toUpperCase() : '?'}
                      </div>
                   )}
                 </div>
-                <h1 className="mt-4 text-2xl font-bold text-gray-900">{userData.name}</h1>
+                <h1 className="mt-5 text-2xl font-bold text-gray-800">{userData.name}</h1>
                 {userData.auth_provider && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 mt-1">
                     Logged in with {userData.auth_provider}
                   </p>
                 )}
               </div>
 
               {/* Coluna de Detalhes e Ações */}
-              <div className="mt-8 md:mt-0 flex-grow border-t border-gray-200 md:border-t-0 md:border-l md:pl-8 pt-8 md:pt-2">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6">Profile Information</h2>
-                <dl className="space-y-5">
+              <div className="mt-10 md:mt-0 flex-grow md:border-l md:pl-10 border-gray-200/80">
+                <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+                <div className="space-y-6">
                   
-                  {/* Chave-Valor: Email */}
-                  <div className="flex">
-                    <dt className="w-1/3 font-medium text-gray-500">Email Address</dt>
-                    <dd className="w-2/3 text-gray-900 break-words">{userData.email}</dd>
+                  {/* Campo de Email */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Email Address</label>
+                    <p className="mt-1 text-lg text-gray-900 break-words">{userData.email}</p>
                   </div>
 
-                  {/* Chave-Valor: Status */}
-                  <div className="flex">
-                    <dt className="w-1/3 font-medium text-gray-500">Account Status</dt>
-                    <dd className="w-2/3">
+                  {/* Campo de Status */}
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Account Status</label>
+                    <p className="mt-1">
                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                           Active
                        </span>
-                    </dd>
+                    </p>
                   </div>
                   
                   {/* Adicione outros campos aqui se necessário */}
 
-                </dl>
+                </div>
 
                 {/* Botões de Ação */}
-                <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col-reverse sm:flex-row sm:justify-end sm:gap-x-3 gap-y-3">
+                <div className="mt-10 pt-6 border-t border-gray-200/80 flex items-center justify-end gap-x-4">
                   <Button
                     variant="outline"
                     onClick={handleGoToMyOrders}
-                    className="w-full sm:w-auto"
                   >
                     My Orders
                   </Button>
                   <Button
                     onClick={handleLogout}
                     variant="destructive"
-                    className="w-full sm:w-auto"
                   >
                     Logout
                   </Button>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </main>
 
