@@ -10,7 +10,7 @@ blueprint = Blueprint('address', __name__)
 def create(current_user_id):
     data = request.get_json()
 
-    required_fields = ["street", "number", "city", "state", "zip_code"]
+    required_fields = ["street", "number", "city", "state", "zip_code", "country"]
     if not data or not all(field in data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in data]
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400

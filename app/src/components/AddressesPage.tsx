@@ -11,7 +11,9 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import api from '@/services/api';
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MapPin } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardFooter, CardTitle, CardDescription } from "@/components/ui/card";
+import { PlusCircle, MapPin, Pencil, Trash2 } from 'lucide-react';
+import { EditAddressModal } from './EditAddressModal';
 
 // Interface for Address data based on the backend model
 interface Address {
@@ -21,6 +23,7 @@ interface Address {
   city: string;
   state: string;
   zip_code: string;
+  country: string;
 }
 
 // Interface for User data, to get the user ID
@@ -35,6 +38,8 @@ export function AddressesPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
 
   useEffect(() => {
     const fetchUserDataAndAddresses = async () => {
@@ -74,6 +79,34 @@ export function AddressesPage() {
     fetchUserDataAndAddresses();
   }, [token]);
 
+  const handleDeleteAddress = async (addressId: number) => {
+    try {
+      await api.delete(`/address/delete/${addressId}`);
+      setAddresses(prev => prev.filter(addr => addr.id !== addressId));
+    } catch (err) {
+      console.error("Failed to delete address:", err);
+      // Optionally, show an error to the user
+    }
+  };
+
+  const handleOpenEditModal = (address: Address) => {
+    setEditingAddress(address);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveAddress = async (updatedAddress: Address) => {
+    try {
+      const response = await api.put(`/address/update/${updatedAddress.id}`, updatedAddress);
+      setAddresses(prev => prev.map(addr => 
+        addr.id === updatedAddress.id ? response.data.data : addr
+      ));
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error("Failed to update address:", err);
+      // Optionally, show an error to the user
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
@@ -112,43 +145,87 @@ export function AddressesPage() {
       <Header onCartClick={() => setIsCartOpen(true)} />
       <main className="flex-grow pt-32 sm:pt-36 pb-20">
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-10">
-            <h1 className="text-4xl font-bold text-gray-900">My Addresses</h1>
+          
+          {/* Page Title Block */}
+          <div className="bg-white rounded-2xl shadow-lg p-6 mb-10 flex justify-between items-center">
+            <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">My Addresses</h1>
             <Button 
                 onClick={() => navigate('/addresses/new')} 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-black text-white hover:bg-gray-800 rounded-full px-5 py-2.5"
             >
               <PlusCircle size={20} />
-              Add New Address
+              Add New
             </Button>
           </div>
 
           {addresses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {addresses.map((address) => (
                 <motion.div
                   key={address.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4 }}
-                  className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between border border-transparent hover:border-blue-500 transition-all"
                 >
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                        <MapPin className="text-blue-500" size={24} />
-                        <h2 className="font-bold text-xl text-gray-800">Address</h2>
-                    </div>
-                    <div className="space-y-2 text-gray-700">
-                        <p><span className="font-semibold">Street:</span> {address.street}, {address.number}</p>
-                        <p><span className="font-semibold">City:</span> {address.city}</p>
-                        <p><span className="font-semibold">State:</span> {address.state}</p>
-                        <p><span className="font-semibold">ZIP:</span> {address.zip_code}</p>
-                    </div>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
-                     <Button variant="outline" size="sm">Edit</Button>
-                     <Button variant="destructive" size="sm">Delete</Button>
-                  </div>
+                  <Card className="bg-white rounded-2xl shadow-lg flex flex-col h-full transition-all duration-300 hover:shadow-xl">
+                    <CardHeader className="flex flex-row items-center gap-4 p-5 bg-gray-50/80 border-b">
+                      <div className="p-3 bg-blue-100 rounded-xl">
+                          <MapPin className="text-blue-600" size={24} />
+                      </div>
+                      <div>
+                          <CardTitle className="font-bold text-xl text-gray-800">
+                              Shipping Address
+                          </CardTitle>
+                          <CardDescription className="text-gray-500">
+                              {address.city}, {address.state}
+                          </CardDescription>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="p-6 flex-grow space-y-3">
+                        <div className="p-3 bg-gray-50 rounded-lg border">
+                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Street</label>
+                            <p className="text-gray-900 font-medium">{address.street}, {address.number}</p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 bg-gray-50 rounded-lg border">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">City</label>
+                                <p className="text-gray-900 font-medium">{address.city}</p>
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-lg border">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">State</label>
+                                <p className="text-gray-900 font-medium">{address.state}</p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3 bg-gray-50 rounded-lg border">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">ZIP Code</label>
+                                <p className="text-gray-900 font-medium">{address.zip_code}</p>
+                            </div>
+                            <div className="p-3 bg-gray-50 rounded-lg border">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Country</label>
+                                <p className="text-gray-900 font-medium">{address.country}</p>
+                            </div>
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="p-4 bg-gray-50/70 border-t flex justify-end gap-3">
+                       <Button 
+                           onClick={() => handleOpenEditModal(address)}
+                           size="sm" 
+                           className="flex items-center gap-2 text-white bg-black hover:bg-gray-800"
+                       >
+                           <Pencil size={16} /> Edit
+                       </Button>
+                       <Button 
+                           onClick={() => handleDeleteAddress(address.id)}
+                           variant="destructive" size="sm" 
+                           className="flex items-center gap-2"
+                       >
+                           <Trash2 size={16} /> Delete
+                       </Button>
+                    </CardFooter>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -162,6 +239,14 @@ export function AddressesPage() {
       </main>
       <Footer />
       <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} setItems={setCartItems} />
+
+      {/* Edit Modal */}
+      <EditAddressModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveAddress}
+        address={editingAddress}
+      />
     </div>
   );
 } 

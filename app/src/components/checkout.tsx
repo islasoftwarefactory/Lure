@@ -55,7 +55,10 @@ interface CartItem {
   image?: string;
 }
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+// const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
+const stripeKey = "pk_test_51REHMcDClD4v1eQKQXawRtfdFesGdsmwEIcWyx0INLqS8IfMyDiqfo85zuLT3CT77Bst9uICCF0QD7OQYM7dPsCJ00Q7sMlzub"
+console.log("Stripe public key used: ", stripeKey)
+const stripePromise = loadStripe(stripeKey)
 
 function PaymentForm({ purchaseId }: { purchaseId: string }) {
   const stripe = useStripe();
@@ -102,6 +105,7 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
 }
 
 export function CheckoutComponent() {
+  console.log("Stripe public key in CheckoutComponent:", stripeKey);
   const location = useLocation();
   const { cartItems: contextCartItems } = useCart();
   const cartItems: CartItem[] =
@@ -283,6 +287,7 @@ export function CheckoutComponent() {
         city: selectedCity,
         state: selectedStateAbbr,
         zip_code: postalCode,
+        country: selectedCountry,
         complement: apartment || null
     };
 
