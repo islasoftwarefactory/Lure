@@ -224,7 +224,7 @@ export function OrderPage() {
                                     <CardDescription className="text-gray-500 mt-1">Thank you for your purchase. Here are the details.</CardDescription>
                                 </div>
                             </div>
-                        </CardHeader>
+                    </CardHeader>
                         <CardContent className="p-6 md:p-8 space-y-8">
                             {/* Order Info Section */}
                             <div className="grid md:grid-cols-2 gap-6 text-base">
@@ -236,20 +236,20 @@ export function OrderPage() {
                                     <strong className="font-semibold text-gray-600">Order Date:</strong>
                                     <span className="text-gray-800">{new Date(orderDetails.created_at).toLocaleDateString()}</span>
                                 </div>
-                            </div>
+                        </div>
 
                             {/* Items Section */}
-                            <div>
+                        <div>
                                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3"><ShoppingCart size={22}/> Items Ordered</h3>
                                 <div className="space-y-4">
                                     {orderDetails.items?.map(item => (
                                         <div key={item.id} className="flex items-center justify-between p-4 bg-white border border-gray-200/80 rounded-xl shadow-sm">
                                             <div className="flex items-center gap-4">
-                                                <img
-                                                    src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
-                                                    alt={item.product?.name || 'Product'}
+                                                    <img
+                                                        src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
+                                                        alt={item.product?.name || 'Product'}
                                                     className="w-16 h-16 rounded-lg object-cover bg-gray-100"
-                                                />
+                                                    />
                                                 <div>
                                                     <p className="font-semibold text-gray-900">{item.product?.name || 'N/A'}</p>
                                                     <p className="text-sm text-gray-500">Size: {item.size?.name || 'N/A'} | Qty: {item.quantity}</p>
@@ -272,34 +272,34 @@ export function OrderPage() {
                                     <div className="flex justify-between items-center text-gray-700">
                                         <p>Shipping</p>
                                         <p className="font-medium">${orderDetails.shipping_cost?.toFixed(2) ?? '0.00'}</p>
-                                    </div>
+                        </div>
                                     <div className="flex justify-between items-center text-gray-700">
                                         <p>Taxes</p>
                                         <p className="font-medium">${orderDetails.taxes?.toFixed(2) ?? '0.00'}</p>
-                                    </div>
+                            </div>
                                     <div className="flex justify-between items-center text-black font-bold text-xl pt-3 border-t mt-3">
                                         <p>Total Paid</p>
                                         <p>${transaction ? transaction.amount?.toFixed(2) : 'N/A'}</p>
-                                    </div>
-                                </div>
                             </div>
-                            
+                            </div>
+                        </div>
+
                             {/* Shipping & Payment Details */}
                             <div className="grid md:grid-cols-2 gap-8">
-                                <div>
+                            <div>
                                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3"><MapPin size={22}/> Shipping Address</h3>
-                                    {orderDetails.address ? (
+                                {orderDetails.address ? (
                                         <div className="p-4 bg-gray-50/80 rounded-xl border">
                                             <address className="not-italic text-gray-700 leading-relaxed">
-                                                {orderDetails.address.street}, {orderDetails.address.number}<br />
+                                        {orderDetails.address.street}, {orderDetails.address.number}<br />
                                                 {orderDetails.address.city}, {orderDetails.address.state} {orderDetails.address.zip_code}
-                                            </address>
+                                    </address>
                                         </div>
-                                    ) : (
-                                        <p className="text-gray-500 italic">Address not available.</p>
-                                    )}
-                                </div>
-                                <div>
+                                ) : (
+                                    <p className="text-gray-500 italic">Address not available.</p>
+                                )}
+                            </div>
+                            <div>
                                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-3"><CreditCard size={22}/> Payment Details</h3>
                                     <div className="p-4 bg-gray-50/80 rounded-xl border space-y-3">
                                         <div className="flex justify-between">
@@ -329,18 +329,18 @@ export function OrderPage() {
                                             )}
                                         </div>
                                     </div>
-                                </div>
                             </div>
-                        </CardContent>
+                        </div>
+                    </CardContent>
                         <CardFooter className="bg-gray-50/80 p-6 flex justify-center">
-                            <Link to="/">
+                        <Link to="/">
                                 <Button size="lg" className="bg-black hover:bg-gray-800 text-white font-bold text-lg py-3 px-8 rounded-full flex items-center gap-2">
                                     Continue Shopping
                                     <ChevronRight size={20}/>
                                 </Button>
-                            </Link>
-                        </CardFooter>
-                    </Card>
+                        </Link>
+                    </CardFooter>
+                </Card>
                 </div>
             );
         }
@@ -357,7 +357,7 @@ export function OrderPage() {
                 </div>
                 <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
                     <p className="text-gray-600">Your order history will be displayed here.</p>
-                    {/* Futuramente: <OrderList /> */}
+                 {/* Futuramente: <OrderList /> */}
                 </div>
             </div>
         );

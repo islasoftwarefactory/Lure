@@ -386,11 +386,11 @@ export function ProductPage() {
               </div>
 
               {/* Botões de Ação */}
-              <div className="mt-8 space-y-3 px-5">
+              <div className="mt-8 space-y-4 flex flex-col items-center">
                 {/* Botão Comprar Agora - ATUALIZADO */}
                 <button
                   onClick={handleBuyNow} // Chama a nova função
-                  className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  className="w-3/4 py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
                   disabled={!product || !auth.token} // Desabilita se não houver produto ou token
                 >
                   <span>BUY NOW</span>
@@ -400,7 +400,7 @@ export function ProductPage() {
                 {/* Botão Adicionar ao Carrinho (mantido como estava) */}
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-3 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  className="w-3/4 py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
                   disabled={!product || !auth.token}
                 >
                   <span>ADD TO CART</span>

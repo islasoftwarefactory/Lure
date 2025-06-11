@@ -210,7 +210,7 @@ export function ProfilePage() {
                   <h2 className="text-xl font-bold text-gray-900 mb-5">Account Actions</h2>
                   <div className="space-y-4">
                     <button
-                      onClick={handleGoToMyOrders}
+                    onClick={handleGoToMyOrders}
                       className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <Package className="mr-4 text-blue-600" size={22} />

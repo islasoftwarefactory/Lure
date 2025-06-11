@@ -434,7 +434,7 @@ export function MyOrdersPage() {
               const itemsForThisOrder = orderItemsMap[order.id];
               const transactionsForThisOrder = orderTransactionsMap[order.id];
               const isLoadingItemsForThisOrder = loadingItemsState.has(order.id);
-              
+
               let currencyCode = null;
               let paymentStatus = null;
               
@@ -452,7 +452,7 @@ export function MyOrdersPage() {
                   <CardHeader className="p-5 bg-gray-50/80 border-b flex flex-row justify-between items-center">
                     <div className="flex items-center gap-3">
                       <Package className="text-blue-600" size={24} />
-                      <div>
+                    <div>
                         <p className="text-sm font-medium text-gray-500">Order ID</p>
                         <p className="font-bold text-gray-900">#{order.id.substring(0, 8)}...</p>
                       </div>
@@ -482,38 +482,38 @@ export function MyOrdersPage() {
                         <span className="text-gray-500">Warehouse</span>
                         <span className="text-blue-600">{order.shipping_address ? `${order.shipping_address.state}, ${order.shipping_address.city}` : "Address unavailable"}</span>
                       </div>
-                    </div>
+                  </div>
 
                     {/* Items list */}
                     <div className="border-t pt-5">
-                      {isLoadingItemsForThisOrder ? (
+                    {isLoadingItemsForThisOrder ? (
                         <div className="flex justify-center items-center py-4 text-gray-500"><Loader2 className="animate-spin mr-2" size={18}/>Loading items...</div>
-                      ) : itemsForThisOrder && itemsForThisOrder.length > 0 ? (
+                    ) : itemsForThisOrder && itemsForThisOrder.length > 0 ? (
                         <div className="space-y-3">
                           {itemsForThisOrder.slice(0, 2).map(item => (
                             <div key={item.id} className="flex items-center gap-4">
-                              <img
-                                src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
-                                alt={item.product?.name || 'Product'}
+                                <img
+                                    src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
+                                    alt={item.product?.name || 'Product'}
                                 className="w-14 h-14 rounded-lg object-cover bg-gray-100"
-                              />
+                                />
                               <div className="flex-grow">
                                 <p className="font-semibold text-sm text-gray-800">{item.product?.name || 'N/A'}</p>
                                 <p className="text-xs text-gray-500">Size: {item.size?.name || 'N/A'} · Qty: {item.quantity}</p>
-                              </div>
+                            </div>
                               <p className="font-bold text-sm text-gray-900">${item.unit_price_at_purchase.toFixed(2)}</p>
                             </div>
                           ))}
-                        </div>
-                      ) : (
+                         </div>
+                    ) : (
                         <p className="text-center text-sm text-gray-400 py-4">No items found for this order.</p>
-                      )}
-                      {itemsForThisOrder && itemsForThisOrder.length > 2 && (
+                    )}
+                    {itemsForThisOrder && itemsForThisOrder.length > 2 && (
                         <p className="text-center text-xs text-gray-500 mt-2">(+{itemsForThisOrder.length - 2} more items)</p>
-                      )}
-                    </div>
+                    )}
+                  </div>
                   </CardContent>
-                  
+
                   <div className="p-5 bg-gray-50/80 border-t flex justify-between items-center">
                     <div>
                       <p className="text-sm text-gray-500">Total</p>
@@ -541,7 +541,7 @@ export function MyOrdersPage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow container mx-auto px-4 py-8 pt-24 sm:pt-28 pb-16">
+      <main className="flex-grow container mx-auto px-4 pt-32 sm:pt-36 pb-24 sm:pb-32">
         {renderContent()} {/* Renderiza ou detalhes ou a lista */}
       </main>
 
