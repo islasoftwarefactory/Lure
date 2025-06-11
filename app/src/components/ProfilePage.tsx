@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext'; // Importa o useAuth correto
 import api from '@/services/api'; // Importa a instância da API
 import { Button } from "@/components/ui/button"; // Para o botão de logout
 import { Link } from "react-router-dom";
+import { Package, MapPin, LogOut } from 'lucide-react'; // Import new icons
 
 // Interface para os dados do usuário (ajuste conforme o retorno do seu backend)
 interface UserData {
@@ -204,24 +205,35 @@ export function ProfilePage() {
 
                 </div>
 
-                {/* Botões de Ação */}
-                <div className="mt-10 pt-6 border-t border-gray-200/80 flex items-center justify-end gap-x-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleGoToMyOrders}
-                  >
-                    My Orders
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleAddressesClick}
-                  >
-                    Addresses
-                  </Button>
+                {/* Seção de Ações */}
+                <div className="mt-10 pt-8 border-t border-gray-200/80">
+                  <h2 className="text-xl font-bold text-gray-900 mb-5">Account Actions</h2>
+                  <div className="space-y-4">
+                    <button
+                      onClick={handleGoToMyOrders}
+                      className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <Package className="mr-4 text-blue-600" size={22} />
+                      <span className="text-lg font-medium text-gray-800">My Orders</span>
+                    </button>
+                    <button
+                      onClick={handleAddressesClick}
+                      className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <MapPin className="mr-4 text-green-600" size={22} />
+                      <span className="text-lg font-medium text-gray-800">Manage Addresses</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Botão de Logout */}
+                <div className="mt-8 pt-6 border-t border-gray-200/80 flex justify-end">
                   <Button
                     onClick={handleLogout}
                     variant="destructive"
+                    className="flex items-center gap-x-2"
                   >
+                    <LogOut size={16} />
                     Logout
                   </Button>
                 </div>
