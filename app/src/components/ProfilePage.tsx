@@ -87,6 +87,11 @@ export function ProfilePage() {
   };
   // --- FIM EDIT 1 ---
 
+  // Handler para o botão "Addresses"
+  const handleAddressesClick = () => {
+    navigate('/addresses'); // Navega para a página de endereços
+  };
+
   // Renderização condicional durante o carregamento ou erro
   if (isLoading) {
     return (
@@ -206,6 +211,12 @@ export function ProfilePage() {
                     onClick={handleGoToMyOrders}
                   >
                     My Orders
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleAddressesClick}
+                  >
+                    Addresses
                   </Button>
                   <Button
                     onClick={handleLogout}

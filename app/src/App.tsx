@@ -14,6 +14,7 @@ import { ProfilePage } from './components/ProfilePage';
 import { CheckoutComponent } from './components/checkout';
 import { OrderPage } from './components/OrderPage';
 import { MyOrdersPage } from './components/MyOrdersPage';
+import { AddressesPage } from './components/AddressesPage';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import { AuthProvider } from './context/AuthContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -92,6 +93,7 @@ export default function App() {
                     <Route path="/product/:id" element={<ProductPage />} />
                     <Route path="/login" element={<LoginComponent />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/addresses" element={<AddressesPage />} />
                     <Route path="/checkout" element={<CheckoutComponent />} />
                     <Route path="/order-page/:id" element={<OrderPage />} />
                     <Route path="/my-orders-list" element={<MyOrdersPage />} />

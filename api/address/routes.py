@@ -55,6 +55,20 @@ def read_all(current_user_id):
         "message": "Addresses retrieved successfully."
     }), 200
 
+@blueprint.route("/read/all/<int:user_id>", methods=["GET"])
+@token_required
+def read_all_for_user(current_user_id, user_id):
+    if current_user_id != user_id:
+        return jsonify({"error": "Not authorized to view addresses for this user"}), 403
+
+    addresses = Address.query.filter_by(user_id=user_id).all()
+    addresses_data = [address.serialize() for address in addresses]
+
+    return jsonify({
+        "data": addresses_data,
+        "message": "Addresses retrieved successfully."
+    }), 200
+
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
 @token_required
