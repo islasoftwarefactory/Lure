@@ -1,0 +1,5 @@
+Ajuste nos botões "Buy Now" e "Add to Cart"
+
+Alteração de Dimensão: Reduzir a largura e aumentar a altura dos botões.
+Objetivo Visual: Fazer com que os botões pareçam mais "gordos".
+Posicionamento: Manter a posição atual dos botões na página.

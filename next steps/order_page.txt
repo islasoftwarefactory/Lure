@@ -1,0 +1,10 @@
+Refatoração do Layout da Página de Pedido (Order Page)
+
+Estrutura de Exibição de Dados:
+
+Requisito: Alterar a forma como os detalhes do pedido são exibidos, aplicando o mesmo conceito da página de Perfil.
+Formato: Dividir as informações em um layout de "chave e valor" (ex: "Produto:", "Preço:"), com cada par sendo apresentado em campos distintos, elegantes e com bordas arredondadas para manter a coerência visual com o restante do sistema.
+Ajuste de Componente (Botão):
+
+Requisito: Mudar a cor do botão "Continue to Shipping".
+Especificação: O botão deve ter a cor preta.

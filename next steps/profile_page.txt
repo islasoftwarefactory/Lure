@@ -1,0 +1,10 @@
+Refatoração do Layout da Página de Perfil (Profile Page)
+
+Estrutura de Dados do Usuário:
+
+Requisito: Modificar a exibição dos dados do usuário, como E-mail, status ("Logged"), Nickname e Foto.
+Formato: Apresentá-los em um layout de "chave e valor", onde cada dado tenha um campo para o rótulo (a chave) e um campo separado para o seu respectivo valor.
+Melhoria Visual e de Coerência:
+
+Requisito: Renovar o design geral da página para torná-la mais esteticamente agradável.
+Objetivo: Garantir que o novo layout esteja visualmente alinhado com o estilo e a identidade do restante da aplicação.
