@@ -9,7 +9,6 @@ import { SocialIcons } from './SocialIcons'
 import { Footer } from './Footer'
 import { SideCart } from './SideCart'
 import { CartItem } from '../types/CartItem'
-import AppleSSO from '../assets/icons/home/AppleSSO.svg?react'
 import { useAuth } from '../context/AuthContext'
 import { GoogleLogin } from '@react-oauth/google'
 import { jwtDecode } from 'jwt-decode'
@@ -71,7 +70,6 @@ export function LoginComponent() {
 
         if (response.ok) {
           const data = await response.json();
-          localStorage.setItem('auth_token', data.token); // Assumindo que o backend retorna um token seu
           login(data.token);
           navigate('/');
         } else {
@@ -99,10 +97,6 @@ export function LoginComponent() {
   const handleGoogleError = () => {
     console.error('Login com Google falhou');
     setError('Autenticação com Google falhou. Tente novamente.');
-  };
-  
-  const handleAppleLogin = () => {
-    console.log('Apple login clicked');
   };
 
   return (
@@ -145,15 +139,6 @@ export function LoginComponent() {
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
                   </div>
                 )}
-                
-                <Button 
-                  className="w-full py-4 bg-white text-black border border-gray-300 hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center rounded-full"
-                  onClick={handleAppleLogin}
-                  disabled={isLoading}
-                >
-                  <AppleSSO className="mr-3 h-5 w-5" />
-                  <span className="text-sm font-medium">Continue with Apple</span>
-                </Button>
               </div>
             </CardContent>
             

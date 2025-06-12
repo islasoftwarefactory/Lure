@@ -57,6 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setToken(null); // Isso vai disparar o useEffect para limpar localStorage e isAuthenticated
+    // Remove legacy auth token key if present
+    localStorage.removeItem('auth_token');
     console.log('Logout realizado');
   };
 
