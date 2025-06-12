@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"; // Para o botão de logout
 import { Link } from "react-router-dom";
 import { Package, MapPin, LogOut, User, Mail, CheckCircle } from 'lucide-react'; // Import additional icons
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { LoginComponent } from './LoginComponent';
 
 // Interface para os dados do usuário (ajuste conforme o retorno do seu backend)
 interface UserData {
@@ -93,6 +94,11 @@ export function ProfilePage() {
   const handleAddressesClick = () => {
     navigate('/addresses'); // Navega para a página de endereços
   };
+
+  // Se não autenticado, exibe o LoginComponent
+  if (!auth.isAuthenticated) {
+    return <LoginComponent />;
+  }
 
   // Renderização condicional durante o carregamento ou erro
   if (isLoading) {
