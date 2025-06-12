@@ -12,7 +12,8 @@ import { useAuth } from '../context/AuthContext'; // Importa o useAuth correto
 import api from '@/services/api'; // Importa a instância da API
 import { Button } from "@/components/ui/button"; // Para o botão de logout
 import { Link } from "react-router-dom";
-import { Package, MapPin, LogOut } from 'lucide-react'; // Import new icons
+import { Package, MapPin, LogOut, User, Mail, CheckCircle } from 'lucide-react'; // Import additional icons
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
 // Interface para os dados do usuário (ajuste conforme o retorno do seu backend)
 interface UserData {
@@ -146,100 +147,121 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow bg-[#f7f7f7] pt-32 sm:pt-36 pb-32 sm:pb-40">
-        <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden"
-            >
-            <div className="p-8 sm:p-10 md:flex md:gap-10">
-              
-              {/* Coluna do Avatar */}
-              <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4">
-                <div className="relative group">
-                  {userData.photo ? (
-                    <img
-                      src={userData.photo}
-                      alt="User profile"
-                      className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-md"
-                      onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => (e.currentTarget.style.display = 'none')}
-                    />
-                  ) : (
-                     <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold ring-4 ring-white shadow-md">
+      <main className="flex-grow container mx-auto px-4 pt-32 sm:pt-36 pb-24 sm:pb-32">
+        <div className="w-full max-w-4xl mx-auto space-y-8">
+          {/* Page Title */}
+          <div className="bg-white rounded-2xl shadow-lg p-5 text-center">
+            <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">
+              My Profile
+            </h1>
+          </div>
+          
+          {/* Profile Information Card */}
+          <Card className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-6 border-b">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-100 rounded-xl">
+                  <User size={28} className="text-blue-600" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Profile Information</CardTitle>
+                  <CardDescription className="text-gray-500 mt-1">Your personal account details</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-6 md:p-8">
+              <div className="md:flex md:gap-10">
+                {/* Profile Photo Section */}
+                <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4">
+                  <div className="relative group">
+                    {userData.photo ? (
+                      <img
+                        src={userData.photo}
+                        alt="User profile"
+                        className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-md"
+                        onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => (e.currentTarget.style.display = 'none')}
+                      />
+                    ) : (
+                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold ring-4 ring-white shadow-md">
                         {userData.name ? userData.name.charAt(0).toUpperCase() : '?'}
-                     </div>
+                      </div>
+                    )}
+                  </div>
+                  <h1 className="mt-5 text-2xl font-bold text-gray-800">{userData.name}</h1>
+                  {userData.auth_provider && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Logged in with {userData.auth_provider}
+                    </p>
                   )}
                 </div>
-                <h1 className="mt-5 text-2xl font-bold text-gray-800">{userData.name}</h1>
-                {userData.auth_provider && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Logged in with {userData.auth_provider}
-                  </p>
-                )}
-              </div>
 
-              {/* Coluna de Detalhes e Ações */}
-              <div className="mt-10 md:mt-0 flex-grow md:border-l md:pl-10 border-gray-200/80">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
-                <div className="space-y-6">
-                  
-                  {/* Campo de Email */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email Address</label>
-                    <p className="mt-1 text-lg text-gray-900 break-words">{userData.email}</p>
+                {/* Profile Details Section */}
+                <div className="mt-10 md:mt-0 flex-grow md:border-l md:pl-10 border-gray-200/80">
+                  <div className="space-y-6">
+                    {/* Email Field */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                      <Mail className="text-blue-600 mt-1" size={20} />
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Email Address</label>
+                        <p className="mt-1 text-lg text-gray-900 break-words">{userData.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Account Status Field */}
+                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+                      <CheckCircle className="text-green-600 mt-1" size={20} />
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Account Status</label>
+                        <p className="mt-1">
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                            Active
+                          </span>
+                        </p>
+                      </div>
+                    </div>
                   </div>
-
-                  {/* Campo de Status */}
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Account Status</label>
-                    <p className="mt-1">
-                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                          Active
-                       </span>
-                    </p>
-                  </div>
-                  
-                  {/* Adicione outros campos aqui se necessário */}
-
-                </div>
-
-                {/* Seção de Ações */}
-                <div className="mt-10 pt-8 border-t border-gray-200/80">
-                  <h2 className="text-xl font-bold text-gray-900 mb-5">Account Actions</h2>
-                  <div className="space-y-4">
-                    <button
-                    onClick={handleGoToMyOrders}
-                      className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <Package className="mr-4 text-blue-600" size={22} />
-                      <span className="text-lg font-medium text-gray-800">My Orders</span>
-                    </button>
-                    <button
-                      onClick={handleAddressesClick}
-                      className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                      <MapPin className="mr-4 text-green-600" size={22} />
-                      <span className="text-lg font-medium text-gray-800">Manage Addresses</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Botão de Logout */}
-                <div className="mt-8 pt-6 border-t border-gray-200/80 flex justify-end">
-                  <Button
-                    onClick={handleLogout}
-                    variant="destructive"
-                    className="flex items-center gap-x-2"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </Button>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </CardContent>
+          </Card>
+          
+          {/* Account Actions Card */}
+          <Card className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-6 border-b">
+              <CardTitle className="text-2xl font-bold text-gray-900">Account Actions</CardTitle>
+            </CardHeader>
+            
+            <CardContent className="p-6 md:p-8">
+              <div className="space-y-4">
+                <button
+                  onClick={handleGoToMyOrders}
+                  className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <Package className="mr-4 text-blue-600" size={22} />
+                  <span className="text-lg font-medium text-gray-800">My Orders</span>
+                </button>
+                <button
+                  onClick={handleAddressesClick}
+                  className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <MapPin className="mr-4 text-green-600" size={22} />
+                  <span className="text-lg font-medium text-gray-800">Manage Addresses</span>
+                </button>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="bg-gray-50/80 p-6 flex justify-end">
+              <Button
+                onClick={handleLogout}
+                variant="destructive"
+                className="flex items-center gap-x-2"
+              >
+                <LogOut size={16} />
+                Logout
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </main>
 
