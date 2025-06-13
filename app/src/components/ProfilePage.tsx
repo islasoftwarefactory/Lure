@@ -107,7 +107,7 @@ export function ProfilePage() {
           <AnnouncementBar />
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center">
-            <div>Loading profile...</div>
+            <div className="text-base sm:text-lg">Loading profile...</div>
           </main>
           <Footer />
           <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} setItems={setCartItems} />
@@ -122,9 +122,9 @@ export function ProfilePage() {
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center text-center p-4">
             <div>
-               <p className="text-red-600 font-semibold">Error loading profile:</p>
-               <p className="text-red-500">{error}</p>
-               <Button onClick={() => navigate('/login')} className="mt-4">Go to Login</Button>
+               <p className="text-red-600 font-semibold text-sm sm:text-base">Error loading profile:</p>
+               <p className="text-red-500 text-sm sm:text-base mt-2">{error}</p>
+               <Button onClick={() => navigate('/login')} className="mt-4 text-sm sm:text-base">Go to Login</Button>
             </div>
           </main>
           <Footer />
@@ -139,7 +139,7 @@ export function ProfilePage() {
           <AnnouncementBar />
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center">
-            <div>No profile data available.</div>
+            <div className="text-base sm:text-lg">No profile data available.</div>
           </main>
           <Footer />
           <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} setItems={setCartItems} />
@@ -153,74 +153,74 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow container mx-auto px-4 pt-32 sm:pt-36 pb-24 sm:pb-32">
-        <div className="w-full max-w-4xl mx-auto space-y-8">
+      <main className="flex-grow container mx-auto px-3 sm:px-4 pt-24 sm:pt-32 md:pt-36 pb-16 sm:pb-24 md:pb-32">
+        <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
           {/* Page Title */}
-          <div className="bg-white rounded-2xl shadow-lg p-5 text-center">
-            <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">
               My Profile
             </h1>
           </div>
           
           {/* Profile Information Card */}
-          <Card className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <CardHeader className="bg-gray-50/80 p-6 border-b">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-xl">
-                  <User size={28} className="text-blue-600" />
+          <Card className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-4 sm:p-6 border-b">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-lg sm:rounded-xl">
+                  <User size={24} className="text-blue-600 sm:w-7 sm:h-7" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">Profile Information</CardTitle>
-                  <CardDescription className="text-gray-500 mt-1">Your personal account details</CardDescription>
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">Profile Information</CardTitle>
+                  <CardDescription className="text-gray-500 mt-1 text-sm sm:text-base">Your personal account details</CardDescription>
                 </div>
               </div>
             </CardHeader>
             
-            <CardContent className="p-6 md:p-8">
-              <div className="md:flex md:gap-10">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:gap-10">
                 {/* Profile Photo Section */}
-                <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4">
+                <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4 mb-6 md:mb-0">
                   <div className="relative group">
                     {userData.photo ? (
                       <img
                         src={userData.photo}
                         alt="User profile"
-                        className="w-32 h-32 rounded-full object-cover ring-4 ring-white shadow-md"
+                        className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-white shadow-md"
                         onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => (e.currentTarget.style.display = 'none')}
                       />
                     ) : (
-                      <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-5xl font-bold ring-4 ring-white shadow-md">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-3xl sm:text-4xl md:text-5xl font-bold ring-4 ring-white shadow-md">
                         {userData.name ? userData.name.charAt(0).toUpperCase() : '?'}
                       </div>
                     )}
                   </div>
-                  <h1 className="mt-5 text-2xl font-bold text-gray-800">{userData.name}</h1>
+                  <h1 className="mt-3 sm:mt-4 md:mt-5 text-xl sm:text-2xl font-bold text-gray-800 break-words">{userData.name}</h1>
                   {userData.auth_provider && (
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Logged in with {userData.auth_provider}
                     </p>
                   )}
                 </div>
 
                 {/* Profile Details Section */}
-                <div className="mt-10 md:mt-0 flex-grow md:border-l md:pl-10 border-gray-200/80">
-                  <div className="space-y-6">
+                <div className="flex-grow md:border-l md:pl-10 border-gray-200/80">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Email Field */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                      <Mail className="text-blue-600 mt-1" size={20} />
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Email Address</label>
-                        <p className="mt-1 text-lg text-gray-900 break-words">{userData.email}</p>
+                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <Mail className="text-blue-600 mt-1 flex-shrink-0" size={16} />
+                      <div className="min-w-0 flex-1">
+                        <label className="text-xs sm:text-sm font-medium text-gray-500">Email Address</label>
+                        <p className="mt-1 text-base sm:text-lg text-gray-900 break-words">{userData.email}</p>
                       </div>
                     </div>
 
                     {/* Account Status Field */}
-                    <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                      <CheckCircle className="text-green-600 mt-1" size={20} />
+                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Account Status</label>
+                        <label className="text-xs sm:text-sm font-medium text-gray-500">Account Status</label>
                         <p className="mt-1">
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
                             Active
                           </span>
                         </p>
@@ -233,37 +233,37 @@ export function ProfilePage() {
           </Card>
           
           {/* Account Actions Card */}
-          <Card className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <CardHeader className="bg-gray-50/80 p-6 border-b">
-              <CardTitle className="text-2xl font-bold text-gray-900">Account Actions</CardTitle>
+          <Card className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-4 sm:p-6 border-b">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">Account Actions</CardTitle>
             </CardHeader>
             
-            <CardContent className="p-6 md:p-8">
-              <div className="space-y-4">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="space-y-3 sm:space-y-4">
                 <button
                   onClick={handleGoToMyOrders}
-                  className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-gray-100"
                 >
-                  <Package className="mr-4 text-blue-600" size={22} />
-                  <span className="text-lg font-medium text-gray-800">My Orders</span>
+                  <Package className="mr-3 sm:mr-4 text-blue-600 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">My Orders</span>
                 </button>
                 <button
                   onClick={handleAddressesClick}
-                  className="w-full flex items-center p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-gray-100"
                 >
-                  <MapPin className="mr-4 text-green-600" size={22} />
-                  <span className="text-lg font-medium text-gray-800">Manage Addresses</span>
+                  <MapPin className="mr-3 sm:mr-4 text-green-600 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">Manage Addresses</span>
                 </button>
               </div>
             </CardContent>
             
-            <CardFooter className="bg-gray-50/80 p-6 flex justify-end">
+            <CardFooter className="bg-gray-50/80 p-4 sm:p-6 flex justify-end">
               <Button
                 onClick={handleLogout}
                 variant="destructive"
-                className="flex items-center gap-x-2"
+                className="flex items-center gap-x-2 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 min-h-[44px]"
               >
-                <LogOut size={16} />
+                <LogOut size={14} className="sm:w-4 sm:h-4" />
                 Logout
               </Button>
             </CardFooter>
