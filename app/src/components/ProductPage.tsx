@@ -318,36 +318,42 @@ export function ProductPage() {
           </div>
 
           {/* Bloco de informações */}
-          <div className="w-full lg:w-[600px] lg:h-[550px] bg-white rounded-2xl lg:rounded-[30px] shadow-lg p-4 sm:p-6 lg:p-8 lg:ml-[250px]">
+          <div className="w-full lg:w-[600px] bg-white rounded-2xl lg:rounded-[30px] shadow-lg p-4 sm:p-6 lg:p-8 lg:ml-[250px]">
             <div>
-              <div className="flex justify-between items-center gap-4">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-aleo leading-tight">{product.name}</h1>
-                <span className="text-2xl sm:text-3xl font-extrabold text-right flex-shrink-0">${product.price}</span>
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex justify-between items-center gap-4">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-aleo leading-tight">{product.name}</h1>
+                  <span className="text-2xl sm:text-3xl font-extrabold text-right flex-shrink-0">${product.price}</span>
+                </div>
               </div>
               
               {/* Descrição do produto */}
-              <p className="mt-3 lg:mt-4 text-gray-700 text-sm sm:text-base leading-relaxed">{product.description}</p>
-
-              {/* Avaliações */}
-              <div className="flex items-center gap-2 mt-3 lg:mt-4">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-black"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-black text-sm sm:text-base">(459 reviews)</span>
+              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{product.description}</p>
               </div>
 
-              {/* Seleção de Tamanho */}
+              {/* Avaliações */}
+              <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center gap-2">
+                  <div className="flex">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg
+                        key={star}
+                        className="w-4 h-4 sm:w-5 sm:h-5 text-black"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-black text-sm sm:text-base">(459 reviews)</span>
+                </div>
+              </div>
+
+              {/* Seleção de Tamanho e Quantidade */}
               <div className="mt-6 lg:mt-8 space-y-4">
-                <div>
+                <div className="bg-gray-50 rounded-lg p-4">
                   <span className="text-sm font-bold text-black/50">Size</span>
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {sizesList.map(sizeObj => (
@@ -365,7 +371,7 @@ export function ProductPage() {
                   </div>
                 </div>
 
-                <div>
+                <div className="bg-gray-50 rounded-lg p-4">
                   <span className="text-sm font-bold text-black/50">Quantity</span>
                   <div className="flex items-center border-2 border-black/10 rounded-full w-32 sm:w-[120px] mt-2">
                     <button 
@@ -390,7 +396,7 @@ export function ProductPage() {
                 {/* Botão Comprar Agora - ATUALIZADO */}
                 <button
                   onClick={handleBuyNow} // Chama a nova função
-                  className="w-full sm:w-3/4 py-3 sm:py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors text-sm sm:text-base min-h-[48px]"
+                  className="w-full sm:w-3/4 py-3 sm:py-4 rounded-full bg-black lg:bg-slate-800 text-white font-medium border border-black lg:border-slate-800 hover:bg-gray-900 lg:hover:bg-slate-700 transition-colors text-sm sm:text-base min-h-[48px]"
                   disabled={!product || !auth.token} // Desabilita se não houver produto ou token
                 >
                   <span>BUY NOW</span>
