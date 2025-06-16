@@ -103,7 +103,7 @@ export function HomePage() {
       try {
         const response = await api.get(`/image-category/read/${imageId}`);
         if (response.data && response.data.data) {
-          setProductImages(prev => ({
+          setProductImages((prev: Record<number, string>) => ({
             ...prev,
             [imageId]: response.data.data.url
           }));
@@ -114,7 +114,7 @@ export function HomePage() {
     };
 
     // Busca as imagens para cada produto
-    products.forEach(product => {
+    products.forEach((product: Product) => {
       if (product.image_category_id && !productImages[product.image_category_id]) {
         fetchProductImage(product.image_category_id);
       }
@@ -137,15 +137,15 @@ export function HomePage() {
           <div>Error: {error}</div>
         ) : (
           <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(products || []).map((product) => {
+            {(products || []).map((product: Product) => {
               return (
                 <ProductCard
                   key={product.id}
                   title={product.name}
-                  subtitle={product.description}
                   imageUrl={productImages[product.image_category_id]}
                   price={product.price}
                   onClick={() => handleProductClick(product.id.toString())}
+                  productId={product.id.toString()}
                 />
               );
             })}

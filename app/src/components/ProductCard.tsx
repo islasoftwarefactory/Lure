@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface ProductCardProps {
   title: string
-  subtitle: string
+  subtitle?: string
   imageUrl: string
   isLimitedEdition?: boolean
   colorVariant?: string
@@ -66,11 +66,13 @@ export default function ProductCard({
           </div>
         </div>
         <div className="p-4 sm:p-6 flex-grow flex flex-col">
-          <div className="flex justify-between items-start">
-            <h3 className="font-medium text-xl sm:text-2xl font-aleo flex-1 mr-2">{title}</h3>
-            {price && <span className="font-bold text-xl sm:text-2xl font-aleo">${price.toFixed(2)}</span>}
+          <div className="bg-gray-50 rounded-lg p-4 flex-grow flex flex-col">
+            <div className="flex justify-between items-start">
+              <h3 className="font-medium text-xl sm:text-2xl font-aleo flex-1 mr-2">{title}</h3>
+              {price && <span className="font-bold text-xl sm:text-2xl font-aleo">${price.toFixed(2)}</span>}
+            </div>
+            {subtitle && <p className="text-sm sm:text-base text-gray-500 font-aleo mt-2 flex-grow">{subtitle}</p>}
           </div>
-          <p className="text-sm sm:text-base text-gray-500 font-aleo mt-2 flex-grow">{subtitle}</p>
           {colorVariant && (
             <div className="mt-4">
               <div
