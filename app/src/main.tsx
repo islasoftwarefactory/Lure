@@ -11,7 +11,8 @@ import { loadStripe } from '@stripe/stripe-js';
 const queryClient = new QueryClient();
 
 // Initialize stripe with the publishable key directly
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+// const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
+const stripePromise = loadStripe("pk_test_51REHMcDClD4v1eQKQXawRtfdFesGdsmwEIcWyx0INLqS8IfMyDiqfo85zuLT3CT77Bst9uICCF0QD7OQYM7dPsCJ00Q7sMlzub")
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

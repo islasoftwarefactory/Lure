@@ -44,12 +44,12 @@ const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & {
     <div className="w-full max-w-3xl bg-white rounded-[20px] overflow-hidden shadow-lg border border-black/10">
       <div
         onClick={onToggle}
-        className="p-6 flex justify-between items-center cursor-pointer"
+        className="p-4 sm:p-6 flex justify-between items-center cursor-pointer min-h-[60px]"
       >
-        <span className="text-xl font-extrabold font-aleo">{title}</span>
+        <span className="text-lg sm:text-xl font-extrabold font-aleo">{title}</span>
         <Plus
-          className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-45' : ''}`}
-          size={24}
+          className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-45' : ''} flex-shrink-0`}
+          size={20}
         />
       </div>
       <div 
@@ -58,7 +58,7 @@ const Accordion = ({ title, children, isExpanded, onToggle }: AccordionProps & {
         }`}
       >
         <div className="overflow-hidden">
-          <div className="px-6 pb-6 border-t border-gray-100">
+          <div className="px-4 sm:px-6 pb-4 sm:pb-6 border-t border-gray-100">
             {children}
           </div>
         </div>
@@ -198,9 +198,9 @@ export function ProductPage() {
     });
   }, [recommendedProducts]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!product) return <div>Product not found</div>;
+  if (isLoading) return <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center text-sm sm:text-base">Loading...</div>;
+  if (error) return <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center text-sm sm:text-base text-red-600 px-4">Error: {error}</div>;
+  if (!product) return <div className="min-h-screen bg-[#f2f2f2] flex items-center justify-center text-sm sm:text-base px-4">Product not found</div>;
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -306,35 +306,35 @@ export function ProductPage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="container mx-auto px-4 py-8 pt-[120px]">
-        <div className="flex justify-start items-center pl-[px]">
+      <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-32 sm:pt-36 lg:pt-[140px]">
+        <div className="flex flex-col lg:flex-row lg:justify-start lg:items-center lg:pl-[px] gap-6 lg:gap-0">
           {/* Imagem principal */}
-          <div className="w-[600px] h-[600px] flex items-center justify-center">
+          <div className="w-full lg:w-[600px] h-64 sm:h-80 lg:h-[600px] flex items-center justify-center bg-white rounded-2xl lg:rounded-none overflow-hidden">
             <img 
               src={productImage} 
               alt={product?.name}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain p-4 lg:p-0"
             />
           </div>
 
           {/* Bloco de informações */}
-          <div className="w-[600px] h-[550px] bg-white rounded-[30px] shadow-lg p-8 ml-[250px]">
+          <div className="w-full lg:w-[600px] lg:h-[550px] bg-white rounded-2xl lg:rounded-[30px] shadow-lg p-4 sm:p-6 lg:p-8 lg:ml-[250px]">
             <div>
-              <div className="flex justify-between items-center">
-                <h1 className="text-4xl font-extrabold font-aleo">{product.name}</h1>
-                <span className="text-3xl font-extrabold">${product.price}</span>
+              <div className="flex justify-between items-center gap-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-aleo leading-tight">{product.name}</h1>
+                <span className="text-2xl sm:text-3xl font-extrabold text-right flex-shrink-0">${product.price}</span>
               </div>
               
               {/* Descrição do produto */}
-              <p className="mt-4 text-gray-700">{product.description}</p>
+              <p className="mt-3 lg:mt-4 text-gray-700 text-sm sm:text-base leading-relaxed">{product.description}</p>
 
               {/* Avaliações */}
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2 mt-3 lg:mt-4">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <svg
                       key={star}
-                      className="w-5 h-5 text-black"
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-black"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -342,19 +342,19 @@ export function ProductPage() {
                     </svg>
                   ))}
                 </div>
-                <span className="text-black">(459 reviews)</span>
+                <span className="text-black text-sm sm:text-base">(459 reviews)</span>
               </div>
 
               {/* Seleção de Tamanho */}
-              <div className="mt-8 space-y-4">
+              <div className="mt-6 lg:mt-8 space-y-4">
                 <div>
                   <span className="text-sm font-bold text-black/50">Size</span>
-                  <div className="flex items-center gap-2 mt-2">
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
                     {sizesList.map(sizeObj => (
                       <button
                         key={sizeObj.id}
                         onClick={() => setSelectedSize(sizeObj.name)}
-                        className={`w-10 h-10 rounded-full flex items-center justify-center border-2 hover:bg-transparent
+                        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 hover:bg-transparent transition-colors text-sm sm:text-base min-h-[44px]
                           ${selectedSize === sizeObj.name
                             ? 'border-black bg-black text-white'
                             : 'border-black/10 text-black'}`}
@@ -367,17 +367,17 @@ export function ProductPage() {
 
                 <div>
                   <span className="text-sm font-bold text-black/50">Quantity</span>
-                  <div className="flex items-center border-2 border-black/10 rounded-full w-[120px] mt-2">
+                  <div className="flex items-center border-2 border-black/10 rounded-full w-32 sm:w-[120px] mt-2">
                     <button 
                       onClick={() => handleQuantityChange(-1)}
-                      className="w-10 h-10 flex items-center justify-center text-black hover:bg-transparent"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-black hover:bg-transparent text-lg min-h-[44px]"
                     >
                       -
                     </button>
-                    <span className="flex-1 text-center text-black">{quantity}</span>
+                    <span className="flex-1 text-center text-black text-sm sm:text-base">{quantity}</span>
                     <button 
                       onClick={() => handleQuantityChange(1)}
-                      className="w-10 h-10 flex items-center justify-center text-black hover:bg-transparent"
+                      className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-black hover:bg-transparent text-lg min-h-[44px]"
                     >
                       +
                     </button>
@@ -386,11 +386,11 @@ export function ProductPage() {
               </div>
 
               {/* Botões de Ação */}
-              <div className="mt-8 space-y-4 flex flex-col items-center">
+              <div className="mt-6 lg:mt-8 space-y-3 lg:space-y-4 flex flex-col items-center">
                 {/* Botão Comprar Agora - ATUALIZADO */}
                 <button
                   onClick={handleBuyNow} // Chama a nova função
-                  className="w-3/4 py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  className="w-full sm:w-3/4 py-3 sm:py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors text-sm sm:text-base min-h-[48px]"
                   disabled={!product || !auth.token} // Desabilita se não houver produto ou token
                 >
                   <span>BUY NOW</span>
@@ -400,7 +400,7 @@ export function ProductPage() {
                 {/* Botão Adicionar ao Carrinho (mantido como estava) */}
                 <button
                   onClick={handleAddToCart}
-                  className="w-3/4 py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors"
+                  className="w-full sm:w-3/4 py-3 sm:py-4 rounded-full bg-black text-white font-medium border border-black hover:bg-gray-900 transition-colors text-sm sm:text-base min-h-[48px]"
                   disabled={!product || !auth.token}
                 >
                   <span>ADD TO CART</span>
@@ -411,24 +411,24 @@ export function ProductPage() {
         </div>
 
         {/* Barra de Navegação */}
-        <div className="flex justify-center mt-6">
-          <div className="bg-[#e4e4e4] rounded-[15px] p-[2px]">
-            <div className="bg-[#e4e4e4] rounded-[13px] px-3 py-1.5 flex gap-3">
+        <div className="flex justify-center mt-8 lg:mt-6">
+          <div className="bg-[#e4e4e4] rounded-[15px] p-[2px] w-full max-w-lg lg:w-auto">
+            <div className="bg-[#e4e4e4] rounded-[13px] px-2 sm:px-3 py-1.5 flex gap-2 sm:gap-3">
               <button
                 onClick={() => scrollToSection(historyRef, 'history')}
-                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
+                className="bg-white text-black px-4 sm:px-6 lg:px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-xs sm:text-sm flex-1 lg:flex-initial min-h-[44px] flex items-center justify-center"
               >
                 History
               </button>
               <button
                 onClick={() => scrollToSection(shippingRef, 'shipping')}
-                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
+                className="bg-white text-black px-4 sm:px-6 lg:px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-xs sm:text-sm flex-1 lg:flex-initial min-h-[44px] flex items-center justify-center"
               >
                 Shipping
               </button>
               <button
                 onClick={() => scrollToSection(faqRef, 'faq')}
-                className="bg-white text-black px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-sm"
+                className="bg-white text-black px-4 sm:px-6 lg:px-8 py-1.5 rounded-[12px] font-extrabold hover:bg-gray-100 transition-colors font-aleo shadow-md text-xs sm:text-sm flex-1 lg:flex-initial min-h-[44px] flex items-center justify-center"
               >
                 FAQ
               </button>
@@ -437,12 +437,12 @@ export function ProductPage() {
         </div>
 
         {/* You May Also Like Section - ATUALIZADO */}
-        <div className="mt-48 pb-16">
+        <div className="mt-16 sm:mt-24 lg:mt-48 pb-12 sm:pb-16">
           <div className="relative">
-            <h2 className="text-7xl font-extrabold text-center mb-8 tracking-[0.15em] absolute w-full top-[-38px] left-1/2 -translate-x-1/2" style={{ maxWidth: '900px' }}>
+            <h2 className="text-3xl sm:text-5xl lg:text-7xl font-extrabold text-center mb-6 sm:mb-8 tracking-wide lg:tracking-[0.15em] lg:absolute lg:w-full lg:top-[-38px] lg:left-1/2 lg:-translate-x-1/2 leading-tight" style={{ maxWidth: '900px' }}>
               You May Also Like
             </h2>
-            <div className="flex justify-center items-center gap-0 -mx-8 pt-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center lg:pt-12">
               {recommendedProducts.map((recProduct) => (
                 <ProductCard
                   key={recProduct.id}
@@ -451,38 +451,39 @@ export function ProductPage() {
                   imageUrl={recommendedImages[recProduct.image_category_id] || productImage}
                   price={recProduct.price}
                   onClick={() => handleProductClick(recProduct.id.toString())}
+                  productId={recProduct.id.toString()}
                 />
               ))}
               {recommendedProducts.length === 0 && (
-                <p className="text-center text-gray-500 pt-12">No recommendations available.</p>
+                <p className="text-center text-gray-500 pt-8 sm:pt-12 col-span-full text-sm sm:text-base">No recommendations available.</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Seções Expansíveis */}
-        <div className="mt-16 space-y-12 flex flex-col items-center pb-16">
+        <div className="mt-12 sm:mt-16 space-y-6 sm:space-y-8 lg:space-y-12 flex flex-col items-center pb-12 sm:pb-16">
           <div ref={historyRef} className="w-full max-w-3xl">
             <Accordion 
               title="History" 
               isExpanded={expandedSection === 'history'}
               onToggle={() => setExpandedSection(expandedSection === 'history' ? null : 'history')}
             >
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Matte fingerprint-resistant PET backplate</li>
                     <li>Polycarbonate frame</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>TPU bumpers and camera ring</li>
                     <li>Microfiber interior</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Fortified corner bumpers</li>
                     <li>Anodized aluminum buttons</li>
                   </ul>
@@ -497,21 +498,21 @@ export function ProductPage() {
               isExpanded={expandedSection === 'shipping'}
               onToggle={() => setExpandedSection(expandedSection === 'shipping' ? null : 'shipping')}
             >
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>15ft drop protection</li>
                     <li>Raised edges to protect screen and camera</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Height above screen at bottom: 1.11mm</li>
                     <li>Height above screen sides/top: 1.85mm</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Bumper thickness: 3.3mm</li>
                     <li>Precise Camera Control button cutout</li>
                   </ul>
@@ -526,19 +527,19 @@ export function ProductPage() {
               isExpanded={expandedSection === 'faq'}
               onToggle={() => setExpandedSection(expandedSection === 'faq' ? null : 'faq')}
             >
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Nickel-plated Neodymium magnets</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>800-1100gf magnetic force with Apple-certified accessories</li>
                   </ul>
                 </div>
                 <div>
-                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold">
+                  <ul className="list-disc pl-4 space-y-2 text-gray-700 font-bold text-sm sm:text-base">
                     <li>Alignment magnet for orientation-specific accessories</li>
                     <li>5G compatible</li>
                   </ul>

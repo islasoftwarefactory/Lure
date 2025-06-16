@@ -82,7 +82,7 @@ export function AddressesPage() {
   const handleDeleteAddress = async (addressId: number) => {
     try {
       await api.delete(`/address/delete/${addressId}`);
-      setAddresses(prev => prev.filter(addr => addr.id !== addressId));
+      setAddresses((prev: Address[]) => prev.filter((addr: Address) => addr.id !== addressId));
     } catch (err) {
       console.error("Failed to delete address:", err);
       // Optionally, show an error to the user
@@ -100,7 +100,7 @@ export function AddressesPage() {
     // If an error is thrown, the modal's catch block will be triggered.
     try {
       const response = await api.put(`/address/update/${updatedAddress.id}`, updatedAddress);
-      setAddresses(prev => prev.map(addr => 
+      setAddresses((prev: Address[]) => prev.map((addr: Address) => 
         addr.id === updatedAddress.id ? response.data.data : addr
       ));
       // No longer need to close modal from here; the modal closes itself on success.
@@ -151,20 +151,20 @@ export function AddressesPage() {
         <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Page Title Block */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-10 flex justify-between items-center">
-            <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">My Addresses</h1>
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">My Addresses</h1>
             <Button 
                 onClick={() => navigate('/addresses/new')} 
-                className="flex items-center gap-2 bg-black text-white hover:bg-gray-800 rounded-full px-5 py-2.5"
+                className="flex items-center gap-2 bg-black text-white hover:bg-gray-800 rounded-full px-4 py-2 sm:px-5 sm:py-2.5 w-full sm:w-auto justify-center sm:justify-start text-sm sm:text-base min-h-[44px]"
             >
-              <PlusCircle size={20} />
+              <PlusCircle size={18} className="sm:w-5 sm:h-5" />
               Add New
             </Button>
           </div>
 
           {addresses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {addresses.map((address) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
+              {addresses.map((address: Address) => (
                 <motion.div
                   key={address.id}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -172,59 +172,59 @@ export function AddressesPage() {
                   transition={{ duration: 0.4 }}
                 >
                   <Card className="bg-white rounded-2xl shadow-lg flex flex-col h-full transition-all duration-300 hover:shadow-xl">
-                    <CardHeader className="flex flex-row items-center gap-4 p-5 bg-gray-50/80 border-b">
-                      <div className="p-3 bg-blue-100 rounded-xl">
-                          <MapPin className="text-blue-600" size={24} />
+                    <CardHeader className="flex flex-row items-center gap-3 sm:gap-4 p-4 sm:p-5 bg-gray-50/80 border-b">
+                      <div className="p-2 sm:p-3 bg-blue-100 rounded-xl">
+                          <MapPin className="text-blue-600" size={20} />
                       </div>
-                      <div>
-                          <CardTitle className="font-bold text-xl text-gray-800">
+                      <div className="min-w-0 flex-1">
+                          <CardTitle className="font-bold text-lg sm:text-xl text-gray-800 truncate">
                               Shipping Address
                           </CardTitle>
-                          <CardDescription className="text-gray-500">
+                          <CardDescription className="text-gray-500 text-sm truncate">
                               {address.city}, {address.state}
                           </CardDescription>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="p-6 flex-grow space-y-3">
+                    <CardContent className="p-4 sm:p-6 flex-grow space-y-3">
                         <div className="p-3 bg-gray-50 rounded-lg border">
                             <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Street</label>
-                            <p className="text-gray-900 font-medium">{address.street}, {address.number}</p>
+                            <p className="text-gray-900 font-medium text-sm sm:text-base break-words">{address.street}, {address.number}</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="p-3 bg-gray-50 rounded-lg border">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">City</label>
-                                <p className="text-gray-900 font-medium">{address.city}</p>
+                                <p className="text-gray-900 font-medium text-sm sm:text-base truncate">{address.city}</p>
                             </div>
                             <div className="p-3 bg-gray-50 rounded-lg border">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">State</label>
-                                <p className="text-gray-900 font-medium">{address.state}</p>
+                                <p className="text-gray-900 font-medium text-sm sm:text-base truncate">{address.state}</p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="p-3 bg-gray-50 rounded-lg border">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">ZIP Code</label>
-                                <p className="text-gray-900 font-medium">{address.zip_code}</p>
+                                <p className="text-gray-900 font-medium text-sm sm:text-base">{address.zip_code}</p>
                             </div>
                             <div className="p-3 bg-gray-50 rounded-lg border">
                                 <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Country</label>
-                                <p className="text-gray-900 font-medium">United States</p>
+                                <p className="text-gray-900 font-medium text-sm sm:text-base">United States</p>
                             </div>
                         </div>
                     </CardContent>
 
-                    <CardFooter className="p-4 bg-gray-50/70 border-t flex justify-end gap-3">
+                    <CardFooter className="p-3 sm:p-4 bg-gray-50/70 border-t flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
                        <Button 
                            onClick={() => handleOpenEditModal(address)}
                            size="sm" 
-                           className="flex items-center gap-2 text-white bg-black hover:bg-gray-800"
+                           className="flex items-center gap-2 text-white bg-black hover:bg-gray-800 w-full sm:w-auto justify-center min-h-[44px] text-sm"
                        >
                            <Pencil size={16} /> Edit
                        </Button>
                        <Button 
                            onClick={() => handleDeleteAddress(address.id)}
                            variant="destructive" size="sm" 
-                           className="flex items-center gap-2"
+                           className="flex items-center gap-2 w-full sm:w-auto justify-center min-h-[44px] text-sm"
                        >
                            <Trash2 size={16} /> Delete
                        </Button>
@@ -234,9 +234,9 @@ export function AddressesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 px-6 bg-white rounded-2xl shadow-lg">
-              <h2 className="text-2xl font-semibold text-gray-800">No Saved Addresses</h2>
-              <p className="text-gray-500 mt-3 max-w-md mx-auto">You haven't added any addresses yet. Add one to make your future checkouts faster and easier.</p>
+            <div className="text-center py-12 sm:py-20 px-4 sm:px-6 bg-white rounded-2xl shadow-lg">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">No Saved Addresses</h2>
+              <p className="text-gray-500 mt-3 max-w-md mx-auto text-sm sm:text-base">You haven't added any addresses yet. Add one to make your future checkouts faster and easier.</p>
             </div>
           )}
         </div>
