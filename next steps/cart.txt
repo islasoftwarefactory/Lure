@@ -1,4 +1,0 @@
-Correção de Bug no Ícone do Carrinho
-
-Comportamento Atual: Quando o carrinho de compras já está aberto, ao clicar no ícone do carrinho novamente, ele fecha e reabre em seguida.
-Comportamento Esperado: Quando o carrinho estiver aberto, um clique no ícone deve apenas fechar o carrinho, sem nenhuma outra ação
