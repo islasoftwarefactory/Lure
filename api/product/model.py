@@ -20,6 +20,7 @@ class Product(db.Model):
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
     currency_rel = db.relationship('Currency', back_populates='products')
+    favorited_by = db.relationship('Favorite', back_populates='product_rel', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Product {self.id}, Name: {self.name}, Price: {self.price} (Currency ID: {self.currency_id})>"

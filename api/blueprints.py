@@ -18,6 +18,7 @@ from api.transaction.method.routes import transaction_method_bp as transaction_m
 from api.shippings.status.routes import blueprint as shipping_status_blueprint
 from api.shippings.conclusion.routes import blueprint as shipping_conclusion_blueprint
 from api.stripe_webhook import stripe_webhook_bp
+from api.favorites.routes import favorites_bp as favorites_blueprint
 
 def register_blueprints(app):
     app.register_blueprint(address_blueprint, url_prefix='/address')
@@ -40,3 +41,4 @@ def register_blueprints(app):
     app.register_blueprint(shipping_status_blueprint, url_prefix='/shipping-status')
     app.register_blueprint(shipping_conclusion_blueprint, url_prefix='/shipping-conclusion')
     app.register_blueprint(stripe_webhook_bp, url_prefix='/webhooks/stripe')
+    app.register_blueprint(favorites_blueprint, url_prefix='/favorites')

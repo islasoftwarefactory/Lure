@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext'; // Importa o useAuth correto
 import api from '@/services/api'; // Importa a instância da API
 import { Button } from "@/components/ui/button"; // Para o botão de logout
 import { Link } from "react-router-dom";
-import { Package, MapPin, LogOut, User, Mail, CheckCircle } from 'lucide-react'; // Import additional icons
+import { Package, MapPin, LogOut, User, Mail, CheckCircle, Heart } from 'lucide-react'; // Import additional icons
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { LoginComponent } from './LoginComponent';
 
@@ -93,6 +93,10 @@ export function ProfilePage() {
   // Handler para o botão "Addresses"
   const handleAddressesClick = () => {
     navigate('/addresses'); // Navega para a página de endereços
+  };
+
+  const handleFavoritesClick = () => {
+    navigate('/favorites');
   };
 
   // Se não autenticado, exibe o LoginComponent
@@ -246,6 +250,13 @@ export function ProfilePage() {
                 >
                   <Package className="mr-3 sm:mr-4 text-blue-600 flex-shrink-0" size={20} />
                   <span className="text-base sm:text-lg font-medium text-gray-800">My Orders</span>
+                </button>
+                <button
+                  onClick={handleFavoritesClick}
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 active:bg-gray-100"
+                >
+                  <Heart className="mr-3 sm:mr-4 text-red-500 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">Favorites</span>
                 </button>
                 <button
                   onClick={handleAddressesClick}

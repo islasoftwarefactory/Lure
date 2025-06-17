@@ -31,6 +31,10 @@ interface Product {
   image_category_id: number;
 }
 
+interface FavoriteProduct {
+  product_id: number;
+}
+
 export function HomePage() {
   const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
   const navigate = useNavigate();
@@ -39,6 +43,7 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<Record<number, string>>({});
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -64,38 +69,37 @@ export function HomePage() {
   }, [token, getAnonymousToken]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchInitialData = async () => {
       if (token) {
-        console.log("Token available, attempting to fetch products...");
         setIsLoading(true);
         setError(null);
         try {
-          const response = await api.get('/product/read/all');
-          
-          console.log('Product API Response:', response.data);
+          const [productsResponse, favoritesResponse] = await Promise.all([
+            api.get('/product/read/all'),
+            api.get('/favorites/read')
+          ]);
 
-          if (response.data && response.data.data) {
-            setProducts(response.data.data);
+          if (productsResponse.data && productsResponse.data.data) {
+            setProducts(productsResponse.data.data);
           } else {
             setProducts([]);
           }
-        } catch (err: any) {
-          console.error('Error fetching products:', err);
-          if (err.response?.status === 401) {
-            setError("Session expired or invalid. Please login again if applicable.");
-          } else {
-            setError(err.response?.data?.message || 'Error fetching products');
+
+          if (favoritesResponse.data && favoritesResponse.data.data) {
+            const ids = new Set(favoritesResponse.data.data.map((fav: FavoriteProduct) => fav.product_id));
+            setFavoriteIds(ids);
           }
-          setProducts([]);
+
+        } catch (err: any) {
+          console.error('Error fetching initial data:', err);
+          setError(err.response?.data?.message || 'Error fetching data');
         } finally {
           setIsLoading(false);
         }
-      } else {
-        console.log("No token available yet, skipping product fetch.");
       }
     };
 
-    fetchProducts();
+    fetchInitialData();
   }, [token]);
 
   useEffect(() => {
@@ -120,6 +124,31 @@ export function HomePage() {
       }
     });
   }, [products]);
+
+  const handleToggleFavorite = (productId: number, isCurrentlyFavorite: boolean) => {
+    const originalFavoriteIds = new Set(favoriteIds);
+
+    // Optimistic UI update
+    const newFavoriteIds = new Set(favoriteIds);
+    if (isCurrentlyFavorite) {
+      newFavoriteIds.delete(productId);
+    } else {
+      newFavoriteIds.add(productId);
+    }
+    setFavoriteIds(newFavoriteIds);
+
+    // API call
+    const apiCall = isCurrentlyFavorite
+      ? api.delete(`/favorites/delete/${productId}`)
+      : api.post('/favorites/create', { product_id: productId });
+
+    apiCall.catch(error => {
+      console.error('Failed to update favorite status:', error);
+      // Revert UI on error
+      setFavoriteIds(originalFavoriteIds);
+      // Optionally show a toast notification to the user
+    });
+  };
 
   const handleProductClick = (productId: string) => {
     navigate(`/product/${productId}`);
@@ -146,6 +175,8 @@ export function HomePage() {
                   price={product.price}
                   onClick={() => handleProductClick(product.id.toString())}
                   productId={product.id.toString()}
+                  isFavorite={favoriteIds.has(product.id)}
+                  onToggleFavorite={() => handleToggleFavorite(product.id, favoriteIds.has(product.id))}
                 />
               );
             })}

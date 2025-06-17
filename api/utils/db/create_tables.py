@@ -18,7 +18,7 @@ from api.payment_status.model import PaymentStatus
 from api.currency.model import Currency
 from api.shippings.status.model import ShippingStatus
 from api.shippings.conclusion.model import ShippingConclusion
-
+from api.favorites.model import Favorite
 
 from api.utils.db.connection import db
 from sqlalchemy import inspect

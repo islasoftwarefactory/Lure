@@ -15,6 +15,7 @@ import { CheckoutComponent } from './components/checkout';
 import { OrderPage } from './components/OrderPage';
 import { MyOrdersPage } from './components/MyOrdersPage';
 import { AddressesPage } from './components/AddressesPage';
+import { FavoritesPage } from './components/FavoritesPage';
 import { AnnouncementProvider } from './contexts/AnnouncementContext';
 import { AuthProvider } from './context/AuthContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -97,6 +98,7 @@ export default function App() {
                     <Route path="/checkout" element={<CheckoutComponent />} />
                     <Route path="/order-page/:id" element={<OrderPage />} />
                     <Route path="/my-orders-list" element={<MyOrdersPage />} />
+                    <Route path="/favorites" element={<FavoritesPage />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/locked" replace />} />
                 </Routes>
