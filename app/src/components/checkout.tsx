@@ -366,6 +366,46 @@ export function CheckoutComponent() {
           <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
             <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">Checkout</h1>
           </div>
+
+          {/* Order Summary - Mobile First (appears after header on mobile) */}
+          <div className="md:hidden space-y-8">
+            <Card className="bg-white rounded-2xl shadow-lg">
+              <CardHeader className="bg-gray-50/80 p-6 border-b">
+                <CardTitle className="font-aleo text-2xl font-bold">Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 md:p-8 space-y-6">
+                {cartItems.map((item: any) => (
+                  <div key={`${item.productId}-${item.size}`} className="flex justify-between items-center p-4 bg-white border border-gray-200/80 rounded-xl shadow-sm">
+                    <div className="flex items-center space-x-4">
+                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg bg-gray-100" />
+                      <div>
+                        <p className="font-aleo font-bold text-base">{item.name}</p>
+                        <p className="font-aleo text-sm text-black">Size: {item.size} | Quantity: {item.quantity}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-aleo font-bold text-base">${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+                <div className="bg-gray-50/80 p-4 rounded-xl border space-y-2 mt-4">
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span className="font-aleo text-base">Subtotal</span>
+                    <span className="font-aleo font-bold text-base">${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-700">
+                    <span className="font-aleo text-base">Shipping</span>
+                    <span className="font-aleo text-base">Calculated at next step</span>
+                  </div>
+                  <div className="flex justify-between items-center text-black font-bold text-xl pt-3 border-t mt-3">
+                    <span className="font-aleo text-2xl font-bold">Total</span>
+                    <span className="font-aleo text-2xl font-bold">${cartItems.reduce((total: number, item: any) => total + item.price * item.quantity, 0).toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-6">
             {/* Coluna 1: Formulário de entrega */}
             <form onSubmit={handlePlaceOrder} className="space-y-8">
@@ -580,8 +620,8 @@ export function CheckoutComponent() {
                 </Button>
               )}
             </form>
-            {/* Coluna 2: Resumo do Pedido */}
-            <div className="space-y-8">
+            {/* Coluna 2: Resumo do Pedido - Desktop Only */}
+            <div className="space-y-8 hidden md:block">
               <Card className="bg-white rounded-2xl shadow-lg">
                 <CardHeader className="bg-gray-50/80 p-6 border-b">
                   <CardTitle className="font-aleo text-2xl font-bold">Order Summary</CardTitle>

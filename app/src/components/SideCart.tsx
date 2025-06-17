@@ -90,7 +90,7 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.2 }}
-            className="fixed top-[100px] sm:top-[130px] right-2 sm:right-4 left-4 sm:left-[50%] lg:left-[70%] bottom-[100px] sm:bottom-[130px] bg-[#f3f3f3] shadow-lg z-50 overflow-y-auto rounded-2xl sm:rounded-3xl"
+            className="fixed top-[120px] sm:top-[150px] right-2 sm:right-4 left-4 sm:left-[50%] lg:left-[70%] bottom-[100px] sm:bottom-[130px] bg-[#f3f3f3] shadow-lg z-50 overflow-y-auto rounded-2xl sm:rounded-3xl"
           >
             <div className="h-full flex flex-col">
               <div className="flex justify-between items-center pt-6 sm:pt-8 lg:pt-12 pb-1 px-4 sm:px-6 lg:px-8">
