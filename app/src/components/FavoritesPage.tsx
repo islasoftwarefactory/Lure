@@ -163,7 +163,6 @@ export function FavoritesPage() {
                     {/* Page Title */}
                     <div className="bg-white rounded-2xl shadow-lg p-5 text-center">
                         <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900 flex items-center justify-center gap-3">
-                            <Heart className="text-red-500" />
                             Favorites
                         </h1>
                     </div>

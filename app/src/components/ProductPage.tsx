@@ -19,7 +19,6 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  description: string;
   inventory: number;
   category_id: number;
   gender_id: number;
@@ -329,7 +328,6 @@ export function ProductPage() {
               
               {/* Descrição do produto */}
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 text-sm sm:text-base leading-relaxed">{product.description}</p>
               </div>
 
               {/* Avaliações */}
@@ -453,7 +451,6 @@ export function ProductPage() {
                 <ProductCard
                   key={recProduct.id}
                   title={recProduct.name}
-                  subtitle={recProduct.description || "Check it out!"}
                   imageUrl={recommendedImages[recProduct.image_category_id] || productImage}
                   price={recProduct.price}
                   onClick={() => handleProductClick(recProduct.id.toString())}
