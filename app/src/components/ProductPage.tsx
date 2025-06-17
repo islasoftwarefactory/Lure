@@ -84,6 +84,18 @@ export function ProductPage() {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [recommendedImages, setRecommendedImages] = useState<Record<number, string>>({});
   const [sizesList, setSizesList] = useState<Size[]>([]);
+  const [simulatedStock, setSimulatedStock] = useState(0);
+  const [simulatedUsers, setSimulatedUsers] = useState(0);
+
+  useEffect(() => {
+    // Simulate low stock
+    const randomStock = Math.floor(Math.random() * (10 - 3 + 1)) + 3; // Random number between 3 and 10
+    setSimulatedStock(randomStock);
+
+    // Simulate active users
+    const randomUsers = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Random number between 5 and 20
+    setSimulatedUsers(randomUsers);
+  }, []);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -308,11 +320,12 @@ export function ProductPage() {
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-32 sm:pt-36 lg:pt-[140px]">
         <div className="flex flex-col lg:flex-row lg:justify-start lg:items-center lg:pl-[px] gap-6 lg:gap-0">
           {/* Imagem principal */}
-          <div className="w-full lg:w-[600px] h-64 sm:h-80 lg:h-[600px] flex items-center justify-center bg-white rounded-2xl lg:rounded-none overflow-hidden">
-            <img 
-              src={productImage} 
-              alt={product?.name}
-              className="w-full h-full object-contain p-4 lg:p-0"
+          <div className="w-full lg:w-[600px] h-auto flex items-center justify-center">
+            <ProductCard
+              productId={product.id.toString()}
+              title={product.name}
+              imageUrl={productImage}
+              hideDetails={true}
             />
           </div>
 
@@ -326,10 +339,6 @@ export function ProductPage() {
                 </div>
               </div>
               
-              {/* Descrição do produto */}
-              <div className="mt-4 bg-gray-50 rounded-lg p-4">
-              </div>
-
               {/* Avaliações */}
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center gap-2">
@@ -346,6 +355,28 @@ export function ProductPage() {
                     ))}
                   </div>
                   <span className="text-black text-sm sm:text-base">(459 reviews)</span>
+                </div>
+              </div>
+
+              {/* Simulated Urgency Section */}
+              <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex items-center text-sm sm:text-base">
+                  <span className="relative flex h-3 w-3 mr-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+                  </span>
+                  <p className="text-black/80">
+                    <span className="font-bold text-black">Only few left in stock!</span>
+                  </p>
+                </div>
+                <div className="flex items-center text-sm sm:text-base">
+                  <span className="relative flex h-3 w-3 mr-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                  <p className="text-black/80">
+                    <span className="font-bold text-black">{simulatedUsers} people</span> are currently viewing this item.
+                  </p>
                 </div>
               </div>
 

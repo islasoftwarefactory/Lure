@@ -14,6 +14,7 @@ interface ProductCardProps {
   price?: number
   isFavorite?: boolean;
   onToggleFavorite?: (event: React.MouseEvent) => void;
+  hideDetails?: boolean;
 }
 
 export default function ProductCard({
@@ -27,6 +28,7 @@ export default function ProductCard({
   price,
   isFavorite,
   onToggleFavorite,
+  hideDetails = false,
 }: ProductCardProps) {
   const { token } = useAuth();
 
@@ -52,17 +54,19 @@ export default function ProductCard({
               LIMITED EDITION
             </Badge>
           )}
-          <button
-            onClick={onToggleFavorite}
-            className="favorite-button absolute top-3 right-3 z-10 p-2 bg-white/70 rounded-full hover:bg-white transition-colors"
-            aria-label="Toggle Favorite"
-          >
-            <Heart
-              className={`w-6 h-6 ${
-                isFavorite ? 'text-red-500 fill-current' : 'text-gray-500'
-              }`}
-            />
-          </button>
+          {!hideDetails && onToggleFavorite && (
+            <button
+              onClick={onToggleFavorite}
+              className="favorite-button absolute top-3 right-3 z-10 p-2 bg-white/70 rounded-full hover:bg-white transition-colors"
+              aria-label="Toggle Favorite"
+            >
+              <Heart
+                className={`w-6 h-6 ${
+                  isFavorite ? 'text-red-500 fill-current' : 'text-gray-500'
+                }`}
+              />
+            </button>
+          )}
           <div className="aspect-square bg-white p-4 sm:p-8">
             <div className="w-full h-full bg-[#f2f2f2] rounded-xl flex items-center justify-center">
               <img
@@ -73,23 +77,25 @@ export default function ProductCard({
             </div>
           </div>
         </div>
-        <div className="p-4 sm:p-6 flex-grow flex flex-col">
-          <div className="bg-gray-50 rounded-lg p-4 flex-grow flex flex-col">
-            <div className="flex justify-between items-start">
-              <h3 className="font-medium text-xl sm:text-2xl font-aleo flex-1 mr-2">{title}</h3>
-              {price && <span className="font-bold text-xl sm:text-2xl font-aleo">${price.toFixed(2)}</span>}
+        {!hideDetails && (
+          <div className="p-4 sm:p-6 flex-grow flex flex-col">
+            <div className="bg-gray-50 rounded-lg p-4 flex-grow flex flex-col">
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium text-xl sm:text-2xl font-aleo flex-1 mr-2">{title}</h3>
+                {price && <span className="font-bold text-xl sm:text-2xl font-aleo">${price.toFixed(2)}</span>}
+              </div>
+              {subtitle && <p className="text-sm sm:text-base text-gray-500 font-aleo mt-2 flex-grow">{subtitle}</p>}
             </div>
-            {subtitle && <p className="text-sm sm:text-base text-gray-500 font-aleo mt-2 flex-grow">{subtitle}</p>}
+            {colorVariant && (
+              <div className="mt-4">
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: colorVariant }}
+                />
+              </div>
+            )}
           </div>
-          {colorVariant && (
-            <div className="mt-4">
-              <div
-                className="w-4 h-4 rounded-full"
-                style={{ backgroundColor: colorVariant }}
-              />
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
