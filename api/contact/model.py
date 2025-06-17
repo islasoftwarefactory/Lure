@@ -9,7 +9,6 @@ class Contact(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=True)
     email = db.Column(db.String(256), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
@@ -21,7 +20,6 @@ class Contact(db.Model):
         return {
             "id": self.id,
             "full_name": self.full_name,
-            "phone": self.phone,
             "email": self.email,
             "message": self.message,
             "created_at": self.created_at
@@ -33,7 +31,6 @@ def create_contact(contact_data: Dict) -> Optional[Contact]:
     try:
         contact = Contact(
             full_name=contact_data["full_name"],
-            phone=contact_data.get("phone"),  # opcional
             email=contact_data["email"],
             message=contact_data["message"]
         )

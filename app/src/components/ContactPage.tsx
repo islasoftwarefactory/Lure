@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 import { AnnouncementBar } from './AnnouncementBar';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { SideCart } from './SideCart';
 import { SocialIcons } from './SocialIcons';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useCart } from '../context/CartContext';
+import api from '../services/api';
 
 // Adicione esta definição de tipo
 interface CartItem {
@@ -18,20 +26,19 @@ interface CartItem {
 export const ContactPage: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({
     name: '',
     email: '',
-    phone: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems, setCartItems } = useCart();
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { name: '', email: '', phone: '', message: '' };
+    const newErrors = { name: '', email: '', message: '' };
 
     if (!name.trim()) {
       newErrors.name = 'Name is required';
@@ -42,12 +49,7 @@ export const ContactPage: React.FC = () => {
       newErrors.email = 'Email is required';
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
-      isValid = false;
-    }
-
-    if (phone.trim() && !/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
-      newErrors.phone = 'Phone number is invalid';
+      newErrors.email = 'Please enter a valid email address';
       isValid = false;
     }
 
@@ -60,17 +62,58 @@ export const ContactPage: React.FC = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Aqui você pode adicionar a lógica para enviar o formulário
-      console.log('Form submitted:', { name, email, phone, message });
-      // Limpar os campos após o envio
-      setName('');
-      setEmail('');
-      setPhone('');
-      setMessage('');
-      setErrors({ name: '', email: '', phone: '', message: '' });
+      setIsSubmitting(true);
+      try {
+        const contactData = {
+          full_name: name.trim(),
+          email: email.trim(),
+          message: message.trim()
+        };
+
+        console.log('Sending contact data:', contactData);
+        
+        const response = await api.post('/contact/create', contactData);
+        
+        if (response.status === 201) {
+          // Clear the form after successful submission
+          setName('');
+          setEmail('');
+          setMessage('');
+          setErrors({ name: '', email: '', message: '' });
+          
+          // Show success toast
+          toast.success('Message sent successfully! We\'ll get back to you soon.');
+          
+          console.log('Contact created successfully:', response.data);
+        }
+      } catch (error: any) {
+        console.error('Error sending message:', error);
+        
+        // Handle different error types
+        if (error.response) {
+          // Server responded with error status
+          const errorMessage = error.response.data?.error || error.response.data?.message || 'Error sending message';
+          
+          if (error.response.status === 400) {
+            toast.error('Please check that all required fields are filled correctly.');
+          } else if (error.response.status === 500) {
+            toast.error('Server error. Please try again later.');
+          } else {
+            toast.error(errorMessage);
+          }
+        } else if (error.request) {
+          // Network error
+          toast.error('Network error. Please check your connection and try again.');
+        } else {
+          // Other error
+          toast.error('An unexpected error occurred. Please try again.');
+        }
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -79,77 +122,88 @@ export const ContactPage: React.FC = () => {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center justify-center px-4 py-12 mt-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-white p-8 rounded-lg shadow-md w-full max-w-md"
-        >
-          <h2 className="text-2xl font-bold mb-6 text-center">Contact Us</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring focus:ring-opacity-50 ${
-                  errors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-indigo-300 focus:ring-indigo-200'
-                }`}
-              />
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-            </div>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring focus:ring-opacity-50 ${
-                  errors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-indigo-300 focus:ring-indigo-200'
-                }`}
-              />
-              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-            </div>
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone (Optional)</label>
-              <input
-                type="tel"
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring focus:ring-opacity-50 ${
-                  errors.phone ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-indigo-300 focus:ring-indigo-200'
-                }`}
-              />
-              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-            </div>
-            <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700">Message</label>
-              <textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={4}
-                className={`mt-1 block w-full rounded-md shadow-sm focus:ring focus:ring-opacity-50 ${
-                  errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 'border-gray-300 focus:border-indigo-300 focus:ring-indigo-200'
-                }`}
-              ></textarea>
-              {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
-            </div>
-            <div>
-              <button
-                type="submit"
-                className="w-full bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition duration-300"
-              >
-                Send
-              </button>
-            </div>
-          </form>
-        </motion.div>
+      <main className="flex-grow pt-32 sm:pt-36 pb-20">
+        <div className="container mx-auto p-4 md:p-6 space-y-8 max-w-2xl">
+          {/* Page Title Block */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-white rounded-2xl shadow-lg p-6 text-center"
+          >
+            <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">Contact Us</h1>
+          </motion.div>
+
+          {/* Contact Form Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Card className="bg-white rounded-2xl shadow-lg">
+              <CardHeader className="bg-gray-50/80 p-6 border-b">
+                <CardTitle className="font-aleo text-2xl font-bold">Get in Touch</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 md:p-8 space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Name Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="font-aleo text-base">Full Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Your full name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={`font-aleo ${errors.name ? 'border-red-500' : ''}`}
+                      disabled={isSubmitting}
+                    />
+                    {errors.name && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.name}</p>}
+                  </div>
+
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="font-aleo text-base">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={`font-aleo ${errors.email ? 'border-red-500' : ''}`}
+                      disabled={isSubmitting}
+                    />
+                    {errors.email && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.email}</p>}
+                  </div>
+
+                  {/* Message Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="message" className="font-aleo text-base">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Your message here..."
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className={`font-aleo min-h-[120px] resize-y ${errors.message ? 'border-red-500' : ''}`}
+                      rows={5}
+                      disabled={isSubmitting}
+                    />
+                    {errors.message && <p className="text-red-500 text-sm mt-1 font-aleo">{errors.message}</p>}
+                  </div>
+
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    className="w-full bg-black text-white font-aleo text-lg font-bold rounded-full py-3 hover:bg-gray-800 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Sending Message...' : 'Send Message'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </main>
 
       <Footer />
