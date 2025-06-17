@@ -45,7 +45,7 @@ class Purchase(db.Model):
         # Add logic for shipping_cost and taxes if applicable
         self.total_amount = self.subtotal + self.shipping_cost + self.taxes
 
-    def serialize(self, include_items=True, include_history=False, include_transactions=False, include_shipping=False) -> Dict:
+    def serialize(self, include_items=True, include_history=False, include_transactions=False, include_shipping=False, include_address=False) -> Dict:
         data = {
             "id": self.id,
             "user_id": self.user_id,
@@ -55,7 +55,8 @@ class Purchase(db.Model):
             "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "shipping_address_id": self.shipping_address_id
         }
         if include_items:
              data["items"] = [item.serialize() for item in self.items]
@@ -65,6 +66,8 @@ class Purchase(db.Model):
              data["transactions"] = [trans.serialize() for trans in self.transactions.order_by(Transaction.created_at.asc())]
         if include_shipping and self.shipping_status_rel:
              data["shipping_status"] = self.shipping_status_rel.serialize()
+        if include_address and self.shipping_address_rel:
+            data["address"] = self.shipping_address_rel.serialize()
 
         return data
 

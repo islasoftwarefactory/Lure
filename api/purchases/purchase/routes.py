@@ -350,3 +350,37 @@ def get_user_purchases(current_user_id): # Nome da função original era handle_
         current_app.logger.error(f"Failed to retrieve purchases for user {current_user_id}: {str(e)}")
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to retrieve purchases due to an internal error."}), 500
+
+
+@purchase_bp.route('/', methods=['GET'])
+@token_required
+def get_all_purchases(current_user_id):
+    """
+    Retrieves all purchase records.
+    Primarily for admin dashboard use.
+    TODO: Add admin role verification.
+    """
+    current_app.logger.info(f"--- Rota GET /purchase/ (get_all_purchases) INICIADA por user_id: {current_user_id} ---")
+    try:
+        # Parameters to control the amount of related data returned
+        include_items = request.args.get('include_items', 'true').lower() == 'true'
+        include_transactions = request.args.get('include_transactions', 'true').lower() == 'true'
+        include_address = request.args.get('include_address', 'true').lower() == 'true'
+
+        all_purchases = Purchase.query.order_by(Purchase.created_at.desc()).all()
+        
+        serialized_data = []
+        for p in all_purchases:
+            data = p.serialize(
+                include_items=include_items,
+                include_transactions=include_transactions,
+                include_address=include_address
+            )
+            serialized_data.append(data)
+
+        current_app.logger.info(f"Retornando {len(serialized_data)} compras totais.")
+        return jsonify({"data": serialized_data}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f"Erro ao buscar todas as compras: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": "Failed to retrieve all purchases due to an internal error."}), 500

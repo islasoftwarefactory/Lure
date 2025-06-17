@@ -23,6 +23,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import Home from './components/page';
 import { LockProvider } from './context/LockContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { SalesDashboard } from './components/SalesDashboard';
 
 // Importe diretamente o AuthProvider do seu arquivo existente
 // import { AuthProvider } from './context/AuthContext'; 
@@ -101,6 +102,7 @@ export default function App() {
                     <Route path="/my-orders-list" element={<MyOrdersPage />} />
                     <Route path="/favorites" element={<FavoritesPage />} />
                     <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/dashboard" element={<SalesDashboard />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/locked" replace />} />
                 </Routes>
