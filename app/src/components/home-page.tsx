@@ -159,32 +159,52 @@ export function HomePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center justify-center px-4 py-8 pt-[180px] pb-96 font-aleo">
-        {isLoading ? (
-          <div>Loading products...</div>
-        ) : error ? (
-          <div>Error: {error}</div>
-        ) : (
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(products || []).map((product: Product) => {
-              return (
-                <ProductCard
-                  key={product.id}
-                  title={product.name}
-                  imageUrl={productImages[product.image_category_id]}
-                  price={product.price}
-                  onClick={() => handleProductClick(product.id.toString())}
-                  productId={product.id.toString()}
-                  isFavorite={favoriteIds.has(product.id)}
-                  onToggleFavorite={() => handleToggleFavorite(product.id, favoriteIds.has(product.id))}
-                />
-              );
-            })}
-            {!isLoading && !error && products && products.length === 0 && (
-               <div>No products found.</div>
-            )}
-          </div>
-        )}
+      <main className="flex-grow pt-[140px] sm:pt-[160px] lg:pt-[180px] pb-20 sm:pb-32 lg:pb-40 font-aleo">
+        <div className="container mx-auto px-6 sm:px-8 lg:px-12">
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-lg sm:text-xl text-gray-600">Loading products...</div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-lg sm:text-xl text-red-600">Error: {error}</div>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 text-center mb-8 sm:mb-12 lg:mb-16">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-aleo text-gray-900 mb-4">
+                  Featured Products
+                </h1>
+                <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+                  Discover our latest collection of Lure.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 justify-items-center">
+                {(products || []).map((product: Product) => {
+                  return (
+                    <div key={product.id} className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[350px]">
+                      <ProductCard
+                        title={product.name}
+                        imageUrl={productImages[product.image_category_id] || '/placeholder-image.jpg'}
+                        price={product.price}
+                        onClick={() => handleProductClick(product.id.toString())}
+                        productId={product.id.toString()}
+                        isFavorite={favoriteIds.has(product.id)}
+                        onToggleFavorite={() => handleToggleFavorite(product.id, favoriteIds.has(product.id))}
+                      />
+                    </div>
+                  );
+                })}
+                {!isLoading && !error && products && products.length === 0 && (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-lg sm:text-xl text-gray-500">No products found.</div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </main>
 
       <div className="fixed bottom-4 right-4 z-50">
