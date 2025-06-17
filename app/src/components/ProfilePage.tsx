@@ -157,7 +157,7 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow container mx-auto px-3 sm:px-4 pt-24 sm:pt-32 md:pt-36 pb-16 sm:pb-24 md:pb-32">
+      <main className="flex-grow container mx-auto px-3 sm:px-4 pt-[140px] sm:pt-[160px] lg:pt-[180px] pb-16 sm:pb-24 md:pb-32">
         <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
           {/* Page Title */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 text-center">
