@@ -2,6 +2,11 @@
 'use client'
 
 import React, { useEffect, useState } from 'react';
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { useParams, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -307,6 +312,40 @@ export function ProductPage() {
     // --- FIM AJUSTE CRIAÇÃO ---
 
     console.log("Navigating to checkout with single item (Corrected Keys):", itemForCheckout);
+
+    // Fire GA4 begin_checkout event before navigation
+    const totalValue = product.price * quantity;
+    
+    // Check if gtag is available
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'begin_checkout', {
+        currency: 'USD',
+        value: totalValue,
+        items: [
+          {
+            item_id: product.id.toString(),
+            item_name: product.name,
+            price: product.price,
+            quantity: quantity,
+            item_variant: selectedSize,
+            item_category: 'Apparel', // You can make this dynamic based on your category data
+            currency: 'USD'
+          }
+        ]
+      });
+      
+      console.log('GA4 begin_checkout event fired:', {
+        currency: 'USD',
+        value: totalValue,
+        item_id: product.id.toString(),
+        item_name: product.name,
+        price: product.price,
+        quantity: quantity,
+        item_variant: selectedSize
+      });
+    } else {
+      console.warn('gtag is not available - GA4 event not fired');
+    }
 
     // Navega para a página de checkout, passando o item formatado corretamente
     navigate('/checkout', { state: { items: [itemForCheckout] } });
