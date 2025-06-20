@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { X, Loader2, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
 
 // The Address object from the backend does not have a country.
 interface Address {
@@ -13,6 +14,7 @@ interface Address {
   city: string;
   state: string; // This is the state abbreviation, e.g., "CA"
   zip_code: string;
+  country: string; // Add country field
 }
 
 // Interfaces for Gist data structure
@@ -44,7 +46,7 @@ export function EditAddressModal({ isOpen, onClose, onSave, address }: EditAddre
   // Location-related state
   const [locationStates, setLocationStates] = useState<USStateWithCities[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('United States');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedStateAbbr, setSelectedStateAbbr] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
@@ -108,7 +110,7 @@ export function EditAddressModal({ isOpen, onClose, onSave, address }: EditAddre
       setStreet(address.street);
       setNumber(String(address.number));
       setZipCode(address.zip_code);
-      setSelectedCountry('United States'); // Currently hardcoded
+      setSelectedCountry(address.country);
       setSelectedStateAbbr(address.state);
       setSelectedCity(address.city);
     } else {
@@ -116,6 +118,7 @@ export function EditAddressModal({ isOpen, onClose, onSave, address }: EditAddre
       setStreet('');
       setNumber('');
       setZipCode('');
+      setSelectedCountry('');
       setSelectedStateAbbr('');
       setSelectedCity('');
     }
@@ -147,6 +150,7 @@ export function EditAddressModal({ isOpen, onClose, onSave, address }: EditAddre
       city: selectedCity,
       state: selectedStateAbbr,
       zip_code: zipCode,
+      country: selectedCountry,
     };
     
     try {
@@ -205,14 +209,14 @@ export function EditAddressModal({ isOpen, onClose, onSave, address }: EditAddre
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <label className="text-sm font-semibold text-gray-600">Country</label>
-                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                  <SelectTrigger className="w-full mt-1 p-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all h-auto">
-                      <SelectValue placeholder="Country/Region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      <SelectItem value="United States">United States</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Input
+                  type="text"
+                  name="country"
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  className="w-full mt-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all"
+                  required
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-semibold text-gray-600">State</label>
