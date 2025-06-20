@@ -21,6 +21,7 @@ class Product(db.Model):
 
     currency_rel = db.relationship('Currency', back_populates='products')
     favorited_by = db.relationship('Favorite', back_populates='product_rel', lazy='dynamic', cascade="all, delete-orphan")
+    category_rel = db.relationship('Category', back_populates='products')
 
     def __repr__(self):
         return f"<Product {self.id}, Name: {self.name}, Price: {self.price} (Currency ID: {self.currency_id})>"
@@ -31,11 +32,13 @@ class Product(db.Model):
             "name": self.name,
             "price": float(self.price),
             "currency_id": self.currency_id,
+            "currency_code": self.currency_rel.code if self.currency_rel else None,
             "size_id": self.size_id,
             "description": self.description,
             "image_category_id": self.image_category_id,
             "inventory": self.inventory,
             "category_id": self.category_id,
+            "category_name": self.category_rel.name if self.category_rel else None,
             "gender_id": self.gender_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None

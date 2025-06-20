@@ -34,6 +34,8 @@ interface Product {
   gender_id: number;
   size_id: number;
   image_category_id: number;
+  currency_code?: string;
+  category_name?: string;
 }
 
 interface FavoriteProduct {
@@ -93,15 +95,15 @@ export function HomePage() {
                 item_id: product.id.toString(),
                 item_name: product.name,
                 price: product.price,
-                item_category: 'Apparel',
-                index: index,
-                currency: 'USD'
+                item_category: product.category_name,
+                index,
+                currency: product.currency_code
               }));
 
               gtag('event', 'view_item_list', {
                 item_list_id: 'featured_products',
                 item_list_name: 'Featured Products',
-                items: items
+                items
               });
 
               console.log('GA4 view_item_list event fired:', {
@@ -162,15 +164,15 @@ export function HomePage() {
       const product = products.find(p => p.id === productId);
       if (typeof gtag !== 'undefined' && product) {
         gtag('event', 'add_to_wishlist', {
-          currency: 'USD',
+          currency: product.currency_code,
           value: product.price,
           items: [
             {
               item_id: product.id.toString(),
               item_name: product.name,
               price: product.price,
-              item_category: 'Apparel',
-              currency: 'USD'
+              item_category: product.category_name,
+              currency: product.currency_code
             }
           ]
         });
@@ -220,9 +222,9 @@ export function HomePage() {
             item_id: product.id.toString(),
             item_name: product.name,
             price: product.price,
-            item_category: 'Apparel',
+            item_category: product.category_name,
             index: productIndex,
-            currency: 'USD'
+            currency: product.currency_code
           }
         ]
       });
