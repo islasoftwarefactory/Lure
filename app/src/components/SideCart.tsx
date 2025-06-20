@@ -6,6 +6,11 @@ import { Overlay } from './common/Overlay';
 import { Trash2, Plus, Minus } from 'lucide-react';
 import { useCart, CartItem } from '../context/CartContext';
 
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
+
 interface SideCartProps {
   isOpen: boolean;
   onClose: () => void;
@@ -67,6 +72,35 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose }) => {
   };
 
   const handleCheckout = () => {
+    // Fire GA4 begin_checkout event with all cart items
+    if (typeof gtag !== 'undefined' && cartItems.length > 0) {
+      const totalValue = calculateTotal();
+      
+      const items = cartItems.map((item, index) => ({
+        item_id: item.productId.toString(),
+        item_name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        item_variant: item.size,
+        item_category: 'Apparel', // Based on your product structure
+        currency: 'USD',
+        index: index
+      }));
+
+      gtag('event', 'begin_checkout', {
+        currency: 'USD',
+        value: totalValue,
+        items: items
+      });
+
+      console.log('GA4 begin_checkout event fired:', {
+        currency: 'USD',
+        value: totalValue,
+        items_count: items.length,
+        total_items: cartItems.reduce((sum, item) => sum + item.quantity, 0)
+      });
+    }
+
     onClose();
     navigate('/checkout', { state: { items: cartItems } });
   };

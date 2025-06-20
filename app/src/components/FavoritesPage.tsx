@@ -3,6 +3,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
@@ -30,6 +35,23 @@ export function FavoritesPage() {
 
     const navigate = useNavigate();
 
+    // Fire GA4 page_view event for favorites page
+    useEffect(() => {
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'page_view', {
+                page_title: 'My Favorites',
+                page_location: window.location.href,
+                page_path: '/favorites'
+            });
+
+            console.log('GA4 page_view event fired for favorites page:', {
+                page_title: 'My Favorites',
+                page_location: window.location.href,
+                page_path: '/favorites'
+            });
+        }
+    }, []);
+
     useEffect(() => {
         const fetchFavorites = async () => {
             setIsLoading(true);
@@ -38,6 +60,30 @@ export function FavoritesPage() {
                 const response = await api.get('/favorites/read');
                 if (response.data && response.data.data) {
                     setFavorites(response.data.data);
+                    
+                    // Fire GA4 view_item_list event for favorites
+                    if (typeof gtag !== 'undefined' && response.data.data.length > 0) {
+                        const items = response.data.data.map((product: FavoriteProduct, index: number) => ({
+                            item_id: product.product_id.toString(),
+                            item_name: product.product_name,
+                            price: product.product_price,
+                            item_category: 'Apparel',
+                            index: index,
+                            currency: 'USD'
+                        }));
+
+                        gtag('event', 'view_item_list', {
+                            item_list_id: 'user_favorites',
+                            item_list_name: 'User Favorites',
+                            items: items
+                        });
+
+                        console.log('GA4 view_item_list event fired for favorites:', {
+                            item_list_id: 'user_favorites',
+                            item_list_name: 'User Favorites',
+                            items_count: items.length
+                        });
+                    }
                 } else {
                     setFavorites([]);
                 }

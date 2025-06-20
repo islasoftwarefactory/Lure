@@ -1,6 +1,11 @@
 // @ts-nocheck
 import React, { useEffect, useState, useCallback } from 'react';
 import { Truck, MapPin, Loader2, CheckCircle, Clock, Package } from "lucide-react"
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import api from '../services/api'
 import { useLocation, useNavigate, Link } from "react-router-dom"
 import { useCart } from '../context/CartContext'
@@ -48,6 +53,23 @@ export function MyOrdersPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
+
+  // Fire GA4 page_view event for my orders page
+  useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Orders',
+        page_location: window.location.href,
+        page_path: '/my-orders-list'
+      });
+
+      console.log('GA4 page_view event fired for my orders page:', {
+        page_title: 'My Orders',
+        page_location: window.location.href,
+        page_path: '/my-orders-list'
+      });
+    }
+  }, []);
 
   // --- Log 1: Estado inicial da localização ---
   console.log("MyOrdersPage: Component rendered. Initial location.state:", location.state);
@@ -192,6 +214,31 @@ export function MyOrdersPage() {
         if (Array.isArray(ordersData)) {
           setOrders(ordersData);
           console.log(`MyOrdersPage (fetchOrders): ${ordersData.length} pedidos definidos no estado.`);
+          
+          // Fire GA4 view_item_list event for orders
+          if (typeof gtag !== 'undefined' && ordersData.length > 0) {
+            const items = ordersData.map((order: Order, index: number) => ({
+              item_id: order.id,
+              item_name: `Order ${order.id}`,
+              item_category: 'Order',
+              price: order.total_amount,
+              quantity: 1,
+              index: index,
+              currency: order.transactions?.[0]?.currency?.code || 'USD'
+            }));
+
+            gtag('event', 'view_item_list', {
+              item_list_id: 'user_orders',
+              item_list_name: 'User Orders',
+              items: items
+            });
+
+            console.log('GA4 view_item_list event fired for orders:', {
+              item_list_id: 'user_orders',
+              item_list_name: 'User Orders',
+              items_count: items.length
+            });
+          }
         } else {
           console.warn("MyOrdersPage (fetchOrders): A estrutura esperada (response.data.data.data) não é um array ou não existe. Definindo como vazio.");
           setOrders([]);
@@ -346,6 +393,30 @@ export function MyOrdersPage() {
       // Navegue mesmo sem dados completos - OrderPage buscará os dados pelo ID
       navigate(`/order-page/${orderId}`);
       return;
+    }
+
+    // Fire GA4 view_item event for order details
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'view_item', {
+        currency: orderTransactions?.[0]?.currency?.code || 'USD',
+        value: orderDetails.total_amount,
+        items: [
+          {
+            item_id: orderId,
+            item_name: `Order ${orderId}`,
+            item_category: 'Order',
+            price: orderDetails.total_amount,
+            quantity: 1,
+            currency: orderTransactions?.[0]?.currency?.code || 'USD'
+          }
+        ]
+      });
+
+      console.log('GA4 view_item event fired for order details:', {
+        order_id: orderId,
+        value: orderDetails.total_amount,
+        currency: orderTransactions?.[0]?.currency?.code || 'USD'
+      });
     }
     
     // Construa um objeto simplificado do pedido para passar via state

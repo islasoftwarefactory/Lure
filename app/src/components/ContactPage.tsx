@@ -14,6 +14,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCart } from '../context/CartContext';
 import api from '../services/api';
 
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
+
 // Adicione esta definição de tipo
 interface CartItem {
   id: string;
@@ -37,6 +42,22 @@ export const ContactPage: React.FC = () => {
   const [submittedName, setSubmittedName] = useState('');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartItems, setCartItems } = useCart();
+
+  // Fire page_view event on component mount
+  React.useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'Contact',
+        page_location: window.location.href,
+        page_referrer: document.referrer
+      });
+
+      console.log('GA4 page_view event fired for Contact page:', {
+        page_title: 'Contact',
+        page_location: window.location.href
+      });
+    }
+  }, []);
 
   const validateForm = () => {
     let isValid = true;
@@ -80,6 +101,23 @@ export const ContactPage: React.FC = () => {
         const response = await api.post('/contact/create', contactData);
         
         if (response.status === 201) {
+          // Fire GA4 generate_lead event (no currency since it's just a contact form)
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'generate_lead', {
+              form_id: 'contact_form',
+              form_name: 'Contact Form',
+              method: 'website_contact'
+            });
+
+            console.log('GA4 generate_lead event fired:', {
+              form_id: 'contact_form',
+              form_name: 'Contact Form',
+              method: 'website_contact',
+              user_name: name.trim(),
+              user_email: email.trim()
+            });
+          }
+          
           // Store the name for the success message
           setSubmittedName(name.trim());
           

@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { motion } from 'framer-motion';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -40,6 +45,23 @@ export function AddressesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+
+  // Fire GA4 page_view event for addresses page
+  useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Addresses',
+        page_location: window.location.href,
+        page_path: '/addresses'
+      });
+
+      console.log('GA4 page_view event fired for addresses page:', {
+        page_title: 'My Addresses',
+        page_location: window.location.href,
+        page_path: '/addresses'
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const fetchUserDataAndAddresses = async () => {

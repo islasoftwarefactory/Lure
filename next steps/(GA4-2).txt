@@ -1,0 +1,30 @@
+You are an expert in web development and Google Analytics 4 (GA4) implementation. Your task is to integrate GA4 tracking for the 'begin_checkout' event into an existing e-commerce website built with a custom front-end framework.
+
+I have provided you with access to the entire front-end codebase, including all page templates, JavaScript files, and the database models/schemas (to understand data structures like product details, order information, user data).
+
+### Objective: Implement the 'begin_checkout' GA4 Event for the 'Buy Now' Action
+
+1.  **Core Principle for Data Mapping:** The key challenge is to correctly translate the data available in my custom front-end into the specific parameter names and formats expected by GA4 for the 'begin_checkout' event. **You must analyze my codebase to identify how these data points are named and structured internally, and then map them precisely to the GA4 event parameters.** Do not assume naming conventions are identical.
+
+2.  **Specific Event to Implement:**
+
+    * **`begin_checkout`**: This event should be triggered specifically when a user clicks a 'Buy Now' button that **initiates the checkout process directly, bypassing the standard cart page**. This aligns with GA4's recommended event for starting the purchase funnel directly from a product page or listing.
+        * **GA4 Parameters Required for `begin_checkout`:**
+            * `items`: An array of objects. Each object represents a product that is being moved to checkout and *must* contain at least the following parameters:
+                * `item_id` (e.g., 'SKU12345') - Unique identifier for the product.
+                * `item_name` (e.g., 'T-Shirt Pro') - Name of the product.
+                * `price` (e.g., 29.99) - Unit price of the product.
+                * `quantity` (e.g., 1) - Quantity of the product.
+                * `currency` (e.g., 'BRL' or 'USD') - Currency of the price.
+            * `value`: The total monetary value of all items included in this direct checkout action. This should be calculated based on `price * quantity` for the item(s) being purchased.
+            * `coupon`: (Optional) The code of any coupon applied during this 'Buy Now' action, if applicable.
+            * `currency`: The overall currency for the transaction (e.g., 'BRL' or 'USD').
+
+        * **Task for Cursor:** Locate the specific event handler (e.g., a click listener on the 'Buy Now' button) or the logic responsible for directly initiating the checkout flow. Analyze the surrounding codebase to identify how the product's **ID, name, price, quantity, currency, and the calculated total value for the direct checkout** are accessed and structured at that precise moment. Then, write the JavaScript code to construct the `items` array object(s) with these dynamically mapped values, and call `gtag('event', 'begin_checkout', { ... });`.
+
+3.  **Implementation Details & Output:**
+    * Provide the specific JavaScript code (`gtag('event', 'begin_checkout', { ... })` call) including the clear logic for **dynamically extracting and accurately mapping data** from my existing front-end code (e.g., from component props, state management, or API response handling at the specific event trigger point).
+    * Provide the recommended **file path and precise location** within that file (e.g., inside a specific function, within a React `useEffect` hook, or immediately after a successful API call that initiates checkout) where this event code should be placed.
+    * **Important:** Prioritize reading the entire component/page's code and its dependencies to understand the data flow, identify the most reliable and consistent sources for the required GA4 parameters, and ensure correct data types.
+
+**Constraint:** Ensure all implementations strictly follow GA4's recommended practices for e-commerce tracking, as outlined in the documentation provided separately.

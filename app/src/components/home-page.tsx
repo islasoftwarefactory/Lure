@@ -2,6 +2,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, ReactNode, useEffect } from 'react'
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { SideCart } from "./SideCart.tsx"
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
@@ -81,6 +86,30 @@ export function HomePage() {
 
           if (productsResponse.data && productsResponse.data.data) {
             setProducts(productsResponse.data.data);
+            
+            // Fire GA4 view_item_list event
+            if (typeof gtag !== 'undefined' && productsResponse.data.data.length > 0) {
+              const items = productsResponse.data.data.map((product: Product, index: number) => ({
+                item_id: product.id.toString(),
+                item_name: product.name,
+                price: product.price,
+                item_category: 'Apparel',
+                index: index,
+                currency: 'USD'
+              }));
+
+              gtag('event', 'view_item_list', {
+                item_list_id: 'featured_products',
+                item_list_name: 'Featured Products',
+                items: items
+              });
+
+              console.log('GA4 view_item_list event fired:', {
+                item_list_id: 'featured_products',
+                item_list_name: 'Featured Products',
+                items_count: items.length
+              });
+            }
           } else {
             setProducts([]);
           }
@@ -128,6 +157,32 @@ export function HomePage() {
   const handleToggleFavorite = (productId: number, isCurrentlyFavorite: boolean) => {
     const originalFavoriteIds = new Set(favoriteIds);
 
+    // Fire GA4 add_to_wishlist event only when adding (not removing)
+    if (!isCurrentlyFavorite) {
+      const product = products.find(p => p.id === productId);
+      if (typeof gtag !== 'undefined' && product) {
+        gtag('event', 'add_to_wishlist', {
+          currency: 'USD',
+          value: product.price,
+          items: [
+            {
+              item_id: product.id.toString(),
+              item_name: product.name,
+              price: product.price,
+              item_category: 'Apparel',
+              currency: 'USD'
+            }
+          ]
+        });
+
+        console.log('GA4 add_to_wishlist event fired:', {
+          item_id: product.id.toString(),
+          item_name: product.name,
+          price: product.price
+        });
+      }
+    }
+
     // Optimistic UI update
     const newFavoriteIds = new Set(favoriteIds);
     if (isCurrentlyFavorite) {
@@ -151,6 +206,35 @@ export function HomePage() {
   };
 
   const handleProductClick = (productId: string) => {
+    // Find the product data for GA4 event
+    const product = products.find(p => p.id.toString() === productId);
+    const productIndex = products.findIndex(p => p.id.toString() === productId);
+    
+    // Fire GA4 select_item event
+    if (typeof gtag !== 'undefined' && product) {
+      gtag('event', 'select_item', {
+        item_list_id: 'featured_products',
+        item_list_name: 'Featured Products',
+        items: [
+          {
+            item_id: product.id.toString(),
+            item_name: product.name,
+            price: product.price,
+            item_category: 'Apparel',
+            index: productIndex,
+            currency: 'USD'
+          }
+        ]
+      });
+
+      console.log('GA4 select_item event fired:', {
+        item_id: product.id.toString(),
+        item_name: product.name,
+        price: product.price,
+        index: productIndex
+      });
+    }
+    
     navigate(`/product/${productId}`);
   };
 

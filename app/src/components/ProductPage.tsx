@@ -129,6 +129,30 @@ export function ProductPage() {
               setSelectedSize(productData.sizes[0].name);
             }
           }
+          
+          // Fire GA4 view_item event
+          if (typeof gtag !== 'undefined') {
+            gtag('event', 'view_item', {
+              currency: 'USD',
+              value: productData.price,
+              items: [
+                {
+                  item_id: productData.id.toString(),
+                  item_name: productData.name,
+                  price: productData.price,
+                  item_category: 'Apparel',
+                  currency: 'USD'
+                }
+              ]
+            });
+
+            console.log('GA4 view_item event fired:', {
+              item_id: productData.id.toString(),
+              item_name: productData.name,
+              price: productData.price
+            });
+          }
+          
           console.log('✅ Produto carregado com sucesso:', response.data.data);
         }
       } catch (error: any) {
@@ -271,6 +295,38 @@ export function ProductPage() {
        // --- EDIT 2: Chamar addToCart do Context ---
        await addToCart(itemDataForContext); // Passa o objeto SEM sizeId inicial
        // --- FIM EDIT 2 ---
+       
+       // Fire GA4 add_to_cart event with all recommended parameters
+       if (typeof gtag !== 'undefined') {
+         const totalValue = product.price * quantity;
+         
+         gtag('event', 'add_to_cart', {
+           currency: 'USD',
+           value: totalValue,
+           items: [
+             {
+               item_id: product.id.toString(),
+               item_name: product.name,
+               price: product.price,
+               quantity: quantity,
+               item_variant: selectedSize,
+               item_category: 'Apparel', // Based on your product structure
+               currency: 'USD'
+             }
+           ]
+         });
+
+         console.log('GA4 add_to_cart event fired:', {
+           currency: 'USD',
+           value: totalValue,
+           item_id: product.id.toString(),
+           item_name: product.name,
+           price: product.price,
+           quantity: quantity,
+           item_variant: selectedSize
+         });
+       }
+       
        console.log("🛒 Chamada para CartContext.addToCart concluída.");
        setIsCartOpen(true);
 

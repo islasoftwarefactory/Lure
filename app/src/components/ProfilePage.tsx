@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { motion } from 'framer-motion';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -33,6 +38,23 @@ export function ProfilePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Fire GA4 page_view event for profile page
+  useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'Profile',
+        page_location: window.location.href,
+        page_path: '/profile'
+      });
+
+      console.log('GA4 page_view event fired for profile page:', {
+        page_title: 'Profile',
+        page_location: window.location.href,
+        page_path: '/profile'
+      });
+    }
+  }, []);
 
   // Efeito para buscar os dados do usuário logado
   useEffect(() => {
@@ -80,22 +102,74 @@ export function ProfilePage() {
   }, [auth.token, auth, navigate]); // Depende do token para re-buscar se ele mudar
 
   const handleLogout = () => {
+    // Fire GA4 logout event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'logout');
+      
+      console.log('GA4 logout event fired:', {
+        user_id: userData?.id,
+        email: userData?.email
+      });
+    }
+    
     auth.logout(); // Chama a função de logout do contexto
     navigate('/login'); // Redireciona para a página de login
   };
 
   // --- EDIT 1: Adicionar handler para o botão "My Orders" ---
   const handleGoToMyOrders = () => {
-      navigate('/my-orders-list'); // Navega para a nova rota da lista de pedidos
+    // Fire GA4 page_view event for my orders navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Orders',
+        page_location: window.location.origin + '/my-orders-list',
+        page_path: '/my-orders-list'
+      });
+      
+      console.log('GA4 page_view event fired for my orders navigation:', {
+        page_title: 'My Orders',
+        page_path: '/my-orders-list'
+      });
+    }
+    
+    navigate('/my-orders-list'); // Navega para a nova rota da lista de pedidos
   };
   // --- FIM EDIT 1 ---
 
   // Handler para o botão "Addresses"
   const handleAddressesClick = () => {
+    // Fire GA4 page_view event for addresses navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Addresses',
+        page_location: window.location.origin + '/addresses',
+        page_path: '/addresses'
+      });
+      
+      console.log('GA4 page_view event fired for addresses navigation:', {
+        page_title: 'My Addresses',
+        page_path: '/addresses'
+      });
+    }
+    
     navigate('/addresses'); // Navega para a página de endereços
   };
 
   const handleFavoritesClick = () => {
+    // Fire GA4 page_view event for favorites navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Favorites',
+        page_location: window.location.origin + '/favorites',
+        page_path: '/favorites'
+      });
+      
+      console.log('GA4 page_view event fired for favorites navigation:', {
+        page_title: 'My Favorites',
+        page_path: '/favorites'
+      });
+    }
+    
     navigate('/favorites');
   };
 

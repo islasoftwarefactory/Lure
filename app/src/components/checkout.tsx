@@ -1,6 +1,11 @@
 // @ts-nocheck
 'use client'
 
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
+
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Button } from "@/components/ui/button"
@@ -65,6 +70,14 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get cart items for GA4 purchase event
+  const { cartItems: contextCartItems } = useCart();
+  const cartItems: CartItem[] =
+    Array.isArray(location.state?.items) && location.state.items.length > 0
+      ? location.state.items
+      : contextCartItems;
 
   const handleSubmit = async () => {
     if (!stripe || !elements) return;
@@ -79,6 +92,39 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
     if (stripeError) {
       setError(stripeError.message);
     } else {
+      // Fire GA4 purchase event after successful Stripe payment confirmation
+      if (typeof gtag !== 'undefined') {
+        const totalValue = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        
+        const items = cartItems.map((item, index) => ({
+          item_id: item.productId.toString(),
+          item_name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          item_variant: item.size,
+          item_category: 'Apparel',
+          currency: 'USD',
+          index: index
+        }));
+
+        gtag('event', 'purchase', {
+          transaction_id: purchaseId, // Use the purchase_id from backend as transaction ID
+          value: totalValue,
+          currency: 'USD',
+          tax: 0.0, // Based on your purchase payload structure
+          shipping: 0.0, // Based on your purchase payload structure
+          items: items
+        });
+
+        console.log('GA4 purchase event fired:', {
+          transaction_id: purchaseId,
+          value: totalValue,
+          currency: 'USD',
+          items_count: items.length,
+          total_items: cartItems.reduce((sum, item) => sum + item.quantity, 0)
+        });
+      }
+      
       navigate(
         `/order-page/${purchaseId}`,
         { state: { justCompletedOrder: { id: purchaseId } }, replace: true }
@@ -330,6 +376,38 @@ export function CheckoutComponent() {
         if (!purchase_id || !client_secret) {
           throw new Error('Invalid server response: missing purchase_id or client_secret.');
         }
+        
+        // Fire GA4 add_payment_info event after purchase intent creation
+        if (typeof gtag !== 'undefined') {
+          const totalValue = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+          
+          const items = cartItems.map((item, index) => ({
+            item_id: item.productId.toString(),
+            item_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            item_variant: item.size,
+            item_category: 'Apparel',
+            currency: 'USD',
+            index: index
+          }));
+
+          gtag('event', 'add_payment_info', {
+            currency: 'USD',
+            value: totalValue,
+            payment_type: 'Credit Card', // Stripe handles credit card payments
+            items: items
+          });
+
+          console.log('GA4 add_payment_info event fired:', {
+            currency: 'USD',
+            value: totalValue,
+            payment_type: 'Credit Card',
+            purchase_id: purchase_id,
+            items_count: items.length
+          });
+        }
+        
         setPurchaseId(purchase_id);
         setClientSecret(client_secret);
         // Move to payment step and let Pay Now button handle confirmation
