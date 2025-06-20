@@ -58,6 +58,8 @@ interface CartItem {
   quantity: number;
   size: string;
   image?: string;
+  currency_code?: string;
+  category_name?: string;
 }
 
 // const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
@@ -102,15 +104,15 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
           price: item.price,
           quantity: item.quantity,
           item_variant: item.size,
-          item_category: 'Apparel',
-          currency: 'USD',
+          item_category: item.category_name,
+          currency: item.currency_code,
           index: index
         }));
 
         gtag('event', 'purchase', {
-          transaction_id: purchaseId, // Use the purchase_id from backend as transaction ID
+          transaction_id: purchaseId,
           value: totalValue,
-          currency: 'USD',
+          currency: cartItems[0]?.currency_code,
           tax: 0.0, // Based on your purchase payload structure
           shipping: 0.0, // Based on your purchase payload structure
           items: items
@@ -119,7 +121,7 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
         console.log('GA4 purchase event fired:', {
           transaction_id: purchaseId,
           value: totalValue,
-          currency: 'USD',
+          currency: cartItems[0]?.currency_code,
           items_count: items.length,
           total_items: cartItems.reduce((sum, item) => sum + item.quantity, 0)
         });
@@ -387,20 +389,20 @@ export function CheckoutComponent() {
             price: item.price,
             quantity: item.quantity,
             item_variant: item.size,
-            item_category: 'Apparel',
-            currency: 'USD',
+            item_category: item.category_name,
+            currency: item.currency_code,
             index: index
           }));
 
           gtag('event', 'add_payment_info', {
-            currency: 'USD',
+            currency: items[0]?.currency,
             value: totalValue,
             payment_type: 'Credit Card', // Stripe handles credit card payments
             items: items
           });
 
           console.log('GA4 add_payment_info event fired:', {
-            currency: 'USD',
+            currency: items[0]?.currency,
             value: totalValue,
             payment_type: 'Credit Card',
             purchase_id: purchase_id,

@@ -82,19 +82,19 @@ const SideCart: React.FC<SideCartProps> = ({ isOpen, onClose }) => {
         price: item.price,
         quantity: item.quantity,
         item_variant: item.size,
-        item_category: 'Apparel', // Based on your product structure
-        currency: 'USD',
+        item_category: (item as any).category_name,
+        currency: (item as any).currency_code,
         index: index
       }));
 
       gtag('event', 'begin_checkout', {
-        currency: 'USD',
+        currency: (cartItems[0] as any).currency_code,
         value: totalValue,
         items: items
       });
 
       console.log('GA4 begin_checkout event fired:', {
-        currency: 'USD',
+        currency: (cartItems[0] as any).currency_code,
         value: totalValue,
         items_count: items.length,
         total_items: cartItems.reduce((sum, item) => sum + item.quantity, 0)

@@ -11,6 +11,8 @@ export interface CartItem {
   size: string;
   quantity: number;
   image: string;
+  currency_code?: string;
+  category_name?: string;
 }
 
 interface InitialCartItemData {

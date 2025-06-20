@@ -30,6 +30,8 @@ interface Product {
   size_id: number | number[];
   sizes?: Size[];
   image_category_id: number;
+  currency_code?: string;
+  category_name?: string;
 }
 
 interface Size {
@@ -133,15 +135,15 @@ export function ProductPage() {
           // Fire GA4 view_item event
           if (typeof gtag !== 'undefined') {
             gtag('event', 'view_item', {
-              currency: 'USD',
+              currency: productData.currency_code,
               value: productData.price,
               items: [
                 {
                   item_id: productData.id.toString(),
                   item_name: productData.name,
                   price: productData.price,
-                  item_category: 'Apparel',
-                  currency: 'USD'
+                  item_category: productData.category_name,
+                  currency: productData.currency_code
                 }
               ]
             });
@@ -301,7 +303,7 @@ export function ProductPage() {
          const totalValue = product.price * quantity;
          
          gtag('event', 'add_to_cart', {
-           currency: 'USD',
+           currency: product?.currency_code,
            value: totalValue,
            items: [
              {
@@ -310,14 +312,14 @@ export function ProductPage() {
                price: product.price,
                quantity: quantity,
                item_variant: selectedSize,
-               item_category: 'Apparel', // Based on your product structure
-               currency: 'USD'
+               item_category: product.category_name,
+               currency: product.currency_code
              }
            ]
          });
 
          console.log('GA4 add_to_cart event fired:', {
-           currency: 'USD',
+           currency: product?.currency_code,
            value: totalValue,
            item_id: product.id.toString(),
            item_name: product.name,
@@ -375,7 +377,7 @@ export function ProductPage() {
     // Check if gtag is available
     if (typeof gtag !== 'undefined') {
       gtag('event', 'begin_checkout', {
-        currency: 'USD',
+        currency: product?.currency_code,
         value: totalValue,
         items: [
           {
@@ -384,14 +386,14 @@ export function ProductPage() {
             price: product.price,
             quantity: quantity,
             item_variant: selectedSize,
-            item_category: 'Apparel', // You can make this dynamic based on your category data
-            currency: 'USD'
+            item_category: product.category_name,
+            currency: product.currency_code
           }
         ]
       });
       
       console.log('GA4 begin_checkout event fired:', {
-        currency: 'USD',
+        currency: product?.currency_code,
         value: totalValue,
         item_id: product.id.toString(),
         item_name: product.name,

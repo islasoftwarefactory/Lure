@@ -24,6 +24,8 @@ interface FavoriteProduct {
     product_name: string;
     product_price: number;
     image_category_id: number; // Corrected: No longer expecting image_url directly
+    currency_code?: string;
+    category_name?: string;
 }
 
 export function FavoritesPage() {
@@ -67,9 +69,9 @@ export function FavoritesPage() {
                             item_id: product.product_id.toString(),
                             item_name: product.product_name,
                             price: product.product_price,
-                            item_category: 'Apparel',
-                            index: index,
-                            currency: 'USD'
+                            item_category: product.category_name,
+                            currency: product.currency_code,
+                            index: index
                         }));
 
                         gtag('event', 'view_item_list', {
