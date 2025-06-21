@@ -290,6 +290,8 @@ export function ProductPage() {
         quantity: quantity,
         size: selectedSize, // <<< ENVIAR O NOME DO TAMANHO
         image: productImage,
+        currency_code: product.currency_code,
+        category_name: product.category_name,
     };
     // --- FIM EDIT 1 ---
 
@@ -366,6 +368,8 @@ export function ProductPage() {
       quantity: quantity,
       size: selectedSize,
       image: productImage,
+      currency_code: product.currency_code,
+      category_name: product.category_name,
     };
     // --- FIM AJUSTE CRIAÇÃO ---
 

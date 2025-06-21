@@ -67,7 +67,7 @@ const stripeKey = "pk_test_51REHMcDClD4v1eQKQXawRtfdFesGdsmwEIcWyx0INLqS8IfMyDiq
 console.log("Stripe public key used: ", stripeKey)
 const stripePromise = loadStripe(stripeKey)
 
-function PaymentForm({ purchaseId }: { purchaseId: string }) {
+function PaymentForm({ purchaseId, shippingCost, taxes }: { purchaseId: string; shippingCost: number; taxes: number }) {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -113,8 +113,8 @@ function PaymentForm({ purchaseId }: { purchaseId: string }) {
           transaction_id: purchaseId,
           value: totalValue,
           currency: cartItems[0]?.currency_code,
-          tax: 0.0, // Based on your purchase payload structure
-          shipping: 0.0, // Based on your purchase payload structure
+          tax: taxes,
+          shipping: shippingCost,
           items: items
         });
 
@@ -189,6 +189,8 @@ export function CheckoutComponent() {
   const [purchaseId, setPurchaseId] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [shippingCost, setShippingCost] = useState<number>(0);
+  const [taxesValue, setTaxesValue] = useState<number>(0);
 
   // Debug: log critical state changes
   useEffect(() => {
@@ -373,7 +375,11 @@ export function CheckoutComponent() {
 
         console.log("Attempting to create purchase...");
         const response = await api.post('/purchase/create', purchasePayload);
-        const { purchase_id, client_secret } = response.data;
+        const { purchase_id, client_secret, shipping_cost, taxes } = response.data;
+        const shippingCostResp = Number(shipping_cost);
+        const taxesResp = Number(taxes);
+        setShippingCost(shippingCostResp);
+        setTaxesValue(taxesResp);
         console.log('Purchase created:', purchase_id, client_secret);
         if (!purchase_id || !client_secret) {
           throw new Error('Invalid server response: missing purchase_id or client_secret.');
@@ -398,7 +404,9 @@ export function CheckoutComponent() {
             currency: items[0]?.currency,
             value: totalValue,
             payment_type: 'Credit Card', // Stripe handles credit card payments
-            items: items
+            items: items,
+            shipping: shippingCostResp,
+            tax: taxesResp
           });
 
           console.log('GA4 add_payment_info event fired:', {
@@ -681,7 +689,7 @@ export function CheckoutComponent() {
                     <CardContent className="p-6 md:p-8 space-y-6">
                       <div id="payment-method-messaging-element" className="mb-4"></div>
                       <Elements stripe={stripePromise} options={{ clientSecret }}>
-                        <PaymentForm purchaseId={purchaseId!} />
+                        <PaymentForm purchaseId={purchaseId!} shippingCost={shippingCost} taxes={taxesValue} />
                       </Elements>
                     </CardContent>
                   </Card>

@@ -251,7 +251,9 @@ def handle_create_purchase(current_user_id):
             "purchase_id": str(new_purchase.id),
             "client_secret": payment_intent.client_secret,
             "total_amount": str(new_purchase.total_amount),
-            "currency": currency_code_for_stripe.upper()
+            "currency": currency_code_for_stripe.upper(),
+            "shipping_cost": float(new_purchase.shipping_cost),
+            "taxes": float(new_purchase.taxes)
         }), 201
 
     except ValueError as ve: # Erros de validação de dados

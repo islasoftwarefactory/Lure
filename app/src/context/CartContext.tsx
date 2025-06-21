@@ -22,6 +22,8 @@ interface InitialCartItemData {
   quantity: number;
   size: string;
   image?: string;
+  currency_code?: string; // Essential for GA4 purchase event
+  category_name?: string; // Essential for GA4 item_category
 }
 
 interface CartContextType {
@@ -88,6 +90,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
           quantity: backendCartItem.quantity,
           size: itemDataToAdd.size,
           image: itemDataToAdd.image || '',
+          currency_code: itemDataToAdd.currency_code, // Essential for GA4 purchase event
+          category_name: itemDataToAdd.category_name, // Essential for GA4 item_category
         };
 
         console.log("CartContext: Object prepared to be added to state:", createdCartItemForState);
