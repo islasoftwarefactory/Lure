@@ -10,7 +10,9 @@ const LockContext = createContext<LockContextType | undefined>(undefined);
 export function LockProvider({ children }: { children: ReactNode }) {
   const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem('isUnlocked') === 'true';
+    // Validate localStorage integrity
+    const stored = localStorage.getItem('isUnlocked');
+    return stored === 'true'; 
   });
 
   const unlock = () => {
@@ -27,10 +29,10 @@ export function LockProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useLock = () => {
+export function useLock() {
   const context = useContext(LockContext);
   if (context === undefined) {
     throw new Error('useLock must be used within a LockProvider');
   }
   return context;
-};
+}

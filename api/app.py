@@ -19,9 +19,8 @@ load_dotenv()
 application = Flask(__name__)
 
 # --- Inicializar Flask-CORS AQUI ---
-# Permitir requisições das origens do seu frontend (dev e HMR)
-# supports_credentials=True é importante para permitir envio de cookies ou cabeçalhos de autenticação
-CORS(application, resources={r"/*": {"origins": ["http://localhost:5173", "http://localhost:8081", "http://localhost:60123"]}}, supports_credentials=True)
+# Permitir requisições do domínio de produção
+CORS(application, resources={r"/*": {"origins": ["https://locked.lureclo.com"]}}, supports_credentials=True)
 
 
 # Configuração do email iCloud

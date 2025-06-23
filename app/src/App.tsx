@@ -91,10 +91,10 @@ export default function App() {
                 <ToastContainer />
                 <Routes>
                   <Route path="/locked" element={<Home />} />
+                  <Route path="/login" element={<LoginComponent />} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/product/:id" element={<ProductPage />} />
-                    <Route path="/login" element={<LoginComponent />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/addresses" element={<AddressesPage />} />
                     <Route path="/checkout" element={<CheckoutComponent />} />

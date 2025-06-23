@@ -1,1 +1,1 @@
-export const API_BASE_URL_FALLBACK = "https://localhost:60123";
+export const API_BASE_URL_FALLBACK = "https://locked.lureclo.com";

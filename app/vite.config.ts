@@ -11,7 +11,7 @@ export default defineConfig({
   envDir: path.resolve(__dirname),
   // Define environment variables here
   define: {
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://localhost:60123')
+    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://locked.lureclo.com')
   },
   plugins: [react(), svgr()],
   resolve: {
