@@ -17,6 +17,7 @@ import ProductCard from "@/components/ProductCard";
 import { CartItem, addToCartAndShow } from '../utils/cartUtils';
 import { useCart } from '../context/CartContext';
 import { SideCart } from "./SideCart";
+import { StickyCart } from "./StickyCart";
 import { useAuth } from '../context/AuthContext';
 import api from '@/services/api';
 
@@ -93,6 +94,8 @@ export function ProductPage() {
   const [sizesList, setSizesList] = useState<Size[]>([]);
   const [simulatedStock, setSimulatedStock] = useState(0);
   const [simulatedUsers, setSimulatedUsers] = useState(0);
+  const [isStickyCartVisible, setIsStickyCartVisible] = useState(false);
+  const productSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Simulate low stock
@@ -102,6 +105,24 @@ export function ProductPage() {
     // Simulate active users
     const randomUsers = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Random number between 5 and 20
     setSimulatedUsers(randomUsers);
+  }, []);
+
+  // Sticky Cart scroll detection
+  useEffect(() => {
+    const handleScroll = () => {
+      if (productSectionRef.current) {
+        const productSectionBottom = productSectionRef.current.getBoundingClientRect().bottom;
+        const shouldShowStickyCart = productSectionBottom < window.innerHeight / 2;
+        setIsStickyCartVisible(shouldShowStickyCart);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial position
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   useEffect(() => {
@@ -419,7 +440,7 @@ export function ProductPage() {
       <Header onCartClick={() => setIsCartOpen(true)} />
       
       <main className="container mx-auto px-3 sm:px-4 py-6 sm:py-8 pt-32 sm:pt-36 lg:pt-[140px]">
-        <div className="flex flex-col lg:flex-row lg:justify-start lg:items-center lg:pl-[px] gap-6 lg:gap-0">
+        <div ref={productSectionRef} className="flex flex-col lg:flex-row lg:justify-start lg:items-center lg:pl-[px] gap-6 lg:gap-0">
           {/* Imagem principal */}
           <div className="w-full lg:w-[600px] h-auto flex items-center justify-center">
             <ProductCard
@@ -693,6 +714,24 @@ export function ProductPage() {
         items={cartItems}
         setItems={setCartItems}
       />
+
+      {/* Sticky Cart */}
+      {product && (
+        <StickyCart
+          product={{
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            currency_code: product.currency_code,
+            category_name: product.category_name
+          }}
+          selectedSize={selectedSize}
+          productImage={productImage}
+          isVisible={isStickyCartVisible}
+          onAddToCart={handleAddToCart}
+          onBuyNow={handleBuyNow}
+        />
+      )}
     </div>
   );
 }
