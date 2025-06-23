@@ -2,6 +2,7 @@ from flask import request, jsonify, Blueprint, current_app
 from api.product.model import Product, create_product, get_product, update_product, delete_product
 from api.currency.model import Currency
 from api.utils.security.jwt.decorators import token_required
+from api.size.model import Size
 import traceback
 
 blueprint = Blueprint('product', __name__, url_prefix='/products')
@@ -56,8 +57,17 @@ def read(current_user_id, id):
     if product is None:
         return jsonify({"error": "Product not found"}), 404
 
+    # Serialize product and include related sizes
+    product_data = product.serialize()
+    # Ensure size_id(s) is a list
+    size_ids = product_data.get('size_id')
+    if not isinstance(size_ids, (list, tuple)):
+        size_ids = [size_ids]
+    # Query sizes from database
+    sizes = Size.query.filter(Size.id.in_(size_ids)).all()
+    product_data['sizes'] = [size.serialize() for size in sizes]
     return jsonify({
-        "data": product.serialize(),
+        "data": product_data,
         "message": "Product retrieved successfully."
     }), 200
 

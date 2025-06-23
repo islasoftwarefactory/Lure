@@ -1,0 +1,18 @@
+You are an expert in web development and Google Analytics 4 (GA4) implementation. Your task is to integrate GA4 tracking into an existing e-commerce website built with a custom front-end framework.
+
+I have provided you with access to the entire front-end codebase, including all page templates and JavaScript files, as well as the database models/schemas (to understand data structures like product details, order information, user data).
+
+Your goal is to implement two main phases of GA4 tracking:
+
+### Phase 1: Global GA4 Tag Installation
+
+1.  **Objective:** Insert the GA4 global site tag (`gtag.js`) into all relevant pages of the e-commerce website.
+2.  **Specifics:**
+    * The tag must be placed as high as possible within the `<head>` section of **every single page** of the website.
+    * Use the GA4 Measurement ID: `G-XXXXXXXXX` (replace with the actual ID after creating the property in Google Analytics).
+    * Ensure the tag loads asynchronously without blocking page rendering.
+3.  **Output:** Provide the exact code snippets to be inserted and specify the file paths/locations where they should be placed for each of the following pages:
+    * Home Page
+    * Product Page
+    * Cart
+    * Checkout

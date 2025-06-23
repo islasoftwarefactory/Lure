@@ -2,6 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
+import { motion } from 'framer-motion';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { AnnouncementBar } from './AnnouncementBar';
@@ -11,6 +17,9 @@ import { useAuth } from '../context/AuthContext'; // Importa o useAuth correto
 import api from '@/services/api'; // Importa a instância da API
 import { Button } from "@/components/ui/button"; // Para o botão de logout
 import { Link } from "react-router-dom";
+import { Package, MapPin, LogOut, User, Mail, CheckCircle, Heart } from 'lucide-react'; // Import additional icons
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { LoginComponent } from './LoginComponent';
 
 // Interface para os dados do usuário (ajuste conforme o retorno do seu backend)
 interface UserData {
@@ -29,6 +38,23 @@ export function ProfilePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Fire GA4 page_view event for profile page
+  useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'Profile',
+        page_location: window.location.href,
+        page_path: '/profile'
+      });
+
+      console.log('GA4 page_view event fired for profile page:', {
+        page_title: 'Profile',
+        page_location: window.location.href,
+        page_path: '/profile'
+      });
+    }
+  }, []);
 
   // Efeito para buscar os dados do usuário logado
   useEffect(() => {
@@ -76,15 +102,81 @@ export function ProfilePage() {
   }, [auth.token, auth, navigate]); // Depende do token para re-buscar se ele mudar
 
   const handleLogout = () => {
+    // Fire GA4 logout event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'logout');
+      
+      console.log('GA4 logout event fired:', {
+        user_id: userData?.id,
+        email: userData?.email
+      });
+    }
+    
     auth.logout(); // Chama a função de logout do contexto
     navigate('/login'); // Redireciona para a página de login
   };
 
   // --- EDIT 1: Adicionar handler para o botão "My Orders" ---
   const handleGoToMyOrders = () => {
-      navigate('/my-orders-list'); // Navega para a nova rota da lista de pedidos
+    // Fire GA4 page_view event for my orders navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Orders',
+        page_location: window.location.origin + '/my-orders-list',
+        page_path: '/my-orders-list'
+      });
+      
+      console.log('GA4 page_view event fired for my orders navigation:', {
+        page_title: 'My Orders',
+        page_path: '/my-orders-list'
+      });
+    }
+    
+    navigate('/my-orders-list'); // Navega para a nova rota da lista de pedidos
   };
   // --- FIM EDIT 1 ---
+
+  // Handler para o botão "Addresses"
+  const handleAddressesClick = () => {
+    // Fire GA4 page_view event for addresses navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Addresses',
+        page_location: window.location.origin + '/addresses',
+        page_path: '/addresses'
+      });
+      
+      console.log('GA4 page_view event fired for addresses navigation:', {
+        page_title: 'My Addresses',
+        page_path: '/addresses'
+      });
+    }
+    
+    navigate('/addresses'); // Navega para a página de endereços
+  };
+
+  const handleFavoritesClick = () => {
+    // Fire GA4 page_view event for favorites navigation
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Favorites',
+        page_location: window.location.origin + '/favorites',
+        page_path: '/favorites'
+      });
+      
+      console.log('GA4 page_view event fired for favorites navigation:', {
+        page_title: 'My Favorites',
+        page_path: '/favorites'
+      });
+    }
+    
+    navigate('/favorites');
+  };
+
+  // Se não autenticado, exibe o LoginComponent
+  if (!auth.isAuthenticated) {
+    return <LoginComponent />;
+  }
 
   // Renderização condicional durante o carregamento ou erro
   if (isLoading) {
@@ -93,7 +185,7 @@ export function ProfilePage() {
           <AnnouncementBar />
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center">
-            <div>Loading profile...</div>
+            <div className="text-base sm:text-lg">Loading profile...</div>
           </main>
           <Footer />
           <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} setItems={setCartItems} />
@@ -108,9 +200,9 @@ export function ProfilePage() {
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center text-center p-4">
             <div>
-               <p className="text-red-600 font-semibold">Error loading profile:</p>
-               <p className="text-red-500">{error}</p>
-               <Button onClick={() => navigate('/login')} className="mt-4">Go to Login</Button>
+               <p className="text-red-600 font-semibold text-sm sm:text-base">Error loading profile:</p>
+               <p className="text-red-500 text-sm sm:text-base mt-2">{error}</p>
+               <Button onClick={() => navigate('/login')} className="mt-4 text-sm sm:text-base">Go to Login</Button>
             </div>
           </main>
           <Footer />
@@ -125,7 +217,7 @@ export function ProfilePage() {
           <AnnouncementBar />
           <Header onCartClick={() => setIsCartOpen(true)} />
           <main className="flex-grow flex items-center justify-center">
-            <div>No profile data available.</div>
+            <div className="text-base sm:text-lg">No profile data available.</div>
           </main>
           <Footer />
           <SideCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} items={cartItems} setItems={setCartItems} />
@@ -139,60 +231,128 @@ export function ProfilePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      {/* Conteúdo Principal com flex-grow e padding */}
-      <main className="flex-grow flex items-center justify-center px-4 py-16 md:py-24">
-        <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-8">
-          <h1 className="text-3xl font-extrabold font-aleo mb-6 text-center">My Profile</h1>
-
-          <div className="flex flex-col items-center space-y-4">
-            {/* Foto do Perfil */}
-            {userData.photo && (
-              <img
-                src={userData.photo}
-                alt="User profile"
-                className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
-                onError={(e) => (e.currentTarget.style.display = 'none')} // Esconde se a imagem falhar
-              />
-            )}
-            {!userData.photo && (
-               <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-gray-500 text-4xl font-bold">
-                  {userData.name ? userData.name.charAt(0).toUpperCase() : '?'}
-               </div>
-            )}
-
-
-            {/* Informações do Usuário */}
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold">{userData.name}</h2>
-              <p className="text-gray-600">{userData.email}</p>
-              {userData.auth_provider && (
-                 <p className="text-sm text-gray-500 mt-1">Logged in via: {userData.auth_provider}</p>
-              )}
-            </div>
-
-            {/* Outras informações ou seções podem ser adicionadas aqui */}
-            {/* Exemplo: <p>User ID: {userData.id}</p> */}
-
-            {/* Botão de Logout */}
-            <Button
-              onClick={handleLogout}
-              variant="destructive"
-              className="mt-6"
-            >
-              Logout
-            </Button>
-
-            {/* --- EDIT 2: Adicionar onClick ao botão "My Orders" --- */}
-            <Button
-              variant="outline"
-              className="mt-2"
-              onClick={handleGoToMyOrders} // Chama o handler de navegação
-            >
-              My Orders
-            </Button>
-             {/* --- FIM EDIT 2 --- */}
-
+      <main className="flex-grow container mx-auto px-3 sm:px-4 pt-[140px] sm:pt-[160px] lg:pt-[180px] pb-16 sm:pb-24 md:pb-32">
+        <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+          {/* Page Title */}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-4 sm:p-5 text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">
+              My Profile
+            </h1>
           </div>
+          
+          {/* Profile Information Card */}
+          <Card className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-4 sm:p-6 border-b">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2 sm:p-3 bg-blue-100 rounded-lg sm:rounded-xl">
+                  <User size={24} className="text-blue-600 sm:w-7 sm:h-7" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">Profile Information</CardTitle>
+                  <CardDescription className="text-gray-500 mt-1 text-sm sm:text-base">Your personal account details</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:gap-10">
+                {/* Profile Photo Section */}
+                <div className="flex-shrink-0 flex flex-col items-center text-center md:w-1/4 mb-6 md:mb-0">
+                  <div className="relative group">
+                    {userData.photo ? (
+                      <img
+                        src={userData.photo}
+                        alt="User profile"
+                        className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover ring-4 ring-white shadow-md"
+                        onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => (e.currentTarget.style.display = 'none')}
+                      />
+                    ) : (
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-3xl sm:text-4xl md:text-5xl font-bold ring-4 ring-white shadow-md">
+                        {userData.name ? userData.name.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
+                  </div>
+                  <h1 className="mt-3 sm:mt-4 md:mt-5 text-xl sm:text-2xl font-bold text-gray-800 break-words">{userData.name}</h1>
+                  {userData.auth_provider && (
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                      Logged in with {userData.auth_provider}
+                    </p>
+                  )}
+                </div>
+
+                {/* Profile Details Section */}
+                <div className="flex-grow md:border-l md:pl-10 border-gray-200/80">
+                  <div className="space-y-4 sm:space-y-6">
+                    {/* Email Field */}
+                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <Mail className="text-blue-600 mt-1 flex-shrink-0" size={16} />
+                      <div className="min-w-0 flex-1">
+                        <label className="text-xs sm:text-sm font-medium text-gray-500">Email Address</label>
+                        <p className="mt-1 text-base sm:text-lg text-gray-900 break-words">{userData.email}</p>
+                      </div>
+                    </div>
+
+                    {/* Account Status Field */}
+                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <CheckCircle className="text-green-600 mt-1 flex-shrink-0" size={16} />
+                      <div>
+                        <label className="text-xs sm:text-sm font-medium text-gray-500">Account Status</label>
+                        <p className="mt-1">
+                          <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
+                            Active
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Account Actions Card */}
+          <Card className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
+            <CardHeader className="bg-gray-50/80 p-4 sm:p-6 border-b">
+              <CardTitle className="text-xl sm:text-2xl font-bold text-gray-900">Account Actions</CardTitle>
+            </CardHeader>
+            
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="space-y-3 sm:space-y-4">
+                <button
+                  onClick={handleGoToMyOrders}
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 active:bg-gray-100"
+                >
+                  <Package className="mr-3 sm:mr-4 text-blue-600 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">My Orders</span>
+                </button>
+                <button
+                  onClick={handleFavoritesClick}
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 active:bg-gray-100"
+                >
+                  <Heart className="mr-3 sm:mr-4 text-red-500 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">Favorites</span>
+                </button>
+                <button
+                  onClick={handleAddressesClick}
+                  className="w-full flex items-center p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 active:bg-gray-100"
+                >
+                  <MapPin className="mr-3 sm:mr-4 text-green-600 flex-shrink-0" size={20} />
+                  <span className="text-base sm:text-lg font-medium text-gray-800">Manage Addresses</span>
+                </button>
+              </div>
+            </CardContent>
+            
+            <CardFooter className="bg-gray-50/80 p-4 sm:p-6 flex justify-end">
+              <Button
+                onClick={handleLogout}
+                variant="destructive"
+                className="flex items-center gap-x-2 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 min-h-[44px]"
+              >
+                <LogOut size={14} className="sm:w-4 sm:h-4" />
+                Logout
+              </Button>
+            </CardFooter>
+          </Card>
         </div>
       </main>
 

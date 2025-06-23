@@ -2,6 +2,11 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, ReactNode, useEffect } from 'react'
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import { SideCart } from "./SideCart.tsx"
 import { AnnouncementBar } from './AnnouncementBar'
 import { Footer } from './Footer'
@@ -29,6 +34,12 @@ interface Product {
   gender_id: number;
   size_id: number;
   image_category_id: number;
+  currency_code?: string;
+  category_name?: string;
+}
+
+interface FavoriteProduct {
+  product_id: number;
 }
 
 export function HomePage() {
@@ -39,6 +50,7 @@ export function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [productImages, setProductImages] = useState<Record<number, string>>({});
+  const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -64,38 +76,61 @@ export function HomePage() {
   }, [token, getAnonymousToken]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchInitialData = async () => {
       if (token) {
-        console.log("Token available, attempting to fetch products...");
         setIsLoading(true);
         setError(null);
         try {
-          const response = await api.get('/product/read/all');
-          
-          console.log('Product API Response:', response.data);
+          const [productsResponse, favoritesResponse] = await Promise.all([
+            api.get('/product/read/all'),
+            api.get('/favorites/read')
+          ]);
 
-          if (response.data && response.data.data) {
-            setProducts(response.data.data);
+          if (productsResponse.data && productsResponse.data.data) {
+            setProducts(productsResponse.data.data);
+            
+            // Fire GA4 view_item_list event
+            if (typeof gtag !== 'undefined' && productsResponse.data.data.length > 0) {
+              const items = productsResponse.data.data.map((product: Product, index: number) => ({
+                item_id: product.id.toString(),
+                item_name: product.name,
+                price: product.price,
+                item_category: product.category_name,
+                index,
+                currency: product.currency_code
+              }));
+
+              gtag('event', 'view_item_list', {
+                item_list_id: 'featured_products',
+                item_list_name: 'Featured Products',
+                items
+              });
+
+              console.log('GA4 view_item_list event fired:', {
+                item_list_id: 'featured_products',
+                item_list_name: 'Featured Products',
+                items_count: items.length
+              });
+            }
           } else {
             setProducts([]);
           }
-        } catch (err: any) {
-          console.error('Error fetching products:', err);
-          if (err.response?.status === 401) {
-            setError("Session expired or invalid. Please login again if applicable.");
-          } else {
-            setError(err.response?.data?.message || 'Error fetching products');
+
+          if (favoritesResponse.data && favoritesResponse.data.data) {
+            const ids = new Set(favoritesResponse.data.data.map((fav: FavoriteProduct) => fav.product_id));
+            setFavoriteIds(ids);
           }
-          setProducts([]);
+
+        } catch (err: any) {
+          console.error('Error fetching initial data:', err);
+          setError(err.response?.data?.message || 'Error fetching data');
         } finally {
           setIsLoading(false);
         }
-      } else {
-        console.log("No token available yet, skipping product fetch.");
       }
     };
 
-    fetchProducts();
+    fetchInitialData();
   }, [token]);
 
   useEffect(() => {
@@ -103,7 +138,7 @@ export function HomePage() {
       try {
         const response = await api.get(`/image-category/read/${imageId}`);
         if (response.data && response.data.data) {
-          setProductImages(prev => ({
+          setProductImages((prev: Record<number, string>) => ({
             ...prev,
             [imageId]: response.data.data.url
           }));
@@ -114,14 +149,94 @@ export function HomePage() {
     };
 
     // Busca as imagens para cada produto
-    products.forEach(product => {
+    products.forEach((product: Product) => {
       if (product.image_category_id && !productImages[product.image_category_id]) {
         fetchProductImage(product.image_category_id);
       }
     });
   }, [products]);
 
+  const handleToggleFavorite = (productId: number, isCurrentlyFavorite: boolean) => {
+    const originalFavoriteIds = new Set(favoriteIds);
+
+    // Fire GA4 add_to_wishlist event only when adding (not removing)
+    if (!isCurrentlyFavorite) {
+      const product = products.find(p => p.id === productId);
+      if (typeof gtag !== 'undefined' && product) {
+        gtag('event', 'add_to_wishlist', {
+          currency: product.currency_code,
+          value: product.price,
+          items: [
+            {
+              item_id: product.id.toString(),
+              item_name: product.name,
+              price: product.price,
+              item_category: product.category_name,
+              currency: product.currency_code
+            }
+          ]
+        });
+
+        console.log('GA4 add_to_wishlist event fired:', {
+          item_id: product.id.toString(),
+          item_name: product.name,
+          price: product.price
+        });
+      }
+    }
+
+    // Optimistic UI update
+    const newFavoriteIds = new Set(favoriteIds);
+    if (isCurrentlyFavorite) {
+      newFavoriteIds.delete(productId);
+    } else {
+      newFavoriteIds.add(productId);
+    }
+    setFavoriteIds(newFavoriteIds);
+
+    // API call
+    const apiCall = isCurrentlyFavorite
+      ? api.delete(`/favorites/delete/${productId}`)
+      : api.post('/favorites/create', { product_id: productId });
+
+    apiCall.catch(error => {
+      console.error('Failed to update favorite status:', error);
+      // Revert UI on error
+      setFavoriteIds(originalFavoriteIds);
+      // Optionally show a toast notification to the user
+    });
+  };
+
   const handleProductClick = (productId: string) => {
+    // Find the product data for GA4 event
+    const product = products.find(p => p.id.toString() === productId);
+    const productIndex = products.findIndex(p => p.id.toString() === productId);
+    
+    // Fire GA4 select_item event
+    if (typeof gtag !== 'undefined' && product) {
+      gtag('event', 'select_item', {
+        item_list_id: 'featured_products',
+        item_list_name: 'Featured Products',
+        items: [
+          {
+            item_id: product.id.toString(),
+            item_name: product.name,
+            price: product.price,
+            item_category: product.category_name,
+            index: productIndex,
+            currency: product.currency_code
+          }
+        ]
+      });
+
+      console.log('GA4 select_item event fired:', {
+        item_id: product.id.toString(),
+        item_name: product.name,
+        price: product.price,
+        index: productIndex
+      });
+    }
+    
     navigate(`/product/${productId}`);
   };
 
@@ -130,30 +245,52 @@ export function HomePage() {
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       
-      <main className="flex-grow flex items-center justify-center px-4 py-8 pt-[180px] pb-96 font-aleo">
-        {isLoading ? (
-          <div>Loading products...</div>
-        ) : error ? (
-          <div>Error: {error}</div>
-        ) : (
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(products || []).map((product) => {
-              return (
-                <ProductCard
-                  key={product.id}
-                  title={product.name}
-                  subtitle={product.description}
-                  imageUrl={productImages[product.image_category_id]}
-                  price={product.price}
-                  onClick={() => handleProductClick(product.id.toString())}
-                />
-              );
-            })}
-            {!isLoading && !error && products && products.length === 0 && (
-               <div>No products found.</div>
-            )}
-          </div>
-        )}
+      <main className="flex-grow pt-[140px] sm:pt-[160px] lg:pt-[180px] pb-20 sm:pb-32 lg:pb-40 font-aleo">
+        <div className="container mx-auto px-6 sm:px-8 lg:px-12">
+          {isLoading ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-lg sm:text-xl text-gray-600">Loading products...</div>
+            </div>
+          ) : error ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-lg sm:text-xl text-red-600">Error: {error}</div>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 lg:p-10 text-center mb-8 sm:mb-12 lg:mb-16">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-aleo text-gray-900 mb-4">
+                  Featured Products
+                </h1>
+                <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+                  Discover our latest collection of Lure.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 lg:gap-10 justify-items-center">
+                {(products || []).map((product: Product) => {
+                  return (
+                    <div key={product.id} className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[350px]">
+                      <ProductCard
+                        title={product.name}
+                        imageUrl={productImages[product.image_category_id] || '/placeholder-image.jpg'}
+                        price={product.price}
+                        onClick={() => handleProductClick(product.id.toString())}
+                        productId={product.id.toString()}
+                        isFavorite={favoriteIds.has(product.id)}
+                        onToggleFavorite={() => handleToggleFavorite(product.id, favoriteIds.has(product.id))}
+                      />
+                    </div>
+                  );
+                })}
+                {!isLoading && !error && products && products.length === 0 && (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-lg sm:text-xl text-gray-500">No products found.</div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </main>
 
       <div className="fixed bottom-4 right-4 z-50">

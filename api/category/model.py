@@ -11,6 +11,8 @@ class Category(db.Model):
     gender_id = db.Column(db.Integer, db.ForeignKey('genders.id'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=datetime.now(pytz.timezone('America/Sao_Paulo')))
+    # Relationship: A category can have many products
+    products = db.relationship('Product', back_populates='category_rel', lazy='dynamic')
 
     def __repr__(self):
         return f"<Category {self.id}, Name: {self.name}>"

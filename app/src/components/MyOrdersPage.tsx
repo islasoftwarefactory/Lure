@@ -1,5 +1,11 @@
+// @ts-nocheck
 import React, { useEffect, useState, useCallback } from 'react';
-import { Truck, MapPin, Loader2 } from "lucide-react"
+import { Truck, MapPin, Loader2, CheckCircle, Clock, Package } from "lucide-react"
+
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
 import api from '../services/api'
 import { useLocation, useNavigate, Link } from "react-router-dom"
 import { useCart } from '../context/CartContext'
@@ -47,6 +53,23 @@ export function MyOrdersPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isCartOpen, setIsCartOpen, cartItems, setCartItems } = useCart();
+
+  // Fire GA4 page_view event for my orders page
+  useEffect(() => {
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'page_view', {
+        page_title: 'My Orders',
+        page_location: window.location.href,
+        page_path: '/my-orders-list'
+      });
+
+      console.log('GA4 page_view event fired for my orders page:', {
+        page_title: 'My Orders',
+        page_location: window.location.href,
+        page_path: '/my-orders-list'
+      });
+    }
+  }, []);
 
   // --- Log 1: Estado inicial da localização ---
   console.log("MyOrdersPage: Component rendered. Initial location.state:", location.state);
@@ -178,7 +201,7 @@ export function MyOrdersPage() {
       try {
         setLoadingList(true)
         console.log("MyOrdersPage (fetchOrders): Iniciando busca de pedidos em /purchase/user/me");
-        const response = await api.get("/purchase/user/me?include_transactions=true")
+        const response = await api.get("/purchase/user/me?include_transactions=true&include_address=true")
         // --- Log Detalhado da Resposta ---
         console.log("MyOrdersPage (fetchOrders): Resposta completa da API:", JSON.stringify(response.data, null, 2));
         // --- Fim Log Detalhado ---
@@ -191,6 +214,31 @@ export function MyOrdersPage() {
         if (Array.isArray(ordersData)) {
           setOrders(ordersData);
           console.log(`MyOrdersPage (fetchOrders): ${ordersData.length} pedidos definidos no estado.`);
+          
+          // Fire GA4 view_item_list event for orders
+          if (typeof gtag !== 'undefined' && ordersData.length > 0) {
+            const items = ordersData.map((order: Order, index: number) => ({
+              item_id: order.id,
+              item_name: `Order ${order.id}`,
+              item_category: 'Order',
+              price: order.total_amount,
+              quantity: 1,
+              index: index,
+              currency: order.transactions?.[0]?.currency?.code || 'USD'
+            }));
+
+            gtag('event', 'view_item_list', {
+              item_list_id: 'user_orders',
+              item_list_name: 'User Orders',
+              items: items
+            });
+
+            console.log('GA4 view_item_list event fired for orders:', {
+              item_list_id: 'user_orders',
+              item_list_name: 'User Orders',
+              items_count: items.length
+            });
+          }
         } else {
           console.warn("MyOrdersPage (fetchOrders): A estrutura esperada (response.data.data.data) não é um array ou não existe. Definindo como vazio.");
           setOrders([]);
@@ -278,7 +326,7 @@ export function MyOrdersPage() {
         setOrderItemsMap({});
         setLoadingItemsState(new Set());
 
-        api.get<{ data: Order[] }>("/purchase/user/me?include_transactions=true")
+        api.get<{ data: Order[] }>("/purchase/user/me?include_transactions=true&include_address=true")
           .then(response => {
             const ordersData = response.data?.data || [];
             console.log("MyOrdersPage (fetchOrders List): Dados recebidos da lista (com transactions):", JSON.stringify(ordersData[0], null, 2));
@@ -346,6 +394,30 @@ export function MyOrdersPage() {
       navigate(`/order-page/${orderId}`);
       return;
     }
+
+    // Fire GA4 view_item event for order details
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'view_item', {
+        currency: orderTransactions?.[0]?.currency?.code || 'USD',
+        value: orderDetails.total_amount,
+        items: [
+          {
+            item_id: orderId,
+            item_name: `Order ${orderId}`,
+            item_category: 'Order',
+            price: orderDetails.total_amount,
+            quantity: 1,
+            currency: orderTransactions?.[0]?.currency?.code || 'USD'
+          }
+        ]
+      });
+
+      console.log('GA4 view_item event fired for order details:', {
+        order_id: orderId,
+        value: orderDetails.total_amount,
+        currency: orderTransactions?.[0]?.currency?.code || 'USD'
+      });
+    }
     
     // Construa um objeto simplificado do pedido para passar via state
     // Semelhante à estrutura que vem após o checkout
@@ -383,7 +455,7 @@ export function MyOrdersPage() {
     // Se temos os detalhes do pedido específico
     if (justCompletedOrderId && orderDetails) {
       return (
-        <Card className="p-6 text-center">
+        <Card className="p-6 text-center bg-white rounded-2xl shadow-lg">
           Displaying details for recently completed order: {orderDetails.id.substring(0,8)}...
           {/* Adicionar JSX detalhado aqui depois */}
         </Card>
@@ -392,188 +464,155 @@ export function MyOrdersPage() {
 
     // --- Se não veio do checkout OU se não há detalhes específicos, mostra a LISTA ---
     return (
-      <>
+      <div className="w-full max-w-5xl mx-auto">
+        {/* Page Title */}
+        <div className="bg-white rounded-2xl shadow-lg p-5 text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold font-aleo text-gray-900">
+            My Orders
+          </h1>
+        </div>
+        
         {/* Tabs */}
-        <div className="bg-gray-100 rounded-full p-2 mb-8 flex max-w-md mx-auto">
+        <div className="bg-white rounded-full p-2 mb-8 flex max-w-md mx-auto shadow-md">
           <button
-            className={`flex-1 py-2 px-3 rounded-full text-center text-sm font-medium transition-colors ${activeTab === "shipping" ? "bg-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
+            className={`flex-1 py-2 px-4 rounded-full text-center text-sm font-semibold transition-all duration-300 ${activeTab === "shipping" ? "bg-black text-white shadow" : "text-gray-600 hover:bg-gray-100"}`}
             onClick={() => setActiveTab("shipping")}
           >
             On Shipping{" "}
-            <span className={`inline-flex items-center justify-center ml-1 w-5 h-5 ${activeTab === "shipping" ? "bg-black text-white" : "bg-gray-200 text-gray-500"} text-xs rounded-full`}>{shippingCount}</span>
+            <span className={`inline-flex items-center justify-center ml-1.5 w-6 h-6 ${activeTab === "shipping" ? "bg-white text-black" : "bg-gray-200 text-gray-700"} text-xs font-bold rounded-full`}>{shippingCount}</span>
           </button>
           <button
-            className={`flex-1 py-2 px-3 rounded-full text-center text-sm font-medium transition-colors ${activeTab === "arrived" ? "bg-white shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
+            className={`flex-1 py-2 px-4 rounded-full text-center text-sm font-semibold transition-all duration-300 ${activeTab === "arrived" ? "bg-black text-white shadow" : "text-gray-600 hover:bg-gray-100"}`}
             onClick={() => setActiveTab("arrived")}
           >
             Arrived{" "}
-            <span className={`inline-flex items-center justify-center ml-1 w-5 h-5 ${activeTab === "arrived" ? "bg-black text-white" : "bg-gray-200 text-gray-500"} text-xs rounded-full`}>{arrivedCount}</span>
+            <span className={`inline-flex items-center justify-center ml-1.5 w-6 h-6 ${activeTab === "arrived" ? "bg-white text-black" : "bg-gray-200 text-gray-700"} text-xs font-bold rounded-full`}>{arrivedCount}</span>
           </button>
-          {/* <button className={`...`} onClick={() => setActiveTab("canceled")}> Canceled </button> */}
         </div>
 
         {/* Conteúdo da Lista */}
         {isLoadingList ? (
           <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+            <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
           </div>
         ) : listError ? (
-          <div className="text-center py-20 text-red-500">Error loading orders: {listError}</div>
+          <div className="text-center py-20 text-red-600 bg-red-50 rounded-2xl shadow-lg">Error loading orders: {listError}</div>
         ) : filteredOrders.length === 0 && !isLoadingList ? (
-          <div className="text-center py-20 text-gray-500">No orders found in this category.</div>
+          <div className="text-center py-20 text-gray-500 bg-white rounded-2xl shadow-lg">No orders found in this category.</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {filteredOrders.map((order: Order) => {
               const itemsForThisOrder = orderItemsMap[order.id];
               const transactionsForThisOrder = orderTransactionsMap[order.id];
               const isLoadingItemsForThisOrder = loadingItemsState.has(order.id);
 
-              // Acesso à moeda da transação a partir do novo estado
               let currencyCode = null;
-              let paymentStatus = null; // Nova variável para armazenar o status do pagamento
-              
-              console.log(`MyOrdersPage (Render): Order ID ${order.id.substring(0,8)}... | Local Transactions:`, transactionsForThisOrder);
+              let paymentStatus = null;
               
               if (transactionsForThisOrder && transactionsForThisOrder.length > 0) {
-                // Extrair o código da moeda, se disponível
                 if (transactionsForThisOrder[0].currency) {
                   currencyCode = transactionsForThisOrder[0].currency.code;
-                  console.log(`MyOrdersPage (Render): SUCCESS! Currency code from state: ${currencyCode}`);
                 }
-                
-                // Extrair o status de pagamento, se disponível
                 if (transactionsForThisOrder[0].status) {
                   paymentStatus = transactionsForThisOrder[0].status.name;
-                  // Capitalize a primeira letra para exibição
-                  paymentStatus = paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1);
-                  console.log(`MyOrdersPage (Render): Payment status from transaction: ${paymentStatus}`);
                 }
-              } else {
-                console.log(`MyOrdersPage (Render): No transaction data in state for this order`);
               }
 
               return (
-                <div key={order.id} className="border rounded-xl p-6 bg-white shadow-sm">
-                  <div className="flex justify-between items-start mb-4">
+                <Card key={order.id} className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl">
+                  <CardHeader className="p-5 bg-gray-50/80 border-b flex flex-row justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <Package className="text-blue-600" size={24} />
                     <div>
-                      <div className="text-sm text-gray-500">Order ID</div>
-                      {/* Exibindo os primeiros 8 caracteres do ID real */}
-                      <div className="text-lg font-bold">#{order.id.substring(0, 8)}...</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">
-                        {/* Exibindo data estimada real ou fallback */}
-                        Estimated arrival: {order.estimated_delivery_date ? new Date(order.estimated_delivery_date).toLocaleDateString() : "Not available"}
+                        <p className="text-sm font-medium text-gray-500">Order ID</p>
+                        <p className="font-bold text-gray-900">#{order.id.substring(0, 8)}...</p>
                       </div>
-                      {/* Exibindo status real ou fallback */}
-                      <span className={`inline-block mt-1 px-3 py-1 ${
-                        paymentStatus 
-                          ? (paymentStatus === 'Paid' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600') 
-                          : 'bg-gray-100 text-gray-500'
-                      } rounded-full text-sm`}>
-                        {paymentStatus || "Processing"}
-                      </span>
                     </div>
+                    {paymentStatus && (
+                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold ${
+                        paymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {paymentStatus === 'Paid' ? <CheckCircle size={16} /> : <Clock size={16} />}
+                        {paymentStatus}
+                      </span>
+                    )}
+                  </CardHeader>
+
+                  <CardContent className="p-5 space-y-5">
+                    {/* Shipping progress */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-gray-600">Estimated arrival: {order.estimated_delivery_date ? new Date(order.estimated_delivery_date).toLocaleDateString() : "Not available"}</p>
+                      <div className="flex items-center gap-2 text-gray-500">
+                        <Truck size={20} className="text-gray-400"/>
+                        <div className="flex-1 h-1 bg-gray-200 rounded-full relative">
+                          <div className="h-1 bg-blue-500 rounded-full" style={{width: '65%'}}></div>
+                        </div>
+                        <MapPin size={20} className="text-blue-500"/>
+                      </div>
+                      <div className="flex justify-between text-xs font-medium">
+                        <span className="text-gray-500">Warehouse</span>
+                        <span className="text-blue-600">{order.shipping_address ? `${order.shipping_address.state}, ${order.shipping_address.city}` : "Address unavailable"}</span>
+                      </div>
                   </div>
 
-                  <div className="flex items-center justify-between mb-6">
-                     {/* Endereço de Origem (Simulado/Fixo - API não fornece) */}
-                    <div className="flex items-center gap-2">
-                      <Truck className="w-5 h-5" />
-                      <span className="text-sm">Warehouse</span> {/* Placeholder */}
-                    </div>
-                    <div className="flex-1 mx-2 border-t border-dashed border-gray-300 relative">
-                      <div className="absolute left-0 top-1/2 w-2 h-2 bg-black rounded-full -translate-y-1/2"></div>
-                      <div className="absolute right-0 top-1/2 w-2 h-2 bg-black rounded-full -translate-y-1/2"></div>
-                    </div>
-                     {/* Endereço de Destino (Real da API) */}
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-5 h-5" />
-                      <span className="text-sm">
-                        {order.shipping_address ? `${order.shipping_address.city}, ${order.shipping_address.state}` : "Address unavailable"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* --- Seção de Produtos - AGORA COM DADOS REAIS (OU LOADING) --- */}
-                  <div className="grid grid-cols-2 gap-4 mb-6 min-h-[100px]"> {/* min-h para evitar colapso durante loading */}
+                    {/* Items list */}
+                    <div className="border-t pt-5">
                     {isLoadingItemsForThisOrder ? (
-                       <div className="col-span-2 flex justify-center items-center text-sm text-gray-400">
-                           <Loader2 className="w-4 h-4 animate-spin mr-2"/> Loading items...
-                       </div>
+                        <div className="flex justify-center items-center py-4 text-gray-500"><Loader2 className="animate-spin mr-2" size={18}/>Loading items...</div>
                     ) : itemsForThisOrder && itemsForThisOrder.length > 0 ? (
-                       // Mostra os primeiros 2 itens (ou ajuste conforme necessário)
-                       itemsForThisOrder.slice(0, 2).map(item => (
-                         <div key={item.id} className="flex gap-3">
-                            <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+                        <div className="space-y-3">
+                          {itemsForThisOrder.slice(0, 2).map(item => (
+                            <div key={item.id} className="flex items-center gap-4">
                                 <img
                                     src={productImages[item.product?.image_category_id] || 'default_product_image.png'}
                                     alt={item.product?.name || 'Product'}
-                                    width={80}
-                                    height={80}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => (e.currentTarget.src = 'default_product_image.png')}
+                                className="w-14 h-14 rounded-lg object-cover bg-gray-100"
                                 />
+                              <div className="flex-grow">
+                                <p className="font-semibold text-sm text-gray-800">{item.product?.name || 'N/A'}</p>
+                                <p className="text-xs text-gray-500">Size: {item.size?.name || 'N/A'} · Qty: {item.quantity}</p>
                             </div>
-                            <div>
-                               <h3 className="font-medium text-sm leading-tight">{item.product?.name || 'N/A'}</h3>
-                               {/* Preço unitário da compra */}
-                               <p className="font-medium text-sm">
-                                   ${item.unit_price_at_purchase.toFixed(2)}
-                                   <span className="text-gray-500 text-xs"> x{item.quantity}</span>
-                               </p>
-                               <p className="text-xs text-gray-500">Size: {item.size?.name || 'N/A'}</p>
+                              <p className="font-bold text-sm text-gray-900">${item.unit_price_at_purchase.toFixed(2)}</p>
                             </div>
+                          ))}
                          </div>
-                       ))
                     ) : (
-                       // Só mostra 'No items' se NÃO estiver carregando e o array estiver definido (vazio ou não)
-                       !isLoadingItemsForThisOrder && <div className="col-span-2 text-center text-sm text-gray-400">No items found.</div>
+                        <p className="text-center text-sm text-gray-400 py-4">No items found for this order.</p>
                     )}
-                    {/* Poderia adicionar um indicador se houver mais de 2 itens */}
                     {itemsForThisOrder && itemsForThisOrder.length > 2 && (
-                        <div className="col-span-2 text-center text-xs text-gray-400 mt-[-10px]">(+{itemsForThisOrder.length - 2} more items)</div>
+                        <p className="text-center text-xs text-gray-500 mt-2">(+{itemsForThisOrder.length - 2} more items)</p>
                     )}
                   </div>
-                  {/* --- Fim Seção de Produtos --- */}
+                  </CardContent>
 
-                  <div className="flex justify-between items-center border-t pt-4 mt-4">
+                  <div className="p-5 bg-gray-50/80 border-t flex justify-between items-center">
                     <div>
-                      <span className="font-medium">
-                        {currencyCode ? (
-                          <>
-                            <span className="text-gray-700">{currencyCode}</span>{' '}
-                          </>
-                        ) : ''}
+                      <p className="text-sm text-gray-500">Total</p>
+                      <p className="font-bold text-xl text-gray-900">
+                        {currencyCode || '$'}
                         {order.total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      {itemsForThisOrder && (
-                        <span className="text-gray-500 text-sm ml-1">
-                          ({itemsForThisOrder.length} Items)
-                        </span>
-                      )}
+                      </p>
                     </div>
-                    <Button onClick={() => handleViewDetailsClick(order.id)} className="px-4 py-2 text-sm">
-                      Details
+                    <Button onClick={() => handleViewDetailsClick(order.id)} className="bg-black hover:bg-gray-800 text-white font-semibold rounded-full px-5 py-2.5">
+                      View Details
                     </Button>
                   </div>
-                </div>
+                </Card>
               )
             })}
           </div>
         )}
-      </>
+      </div>
     );
   }
 
   // --- Estrutura Principal com Layout ---
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50"> {/* Fundo ligeiramente cinza */}
+    <div className="flex flex-col min-h-screen bg-[#f2f2f2]">
       <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
 
-      <main className="flex-grow container mx-auto px-4 py-8 pt-[100px] md:pt-[120px]"> {/* Padding top ajustado */}
-        <h1 className="text-3xl font-bold mb-8 text-center md:text-left">My Orders</h1>
+      <main className="flex-grow container mx-auto px-4 pt-32 sm:pt-36 pb-24 sm:pb-32">
         {renderContent()} {/* Renderiza ou detalhes ou a lista */}
       </main>
 

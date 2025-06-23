@@ -194,7 +194,7 @@ export function LockedPage() {
         contact_type_id: contactTypeId
       };
       
-      const response = await api.post('/locked/create', requestData);
+      const response = await api.post('/scraping/create', requestData);
 
       if (response.status === 201) {
         setFormData({

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import path             from "path";
 import { defineConfig } from "vite";
 import react            from "@vitejs/plugin-react";
@@ -6,6 +7,8 @@ import svgr from 'vite-plugin-svgr'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Load environment variables from app/ directory
+  envDir: path.resolve(__dirname),
   // Define environment variables here
   define: {
     'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://locked.lureclo.com')
@@ -25,7 +28,7 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     hmr: {
-      host: 'lureclo.com',
+      host: 'localhost',
       port: 5173,
       clientPort: 8081
     }
