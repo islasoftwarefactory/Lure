@@ -41,12 +41,71 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
     return name.trim().includes(' '); // Verifica se tem pelo menos um espaço
   };
 
+  const testConnectivity = async () => {
+    console.log('=== TESTE DE CONECTIVIDADE ===');
+    
+    try {
+      // Teste 1: Fetch simples
+      console.log('Testando conectividade com fetch...');
+      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/scraping/contact-types`;
+      console.log('URL de teste:', testUrl);
+      
+      const fetchResponse = await fetch(testUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Resposta do fetch:', {
+        status: fetchResponse.status,
+        statusText: fetchResponse.statusText,
+        headers: Object.fromEntries(fetchResponse.headers.entries())
+      });
+      
+      // Teste 2: Axios para endpoint de teste
+      console.log('Testando conectividade com axios...');
+      const axiosResponse = await api.get('scraping/contact-types');
+      console.log('Resposta do axios:', axiosResponse);
+      
+    } catch (error) {
+      console.error('Erro no teste de conectividade:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('=== INICIO DO HANDLESUBMIT ===');
+    
+    // Executar teste de conectividade primeiro
+    await testConnectivity();
+    
     setLoading(true);
     setError(null);
 
+    console.log('Estado inicial:', {
+      email,
+      fullName,
+      loading,
+      error,
+      timestamp: new Date().toISOString()
+    });
+
+    console.log('Variáveis de ambiente disponíveis:', {
+      VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+      VITE_API_URL: import.meta.env.VITE_API_URL,
+      NODE_ENV: import.meta.env.NODE_ENV,
+      DEV: import.meta.env.DEV,
+      PROD: import.meta.env.PROD
+    });
+
     if (!validateFullName(fullName)) {
+      console.log('❌ Validação de nome falhou:', {
+        fullName,
+        hasSpace: fullName.includes(' '),
+        trimmedLength: fullName.trim().length
+      });
       setError('Please enter your full name (Name and Last Name)');
       setLoading(false);
       return;
@@ -58,46 +117,124 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
       contact_type_id: 1
     };
 
-    console.log('Enviando dados para a API:', requestData);
+    console.log('=== PREPARAÇÃO DA REQUISIÇÃO ===');
+    console.log('Dados da requisição:', requestData);
+    console.log('JSON stringified:', JSON.stringify(requestData));
+    
+    // Validação adicional dos dados
+    console.log('Validações dos dados:', {
+      emailValid: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
+      fullNameValid: fullName.trim().includes(' '),
+      contactTypeValid: typeof requestData.contact_type_id === 'number'
+    });
 
     try {
-      console.log('Fazendo requisição para a API...');
-      const response = await api.post<ScrapingResponse>('scraping/create', requestData);
+      console.log('=== ENVIANDO REQUISIÇÃO PRINCIPAL ===');
+      console.log('Timestamp da requisição:', new Date().toISOString());
       
-      console.log('Resposta da API:', response.data);
+      // Headers explícitos
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest' // Para ajudar com CORS
+      };
+      
+      console.log('Headers da requisição:', headers);
+      
+      const response = await api.post<ScrapingResponse>('scraping/create', requestData, {
+        headers,
+        timeout: 20000, // 20 segundos
+        validateStatus: function (status) {
+          console.log('Validando status da resposta:', status);
+          return status >= 200 && status < 300;
+        }
+      });
+      
+      console.log('=== RESPOSTA RECEBIDA COM SUCESSO ===');
+      console.log('Status:', response.status);
+      console.log('Headers da resposta:', response.headers);
+      console.log('Dados da resposta:', response.data);
+      console.log('Timestamp da resposta:', new Date().toISOString());
 
       setSuccess(true);
       setEmail('');
       setFullName('');
+      console.log('✅ FORMULÁRIO RESETADO COM SUCESSO');
+      
     } catch (error: any) {
-      console.error('Erro detalhado na submissão:', { 
-        error: error.toString(),
-        isAxiosError: error.isAxiosError,
-        responseStatus: error.response?.status,
-        responseData: error.response?.data
-      });
+      console.log('=== ERRO CAPTURADO NO CATCH ===');
+      console.log('Timestamp do erro:', new Date().toISOString());
+      console.error('Objeto de erro completo:', error);
       
-      console.log('>> Início do bloco de tratamento de erro');
-      console.log('>> Tipo de erro:', typeof error);
-      console.log('>> É instância de Error?', error instanceof Error);
-      console.log('>> Propriedades disponíveis no objeto error:', Object.keys(error));
-      console.log('>> error.response existe?', !!error.response);
+      // Análise detalhada do erro
+      console.log('=== ANÁLISE DETALHADA DO ERRO ===');
+      console.log('Tipo:', typeof error);
+      console.log('Constructor:', error.constructor.name);
+      console.log('Message:', error.message);
+      console.log('Name:', error.name);
+      console.log('Stack:', error.stack);
       
-      if (error.response) {
-        console.log('>> error.response.data:', error.response.data);
-        console.log('>> Tipo de error.response.data:', typeof error.response.data);
+      // Propriedades específicas do Axios
+      if (error.isAxiosError) {
+        console.log('=== AXIOS ERROR DETAILS ===');
+        console.log('Código:', error.code);
+        console.log('Config:', error.config);
+        
+        if (error.response) {
+          console.log('=== RESPOSTA DO SERVIDOR (ERRO) ===');
+          console.log('Status:', error.response.status);
+          console.log('Status Text:', error.response.statusText);
+          console.log('Headers:', error.response.headers);
+          console.log('Data:', error.response.data);
+        } else if (error.request) {
+          console.log('=== REQUEST SEM RESPOSTA ===');
+          console.log('Request readyState:', error.request.readyState);
+          console.log('Request status:', error.request.status);
+          console.log('Request response:', error.request.response);
+          console.log('Request responseText:', error.request.responseText);
+          console.log('Request responseURL:', error.request.responseURL);
+        } else {
+          console.log('=== ERRO DE CONFIGURAÇÃO ===');
+          console.log('Erro ao configurar requisição');
+        }
       }
       
-      const apiError = error.response?.data as ApiError;
-      console.log('>> apiError após cast:', apiError);
-      console.log('>> apiError?.error existe?', !!apiError?.error);
+      // Análise específica para ERR_FAIL
+      if (error.message && error.message.includes('ERR_FAIL')) {
+        console.log('=== DIAGNÓSTICO ERR_FAIL ===');
+        console.log('Este erro geralmente indica:');
+        console.log('1. Servidor não está respondendo');
+        console.log('2. Problema de CORS');
+        console.log('3. SSL/certificado inválido');
+        console.log('4. Firewall/proxy bloqueando');
+        console.log('5. URL incorreta');
+        
+        // Sugestões de troubleshooting
+        console.log('=== TROUBLESHOOTING SUGERIDO ===');
+        console.log('1. Verificar se a URL está correta');
+        console.log('2. Testar a URL diretamente no navegador');
+        console.log('3. Verificar logs do servidor');
+        console.log('4. Verificar configurações de CORS');
+        console.log('5. Verificar certificado SSL');
+      }
       
-      const errorMessage = apiError?.error || 'Failed to join waitlist. Please try again.';
-      console.log('>> Mensagem de erro final:', errorMessage);
+      // Tratamento de erro para o usuário
+      const apiError = error.response?.data as ApiError;
+      let errorMessage = 'Failed to join waitlist. Please try again.';
+      
+      if (apiError?.error) {
+        errorMessage = apiError.error;
+      } else if (error.message) {
+        errorMessage = `Network error: ${error.message}`;
+      }
+      
+      console.log('=== ERRO FINAL PARA O USUÁRIO ===');
+      console.log('Mensagem:', errorMessage);
       
       setError(errorMessage);
-      console.log('>> Final do bloco de tratamento de erro');
     } finally {
+      console.log('=== LIMPEZA FINAL ===');
+      console.log('Definindo loading como false');
       setLoading(false);
     }
   };
