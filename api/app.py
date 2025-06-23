@@ -12,11 +12,48 @@ from api.contact.routes import blueprint as contact_blueprint
 
 from dotenv import load_dotenv
 import os
+import logging
+from logging.handlers import RotatingFileHandler
 
 from datetime import datetime
 
 load_dotenv()
+
+# Configuração de logging para exportar para arquivo
+def setup_logging(app):
+    # Criar diretório de logs se não existir
+    logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+    if not os.path.exists(logs_dir):
+        os.makedirs(logs_dir)
+    
+    # Configurar o formatter
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+    
+    # Configurar o handler para arquivo com rotação
+    file_handler = RotatingFileHandler(
+        os.path.join(logs_dir, 'scraping_logs.txt'),
+        maxBytes=10*1024*1024,  # 10MB
+        backupCount=5
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+    
+    # Configurar o logger da aplicação Flask
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    
+    # Configurar especificamente o logger do Flask
+    flask_logger = logging.getLogger('werkzeug')
+    flask_logger.addHandler(file_handler)
+    flask_logger.setLevel(logging.INFO)
+
 application = Flask(__name__)
+
+# Chamar a configuração de logging após criar a aplicação
+setup_logging(application)
 
 # --- Inicializar Flask-CORS AQUI ---
 # Permitir requisições do domínio de produção e localhost para desenvolvimento
