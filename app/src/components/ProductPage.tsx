@@ -266,17 +266,36 @@ export function ProductPage() {
       // 1. Primeiro expande a seção
       setExpandedSection(section);
       
-      // 2. Aguarda a expansão e ajusta o scroll 
+      // 2. Aguarda a expansão e ajusta o scroll com animação suave
       requestAnimationFrame(() => {
         setTimeout(() => {
           const headerOffset = 120;
           const elementPosition = ref.current?.getBoundingClientRect().top || 0;
-          const offsetPosition = window.scrollY + elementPosition - headerOffset;
-   
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
+          const targetPosition = window.scrollY + elementPosition - headerOffset;
+          const startPosition = window.scrollY;
+          const distance = targetPosition - startPosition;
+          const duration = 1200; // 1.2 segundos para consistência
+          let startTime: number | null = null;
+
+          // Função de easing suave (easeInOutCubic)
+          const easeInOutCubic = (t: number): number => {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          };
+
+          const animateScroll = (currentTime: number) => {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const easedProgress = easeInOutCubic(progress);
+            
+            window.scrollTo(0, startPosition + distance * easedProgress);
+            
+            if (progress < 1) {
+              requestAnimationFrame(animateScroll);
+            }
+          };
+
+          requestAnimationFrame(animateScroll);
         }, 300); // Tempo suficiente para a animação de expansão
       });
     }
@@ -286,12 +305,31 @@ export function ProductPage() {
     if (reviewsSectionRef.current) {
       const headerOffset = 120;
       const elementPosition = reviewsSectionRef.current.getBoundingClientRect().top;
-      const offsetPosition = window.scrollY + elementPosition - headerOffset;
+      const targetPosition = window.scrollY + elementPosition - headerOffset;
+      const startPosition = window.scrollY;
+      const distance = targetPosition - startPosition;
+      const duration = 1200; // 1.2 segundos para um scroll mais suave
+      let startTime: number | null = null;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+      // Função de easing suave (easeInOutCubic)
+      const easeInOutCubic = (t: number): number => {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      };
+
+      const animateScroll = (currentTime: number) => {
+        if (startTime === null) startTime = currentTime;
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const easedProgress = easeInOutCubic(progress);
+        
+        window.scrollTo(0, startPosition + distance * easedProgress);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        }
+      };
+
+      requestAnimationFrame(animateScroll);
     }
   };
 
