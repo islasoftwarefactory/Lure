@@ -19,8 +19,22 @@ load_dotenv()
 application = Flask(__name__)
 
 # --- Inicializar Flask-CORS AQUI ---
-# Permitir requisições do domínio de produção
-CORS(application, resources={r"/*": {"origins": ["https://locked.lureclo.com"]}}, supports_credentials=True)
+# Permitir requisições do domínio de produção e localhost para desenvolvimento
+allowed_origins = [
+    "https://locked.lureclo.com",  # Produção
+    "http://localhost:5173",       # Desenvolvimento (Vite)
+    "http://localhost:3000",       # Desenvolvimento (alternativo)
+    "http://127.0.0.1:5173",       # Desenvolvimento (IP local)
+]
+
+CORS(application, resources={
+    r"/*": {
+        "origins": allowed_origins,
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": True
+    }
+})
 
 
 # Configuração do email iCloud
