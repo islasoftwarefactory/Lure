@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ShoppingCart, Search, Heart } from 'lucide-react';
+import { User, ShoppingCart} from 'lucide-react';
 import Logo from '../assets/icons/home/Logo.svg?react';
 
 interface HeaderProps {

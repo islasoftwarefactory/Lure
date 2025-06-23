@@ -1,4 +1,5 @@
-from flask import request, jsonify, Blueprint, make_response
+
+from flask import request, jsonify, Blueprint, make_response, current_app
 from api.scraping.model import Scraping, create_scraping, get_scraping, update_scraping, delete_scraping, validate_email_provider, update_password, login_scraping, update_scraping_password, get_email_contact_type_id
 from api.scraping.type.model import ContactType
 from sqlalchemy.exc import IntegrityError
@@ -182,11 +183,15 @@ def delete(id):
 
 @blueprint.route("/login", methods=["POST"])
 def login():
-    """Authenticate user with contact_value and password"""
     data = request.get_json()
+    
+    # Log dos dados recebidos
+    # Adicione esta linha para ver o payload:
+    current_app.logger.info(f"Login request received. Data: {data}")
     
     # Validate request payload
     if not data:
+        current_app.logger.warning("Login attempt with no data in request body.")
         return jsonify({
             "error": "Request body is required",
             "details": "Please provide contact_value and password"
@@ -194,6 +199,7 @@ def login():
     
     # Check required fields
     if "contact_value" not in data or "password" not in data:
+        current_app.logger.warning(f"Login attempt with missing fields. Provided keys: {list(data.keys())}")
         return jsonify({
             "error": "Missing required fields",
             "details": "Both contact_value and password are required",
@@ -201,26 +207,30 @@ def login():
         }), 400
     
     try:
+        # Supondo que login_scraping seja uma função que você definiu em outro lugar
         scraping = login_scraping(data["contact_value"], data["password"])
         
         if not scraping:
+            current_app.logger.warning(f"Login failed for contact: {data.get('contact_value')}. Invalid credentials.")
             return jsonify({
                 "error": "Authentication failed",
                 "details": "Invalid contact value or password",
                 "message": "Please check your credentials and try again"
             }), 401
             
+        current_app.logger.info(f"Login successful for contact: {data.get('contact_value')}")
         return jsonify({
             "success": True,
             "message": "Login successful",
             "data": {
-                "user": scraping.serialize(),
+                # Supondo que scraping.serialize() exista
+                "user": scraping.serialize(), 
                 "timestamp": datetime.now().isoformat()
             }
         }), 200
         
     except Exception as e:
-        current_app.logger.error(f"Login error: {str(e)}")
+        current_app.logger.error(f"Login error for contact {data.get('contact_value', 'N/A')}: {str(e)}", exc_info=True) # Adicionado exc_info=True para traceback
         return jsonify({
             "error": "Login failed",
             "message": "An unexpected error occurred during login",

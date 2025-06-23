@@ -109,6 +109,29 @@ def handle_get_all_transactions_for_purchase(current_user_id, purchase_id):
         current_app.logger.error(traceback.format_exc())
         return jsonify({"error": "Failed to retrieve transactions due to an internal error."}), 500
 
+@transaction_bp.route("/", methods=["GET"])
+@token_required
+def handle_get_all_transactions(current_user_id):
+    """
+    Retrieves all transaction records.
+    Primarily for admin dashboard use.
+    TODO: Add proper admin authorization check.
+    """
+    current_app.logger.info(f"--- Rota GET /purchase-transaction/ (handle_get_all_transactions) INICIADA por user_id: {current_user_id} ---")
+    try:
+        # Get all transactions, newest first
+        transactions = Transaction.query.order_by(Transaction.created_at.desc()).all()
+        
+        # NOTE: The transaction serializer may need to be enhanced to include
+        # relational data like user info for the dashboard.
+        serialized_transactions = [t.serialize() for t in transactions]
+
+        current_app.logger.info(f"Retornando {len(serialized_transactions)} transações totais.")
+        return jsonify({"data": serialized_transactions}), 200
+    except Exception as e:
+        current_app.logger.error(f"Failed to retrieve all transactions: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error": "Failed to retrieve all transactions due to an internal error."}), 500
+
 @transaction_bp.route("/<int:transaction_id>", methods=["PUT"])
 @token_required
 def handle_update_transaction(current_user_id, transaction_id):

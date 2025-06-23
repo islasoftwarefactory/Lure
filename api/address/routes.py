@@ -10,7 +10,7 @@ blueprint = Blueprint('address', __name__)
 def create(current_user_id):
     data = request.get_json()
 
-    required_fields = ["street", "number", "city", "state", "zip_code"]
+    required_fields = ["street", "number", "city", "state", "zip_code", "country"]
     if not data or not all(field in data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in data]
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
@@ -48,6 +48,20 @@ def read(current_user_id, address_id):
 @token_required
 def read_all(current_user_id):
     addresses = Address.query.filter_by(user_id=current_user_id).all()
+    addresses_data = [address.serialize() for address in addresses]
+
+    return jsonify({
+        "data": addresses_data,
+        "message": "Addresses retrieved successfully."
+    }), 200
+
+@blueprint.route("/read/all/<int:user_id>", methods=["GET"])
+@token_required
+def read_all_for_user(current_user_id, user_id):
+    if current_user_id != user_id:
+        return jsonify({"error": "Not authorized to view addresses for this user"}), 403
+
+    addresses = Address.query.filter_by(user_id=user_id).all()
     addresses_data = [address.serialize() for address in addresses]
 
     return jsonify({

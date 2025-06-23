@@ -26,6 +26,7 @@ class User(db.Model):
     purchases = db.relationship('Purchase', back_populates='user_rel', lazy='dynamic', order_by='Purchase.created_at.desc()')
     addresses = db.relationship('Address', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
     transactions = db.relationship('Transaction', back_populates='user_rel', lazy='dynamic')
+    favorites = db.relationship('Favorite', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User id={self.id} email='{self.email}' provider='{self.auth_provider.value}' provider_id='{self.provider_id}'>"

@@ -13,6 +13,10 @@ class Purchase(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     currency_id = db.Column(db.Integer, db.ForeignKey('currencies.id'), nullable=False)
+    # Link to shipping address
+    shipping_address_id = db.Column(db.Integer, db.ForeignKey('addresses.id'), nullable=False)
+    # ORM relationship to Address for shipping
+    shipping_address_rel = db.relationship('Address', back_populates='purchases')
 
     subtotal = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
     shipping_cost = db.Column(db.Numeric(10, 2), nullable=False, default=0.0)
@@ -41,7 +45,7 @@ class Purchase(db.Model):
         # Add logic for shipping_cost and taxes if applicable
         self.total_amount = self.subtotal + self.shipping_cost + self.taxes
 
-    def serialize(self, include_items=True, include_history=False, include_transactions=False, include_shipping=False) -> Dict:
+    def serialize(self, include_items=True, include_history=False, include_transactions=False, include_shipping=False, include_address=False) -> Dict:
         data = {
             "id": self.id,
             "user_id": self.user_id,
@@ -51,7 +55,8 @@ class Purchase(db.Model):
             "taxes": float(self.taxes),
             "total_amount": float(self.total_amount),
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
+            "shipping_address_id": self.shipping_address_id
         }
         if include_items:
              data["items"] = [item.serialize() for item in self.items]
@@ -61,6 +66,8 @@ class Purchase(db.Model):
              data["transactions"] = [trans.serialize() for trans in self.transactions.order_by(Transaction.created_at.asc())]
         if include_shipping and self.shipping_status_rel:
              data["shipping_status"] = self.shipping_status_rel.serialize()
+        if include_address and self.shipping_address_rel:
+            data["address"] = self.shipping_address_rel.serialize()
 
         return data
 
@@ -72,6 +79,7 @@ class Purchase(db.Model):
             purchase = cls(
                 user_id=data["user_id"],
                 currency_id=data["currency_id"],
+                shipping_address_id=data.get("shipping_address_id"),
                 subtotal=data.get("subtotal", 0.0),
                 shipping_cost=data.get("shipping_cost", 0.0),
                 taxes=data.get("taxes", 0.0),

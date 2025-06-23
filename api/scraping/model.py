@@ -6,6 +6,7 @@ from flask import current_app
 import re
 from api.scraping.type.model import ContactType
 from flask_bcrypt import Bcrypt
+from api.utils.validators import validate_email_provider, validate_email_complete
 
 bcrypt = Bcrypt()
 
@@ -52,36 +53,6 @@ def validate_scraping_data(data: Dict) -> tuple[bool, str]:
 
     return True, ""
 
-ALLOWED_EMAIL_PROVIDERS = {
-    'gmail.com',
-    'yahoo.com',
-    'outlook.com',
-    'hotmail.com',
-    'icloud.com',
-    'aol.com',
-    'mail.com',
-    'zoho.com',
-    'protonmail.com',
-    'gmx.com'
-}
-
-def validate_email_provider(email: str) -> tuple[bool, str]:
-    """
-    Validates if the email provider is in the allowed list
-    Args:
-        email: The email address to validate
-    Returns:
-        tuple: (is_valid, error_message)
-    """
-    try:
-        # Extract domain from email
-        domain = email.split('@')[1].lower()
-        if domain not in ALLOWED_EMAIL_PROVIDERS:
-            return False, f"Email provider '{domain}' is not allowed. Please use one of: {', '.join(ALLOWED_EMAIL_PROVIDERS)}"
-        return True, ""
-    except IndexError:
-        return False, "Invalid email format"
-
 def validate_contact_type(contact_value: str) -> int:
     """
     Validates and determines the appropriate contact type ID based on the contact value format.
@@ -99,8 +70,8 @@ def validate_contact_type(contact_value: str) -> int:
     if re.match(r'^\d+$', contact_value):
         return phone_type.id
     elif '@' in contact_value:
-        # Add email provider validation
-        is_valid, error_message = validate_email_provider(contact_value)
+        # Use shared email provider validation
+        is_valid, error_message = validate_email_complete(contact_value)
         if not is_valid:
             raise ValueError(error_message)
         return email_type.id

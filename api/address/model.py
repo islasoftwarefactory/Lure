@@ -2,17 +2,21 @@ from api.utils.db.connection import db
 from datetime import datetime
 import pytz
 from typing import Dict, Optional
+from api.purchases.purchase.model import Purchase
 
 class Address(db.Model):
     __tablename__ = "addresses"
 
     id = db.Column(db.Integer, primary_key=True)
+    # Purchases that use this address for shipping
+    purchases = db.relationship('Purchase', back_populates='shipping_address_rel', lazy='dynamic')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     street = db.Column(db.String(30), nullable=False)
     number = db.Column(db.Integer, nullable=False)
     city = db.Column(db.String(30), nullable=False) 
     state = db.Column(db.String(2), nullable=False) 
     zip_code = db.Column(db.String(9), nullable=False)
+    country = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -32,6 +36,7 @@ class Address(db.Model):
             "city": self.city,
             "state": self.state,
             "zip_code": self.zip_code,
+            "country": self.country,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
@@ -40,7 +45,7 @@ def create_address(address_data: Dict, current_user_id: int) -> Optional[Address
     """Creates a new address"""
     print(f"Starting address creation for user: {current_user_id}")
     try:
-        required_fields = ["street", "number", "city", "state", "zip_code"]
+        required_fields = ["street", "number", "city", "state", "zip_code", "country"]
         if not all(field in address_data for field in required_fields):
             raise ValueError("Missing required fields in address_data")
 
@@ -51,6 +56,7 @@ def create_address(address_data: Dict, current_user_id: int) -> Optional[Address
             city=address_data["city"],
             state=address_data["state"],
             zip_code=address_data["zip_code"],
+            country=address_data["country"],
         )
         db.session.add(new_address)
         db.session.commit()
@@ -70,7 +76,7 @@ def update_address(address_id: int, address_data: Dict) -> Optional[Address]:
     """Updates an existing address"""
     address = get_address(address_id)
     if address:
-        for field in ["street", "number", "city", "state", "zip_code"]:
+        for field in ["street", "number", "city", "state", "zip_code", "country"]:
             if field in address_data:
                 setattr(address, field, address_data[field])
         db.session.commit()

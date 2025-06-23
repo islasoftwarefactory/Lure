@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '@/services/api'; // Importar o serviço da API
 
+// GA4 gtag declaration
+declare global {
+  function gtag(...args: any[]): void;
+}
+
 // Interface que define o que estará disponível no contexto
 interface AuthContextType {
   user: any | null;
@@ -52,11 +57,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (newToken: string, userData: any = null) => {
     setToken(newToken);
     // setUser(userData || { id: 'simulated', name: 'User' }); // Define o usuário recebido ou um simulado
+    
+    // Fire GA4 login event as backup (if not already fired in GoogleSignInButton)
+    if (typeof gtag !== 'undefined' && newToken && !newToken.includes('anonymous')) {
+      // Only fire if this is not an anonymous token
+      gtag('event', 'login', {
+        method: 'Context_Backup' // Different method to distinguish from GoogleSignInButton events
+      });
+      
+      console.log('GA4 login event fired from AuthContext:', {
+        method: 'Context_Backup',
+        token_preview: newToken.substring(0,10) + '...'
+      });
+    }
+    
     console.log('Login realizado com token:', newToken ? newToken.substring(0,10) + '...' : 'None');
   };
 
   const logout = () => {
     setToken(null); // Isso vai disparar o useEffect para limpar localStorage e isAuthenticated
+    // Remove legacy auth token key if present
+    localStorage.removeItem('auth_token');
     console.log('Logout realizado');
   };
 

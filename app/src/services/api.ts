@@ -1,12 +1,7 @@
 import axios from 'axios';
 
-// Configurando a API para ambiente de produção
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://lureclo.com';
-// Garantir que estamos sempre usando HTTPS
-const secureBaseUrl = apiBaseUrl.replace('http://', 'https://');
-
 const api = axios.create({
-  baseURL: secureBaseUrl,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://locked.lureclo.com',
   timeout: 5000,
   headers: {
     'Content-Type': 'application/json',
@@ -68,17 +63,6 @@ api.interceptors.response.use(
       message: error.message,
       headers: error.config?.headers
     });
-    
-    // Log detalhado para ajudar no diagnóstico
-    console.error('Detalhes completos do erro:', {
-      name: error.name,
-      code: error.code,
-      networkError: error.isAxiosError,
-      corsError: error.message.includes('CORS') || error.message.includes('cross-origin'),
-      mixedContent: error.message.includes('Mixed Content'),
-      responseData: error.response?.data
-    });
-    
     if (error.response?.status === 429) {
       // DDOS Protection error
       return Promise.reject(new Error('Too many requests. Please try again later.'));
