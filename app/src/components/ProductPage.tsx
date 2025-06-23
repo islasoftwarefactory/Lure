@@ -18,6 +18,7 @@ import { CartItem, addToCartAndShow } from '../utils/cartUtils';
 import { useCart } from '../context/CartContext';
 import { SideCart } from "./SideCart";
 import { StickyCart } from "./StickyCart";
+import { ReviewsSection } from "./ReviewsSection";
 import { useAuth } from '../context/AuthContext';
 import api from '@/services/api';
 
@@ -92,20 +93,11 @@ export function ProductPage() {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [recommendedImages, setRecommendedImages] = useState<Record<number, string>>({});
   const [sizesList, setSizesList] = useState<Size[]>([]);
-  const [simulatedStock, setSimulatedStock] = useState(0);
-  const [simulatedUsers, setSimulatedUsers] = useState(0);
   const [isStickyCartVisible, setIsStickyCartVisible] = useState(false);
   const productSectionRef = useRef<HTMLDivElement>(null);
+  const reviewsSectionRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    // Simulate low stock
-    const randomStock = Math.floor(Math.random() * (10 - 3 + 1)) + 3; // Random number between 3 and 10
-    setSimulatedStock(randomStock);
 
-    // Simulate active users
-    const randomUsers = Math.floor(Math.random() * (20 - 5 + 1)) + 5; // Random number between 5 and 20
-    setSimulatedUsers(randomUsers);
-  }, []);
 
   // Sticky Cart scroll detection
   useEffect(() => {
@@ -290,6 +282,19 @@ export function ProductPage() {
     }
    };
 
+  const scrollToReviews = () => {
+    if (reviewsSectionRef.current) {
+      const headerOffset = 120;
+      const elementPosition = reviewsSectionRef.current.getBoundingClientRect().top;
+      const offsetPosition = window.scrollY + elementPosition - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const handleQuantityChange = (change: number) => {
     setQuantity(prev => Math.max(1, prev + change));
   };
@@ -463,7 +468,10 @@ export function ProductPage() {
               
               {/* Avaliações */}
               <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center gap-2">
+                <div 
+                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 transition-colors p-2 rounded-lg -m-2"
+                  onClick={scrollToReviews}
+                >
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <svg
@@ -476,31 +484,11 @@ export function ProductPage() {
                       </svg>
                     ))}
                   </div>
-                  <span className="text-black text-sm sm:text-base">(459 reviews)</span>
+                  <span className="text-black text-sm sm:text-base hover:underline">(459 reviews)</span>
                 </div>
               </div>
 
-              {/* Simulated Urgency Section */}
-              <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-3">
-                <div className="flex items-center text-sm sm:text-base">
-                  <span className="relative flex h-3 w-3 mr-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                  </span>
-                  <p className="text-black/80">
-                    <span className="font-bold text-black">Only few left in stock!</span>
-                  </p>
-                </div>
-                <div className="flex items-center text-sm sm:text-base">
-                  <span className="relative flex h-3 w-3 mr-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                  </span>
-                  <p className="text-black/80">
-                    <span className="font-bold text-black">{simulatedUsers} people</span> are currently viewing this item.
-                  </p>
-                </div>
-              </div>
+
 
               {/* Seleção de Tamanho e Quantidade */}
               <div className="mt-6 lg:mt-8 space-y-4">
@@ -703,6 +691,11 @@ export function ProductPage() {
               </div>
             </Accordion>
           </div>
+        </div>
+
+        {/* Reviews Section - Positioned after History, Shipping, FAQ and before You May Also Like */}
+        <div ref={reviewsSectionRef}>
+          <ReviewsSection productId={product.id} />
         </div>
       </main>
 
