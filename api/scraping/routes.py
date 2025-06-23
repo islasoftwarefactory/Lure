@@ -37,7 +37,6 @@ def validate_contact_value_unique(contact_value: str, exclude_id: int = None) ->
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-@ddos_protection(max_requests=50, window=5)
 def create():
     current_app.logger.info("=== INICIO DO ENDPOINT /create ===")
     
