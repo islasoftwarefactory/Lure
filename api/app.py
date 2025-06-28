@@ -206,7 +206,7 @@ def log_request_info():
 #     return response
 # -------------------------------------------------
 
-@application.route('/health', methods=['GET'])
+@application.route('/api/health', methods=['GET'])
 def health():
     """A simple health check endpoint to verify the API is running."""
     return jsonify(message="API is up and running!"), 200
