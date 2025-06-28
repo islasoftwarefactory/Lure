@@ -1,4 +1,17 @@
 services:
+  proxy:
+    container_name: lure_proxy_srvr
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - lure-net
+    depends_on:
+      - api
+      - app
+
   api:
     container_name: lure_api_srvr
     build:
@@ -7,8 +20,7 @@ services:
     command: gunicorn --bind 0.0.0.0:5000 --workers 5 app:application
     env_file:
       - ./.env
-    ports:
-      - "60123:5000"
+    ports: []
     networks:
       - lure-net
     depends_on:
@@ -30,8 +42,7 @@ services:
       dockerfile: Dockerfile.dev
     env_file:
       - ./.env
-    ports:
-      - "5173:5173"
+    ports: []
     networks:
       - lure-net
     volumes:
