@@ -8,7 +8,7 @@ console.log('NODE_ENV:', import.meta.env.NODE_ENV);
 console.log('Todas as vars de ambiente VITE_:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com',
+  baseURL: 'http://api.locked.lureclo.com',
   timeout: 15000, // Aumentar timeout para 15 segundos
   headers: {
     'Content-Type': 'application/json',
