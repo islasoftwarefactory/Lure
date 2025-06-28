@@ -47,7 +47,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
     try {
       // Teste 1: Fetch simples
       console.log('Testando conectividade com fetch...');
-      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/scraping/contact-types`;
+      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/api/scraping/contact-types`;
       console.log('URL de teste:', testUrl);
       
       const fetchResponse = await fetch(testUrl, {
@@ -66,7 +66,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
       
       // Teste 2: Axios para endpoint de teste
       console.log('Testando conectividade com axios...');
-      const axiosResponse = await api.get('scraping/contact-types');
+      const axiosResponse = await api.get('/api/scraping/contact-types');
       console.log('Resposta do axios:', axiosResponse);
       
     } catch (error) {
@@ -141,7 +141,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
       
       console.log('Headers da requisição:', headers);
       
-      const response = await api.post<ScrapingResponse>('scraping/create', requestData, {
+      const response = await api.post<ScrapingResponse>('/api/scraping/create', requestData, {
         headers,
         timeout: 20000, // 20 segundos
         validateStatus: function (status) {
