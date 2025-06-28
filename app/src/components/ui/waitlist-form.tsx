@@ -222,6 +222,14 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
       const apiError = error.response?.data as ApiError;
       let errorMessage = 'Failed to join waitlist. Please try again.';
       
+      // LOGS DO BACKEND
+      if (error.response?.data?.backend_logs) {
+        console.log('#####################################');
+        console.log('###     LOGS VINDOS DO BACKEND    ###');
+        console.log('#####################################');
+        console.log(error.response.data.backend_logs.join('\\n'));
+      }
+      
       if (apiError?.error) {
         errorMessage = apiError.error;
       } else if (error.message) {
