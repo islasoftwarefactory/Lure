@@ -38,6 +38,12 @@ def validate_contact_value_unique(contact_value: str, exclude_id: int = None) ->
 # Create
 @blueprint.route("/create", methods=["POST"])
 def create():
+    current_app.logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    current_app.logger.info("!!!      /SCRAPING/CREATE ENDPOINT HIT      !!!")
+    current_app.logger.info("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    current_app.logger.info(f"Request Method: {request.method}")
+    current_app.logger.info(f"Request Path: {request.path}")
+    current_app.logger.info(f"Request URL: {request.url}")
     current_app.logger.info("=== INICIO DO ENDPOINT /create ===")
     
     try:

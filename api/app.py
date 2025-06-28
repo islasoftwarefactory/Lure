@@ -151,7 +151,7 @@ def verify_jwt():
 
     public_paths = [
         '/contact/create',
-        '/scraping/create',
+        '/api/scraping/create',
         '/scraping/update-password',
         '/scraping/login',
         '/webhooks/stripe/create'
