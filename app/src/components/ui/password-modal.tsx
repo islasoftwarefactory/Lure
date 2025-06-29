@@ -51,7 +51,7 @@ export default function PasswordModal({ className }: PasswordModalProps) {
     setErrorMessage("")
 
     try {
-      const response = await api.post<LoginResponse>('/scraping/login', {
+      const response = await api.post<LoginResponse>('/api/scraping/login', {
         contact_value: email,
         password: password
       })
