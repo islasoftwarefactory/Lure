@@ -63,3 +63,23 @@ jobs:
       # Passo 4: (Opcional) Limpar imagens Docker antigas.
       - name: Clean up old Docker images
         run: docker image prune -f
+
+      # Ação Final Corrigida:
+      - name: Stop, Rebuild, and Deploy Docker Stack
+        run: |
+          # Passo 1: Forçar a parada e remoção do container antigo para liberar a porta 80.
+          # O '|| true' previne erros se o container não existir.
+          docker stop lure_proxy_srvr || true
+          docker rm lure_proxy_srvr || true
+
+          # Passo 2: Construir a imagem do proxy sem cache para garantir a nova config.
+          docker-compose build --no-cache proxy
+
+          # Passo 3: Parar o resto da stack (se houver algo).
+          docker-compose down || true
+          
+          # Passo 4: Subir a aplicação inteira.
+          docker-compose up -d
+
+      - name: Clean up old Docker images
+        run: docker image prune -f
