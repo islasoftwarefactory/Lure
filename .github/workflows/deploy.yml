@@ -15,6 +15,11 @@ jobs:
     runs-on: self-hosted # Este job roda diretamente no seu servidor
 
     steps:
+      # PASSO NOVO: Limpar o diretório de trabalho com permissões de administrador.
+      # Isso remove quaisquer arquivos deixados por execuções anteriores que possam ter permissões incorretas.
+      - name: Force Clean Workspace
+        run: sudo rm -rf ./*
+
       # Passo 1: Baixar o código mais recente do repositório
       - name: Check out repository
         uses: actions/checkout@v4
