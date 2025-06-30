@@ -129,6 +129,7 @@ except Exception as e:
 
 @application.before_request
 def verify_jwt():
+    # Always allow OPTIONS requests for CORS preflight
     if request.method == 'OPTIONS':
         return None
 
@@ -150,6 +151,7 @@ def verify_jwt():
     ]
 
     public_paths = [
+        '/api/health',
         '/contact/create',
         '/api/scraping/create',
         '/api/scraping/update-password',
@@ -157,29 +159,26 @@ def verify_jwt():
         '/webhooks/stripe/create'
     ]
  
- 
+    # Check if current path is public
     if request.endpoint and (request.endpoint in public_endpoints or request.path in public_paths):
          current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is public. Skipping token check.")
          return None # Não verifica token para rotas públicas
     else:
           current_app.logger.debug(f"verify_jwt: Endpoint '{request.endpoint}' is NOT public. Proceeding with token check.")
  
-    # Log para debug do endpoint sendo verificado
-### erro aqui facil de resolver só ver no git e arrumar
+    # Get authorization token
     token = request.headers.get("Authorization")
     if not token:
         current_app.logger.warning(f"verify_jwt: Token ausente para endpoint protegido '{request.endpoint}'.")
         return jsonify({"message": "Token ausente!"}), 401
 
     try:
-        # Assumindo que verify_token agora retorna apenas o user_id ou levanta exceção
-        from api.utils.security.jwt.jwt_utils import verify_token # Importar aqui ou no topo
+        # Import and verify token
+        from api.utils.security.jwt.jwt_utils import verify_token
         user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
-        g.current_user_id = user_id # Armazena no contexto da requisição 'g'
-    except Exception as e: # Captura exceções de verify_token (Expirado, Inválido)
-        # É importante que verify_token levante exceções específicas ou retorne algo
-        # que indique falha para este try/except funcionar bem.
-        # Ajuste a mensagem de erro conforme o que verify_token retorna/levanta.
+        g.current_user_id = user_id # Store in request context
+    except Exception as e:
+        current_app.logger.error(f"verify_jwt: Token verification failed: {str(e)}")
         return jsonify({"message": f"Token inválido ou expirado: {str(e)}"}), 401
 
 
@@ -206,10 +205,27 @@ def log_request_info():
 #     return response
 # -------------------------------------------------
 
-@application.route('/api/health', methods=['GET'])
+@application.route('/api/health', methods=['GET', 'OPTIONS'])
 def health():
     """A simple health check endpoint to verify the API is running."""
+    if request.method == 'OPTIONS':
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
+    
     return jsonify(message="API is up and running!"), 200
+
+# Add a general OPTIONS handler for all API routes
+@application.route('/api/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    """Handle CORS preflight requests for all API routes."""
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', "*")
+    response.headers.add('Access-Control-Allow-Methods', "*")
+    return response
 
 print("=== Servidor Iniciando ===")
 
