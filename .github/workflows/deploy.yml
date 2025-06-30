@@ -17,7 +17,7 @@ jobs:
     steps:
       # PASSO CORRIGIDO: Usando um comando 'find' mais seguro para limpar o diretório.
       # Isso evita o erro 'rm: can't remove . or ..'
-      - name: Force Clean Workspace with Docker
+      - name: Force Clean Workspace
         run: docker run --rm -v ${{ github.workspace }}:/workspace alpine sh -c "find /workspace/. -mindepth 1 -delete"
 
       # Passo 1: Baixar o código mais recente do repositório
@@ -26,6 +26,17 @@ jobs:
 
       # Passo 2: Criar o arquivo .env no servidor usando os valores fornecidos.
       # O comando 'cat << EOF > .env' é uma forma eficiente de criar um arquivo com múltiplas linhas.
+      - name: Diagnose Port 80 Usage (No Sudo)
+        run: |
+          echo "--- Checking for processes on port 80 (without sudo) ---"
+          lsof -i :80 || echo "lsof command failed or port 80 is free. This is expected if the process is not owned by the current user."
+          echo "--- Listing running Docker containers using port 80 ---"
+          docker ps --filter "publish=80"
+          echo "--- Checking for common web server processes ---"
+          ps aux | grep -E '[n]ginx|[a]pache|[h]ttpd' || echo "No other common web server processes found."
+          echo "--- End of diagnosis ---"
+        continue-on-error: true
+
       - name: Create .env file
         run: |
           cat << EOF > .env
@@ -59,31 +70,16 @@ jobs:
 
       # Passo 3: Parar, reconstruir e iniciar a aplicação.
       # Agora o docker-compose encontrará o .env e funcionará corretamente.
-      - name: Rebuild and Deploy Docker Stack
-        run: |
-          docker-compose build --no-cache proxy
-          docker-compose down || true
-          docker-compose up -d
-
-      # Passo 4: (Opcional) Limpar imagens Docker antigas.
-      - name: Clean up old Docker images
-        run: docker image prune -f
-
-      # Ação Final Corrigida:
       - name: Stop, Rebuild, and Deploy Docker Stack
         run: |
-          # Passo 1: Forçar a parada e remoção do container antigo para liberar a porta 80.
-          # O '|| true' previne erros se o container não existir.
+          echo "--- Attempting to stop and remove lure_proxy_srvr ---"
           docker stop lure_proxy_srvr || true
           docker rm lure_proxy_srvr || true
-
-          # Passo 2: Construir a imagem do proxy sem cache para garantir a nova config.
+          echo "--- Building new proxy image without cache ---"
           docker-compose build --no-cache proxy
-
-          # Passo 3: Parar o resto da stack (se houver algo).
+          echo "--- Tearing down existing services ---"
           docker-compose down || true
-          
-          # Passo 4: Subir a aplicação inteira.
+          echo "--- Starting all services ---"
           docker-compose up -d
 
       - name: Clean up old Docker images
