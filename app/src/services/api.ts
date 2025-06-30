@@ -8,7 +8,7 @@ console.log('NODE_ENV:', import.meta.env.NODE_ENV);
 console.log('Todas as vars de ambiente VITE_:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
 
 const api = axios.create({
-  baseURL: 'https://locked.lureclo.com',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://locked.lureclo.com',
   timeout: 15000, // Aumentar timeout para 15 segundos
   headers: {
     'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ console.log('API configurada com baseURL:', api.defaults.baseURL);
 
 // Adicionar interceptors para melhor logging
 api.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     console.log('=== INTERCEPTOR DE REQUEST ===');
     console.log('Config completa:', config);
     console.log('URL final:', config.url?.startsWith('http') ? config.url : `${config.baseURL}${config.url?.startsWith('/') ? config.url : '/' + config.url}`);
@@ -56,7 +56,7 @@ api.interceptors.request.use(
     
     return config;
   },
-  (error) => {
+  (error: any) => {
     console.error('❌ Erro no interceptor de request:', error);
     return Promise.reject(error);
   }
@@ -64,7 +64,7 @@ api.interceptors.request.use(
 
 // Adicionar interceptor de resposta para debug
 api.interceptors.response.use(
-  (response) => {
+  (response: any) => {
     console.log('=== INTERCEPTOR DE RESPONSE (SUCESSO) ===');
     console.log('✅ Resposta recebida:', {
       status: response.status,
@@ -75,7 +75,7 @@ api.interceptors.response.use(
     });
     return response;
   },
-  (error) => {
+  (error: any) => {
     console.log('=== INTERCEPTOR DE RESPONSE (ERRO) ===');
     console.error('❌ Erro na resposta:', {
       message: error.message,
