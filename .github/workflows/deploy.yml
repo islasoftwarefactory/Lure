@@ -4,7 +4,7 @@ on:
   # Dispara o workflow em push para a branch 'refact/nginx'.
   # IMPORTANTE: Altere 'refact/nginx' para a sua branch principal de deploy (ex: 'main' ou 'pipeline') quando estiver pronto.
   push:
-    branches: [ "pipeline" ]
+    branches: [ "refact/nginx" ]
 
   # Permite que você rode este workflow manualmente pela aba Actions
   workflow_dispatch:
@@ -51,8 +51,9 @@ jobs:
       # Agora o docker-compose encontrará o .env e funcionará corretamente.
       - name: Rebuild and Deploy Docker Stack
         run: |
+          docker-compose build --no-cache proxy
           docker-compose down || true
-          docker-compose up --build -d
+          docker-compose up -d
 
       # Passo 4: (Opcional) Limpar imagens Docker antigas.
       - name: Clean up old Docker images
