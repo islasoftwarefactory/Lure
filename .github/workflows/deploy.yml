@@ -1,59 +1,59 @@
-# This is a basic workflow to help you get started with Actions
+name: Deploy Lure Application to Server
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "pipeline" branch
+  # Dispara o workflow em push para a branch 'refact/nginx'.
+  # IMPORTANTE: Altere 'refact/nginx' para a sua branch principal de deploy (ex: 'main' ou 'pipeline') quando estiver pronto.
   push:
     branches: [ "pipeline" ]
-  pull_request:
-    branches: [ "pipeline" ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Permite que você rode este workflow manualmente pela aba Actions
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-outs your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
-
-      # Runs a single command using the runners shell
-      - name: Start container and build application
-        run: |
-          git fetch origin pipeline
-          git checkout pipeline
-          git pull origin pipeline
-          docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
-          
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: app/dist/
-
   deploy:
-    needs: build
-    runs-on: self-hosted
-    
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: app/dist
+    name: Build and Deploy Application
+    runs-on: self-hosted # Este job roda diretamente no seu servidor
 
-      - name: Copy to lureclo via Docker
+    steps:
+      # Passo 1: Baixar o código mais recente do repositório
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Passo 2: Criar o arquivo .env no servidor usando os valores fornecidos.
+      # O comando 'cat << EOF > .env' é uma forma eficiente de criar um arquivo com múltiplas linhas.
+      - name: Create .env file
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}/app/dist:/dist:ro \
-            -v /var/www/lureclo:/var/www/lureclo \
-            alpine:latest \
-            sh -c "cp -r /dist/* /var/www/lureclo/"
+          cat << EOF > .env
+          FLASK_APP=app.py
+          FLASK_ENV=production
+          FLASK_PORT=5000
+          JWT_SECRET_KEY=065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+          JWT_EXPIRATION_MINUTES=1440
+          PYTHONPATH=/:/api
+          DB_HOST=lure_mysql_srvr
+          DB_PORT=3306
+          DB_DATABASE=Lure
+          DB_USERNAME=65CC63A4E10EE8F05BE4E1A8
+          DB_PASSWORD=1C969B094797CB3AF27FF949
+          MYSQL_HOST=lure_mysql_srvr
+          MYSQL_PORT=3306
+          MYSQL_ROOT_PASSWORD=1C969B094797CB3AF27FF949
+          MYSQL_DATABASE=Lure
+          MYSQL_USER=65CC63A4E10EE8F05BE4E1A8
+          MYSQL_PASSWORD=1C969B094797CB3AF27FF949
+          REDIS_HOST=lure_redis_srvr
+          REDIS_PORT=6379
+          REDIS_PASSWORD=redis_password
+          REDIS_DB=0
+          EOF
+
+      # Passo 3: Parar, reconstruir e iniciar a aplicação.
+      # Agora o docker-compose encontrará o .env e funcionará corretamente.
+      - name: Rebuild and Deploy Docker Stack
+        run: |
+          docker-compose down
+          docker-compose up --build -d
+
+      # Passo 4: (Opcional) Limpar imagens Docker antigas.
+      - name: Clean up old Docker images
+        run: docker image prune -f
