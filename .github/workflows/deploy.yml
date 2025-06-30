@@ -51,7 +51,7 @@ jobs:
       # Agora o docker-compose encontrará o .env e funcionará corretamente.
       - name: Rebuild and Deploy Docker Stack
         run: |
-          docker-compose down
+          docker-compose down || true
           docker-compose up --build -d
 
       # Passo 4: (Opcional) Limpar imagens Docker antigas.
