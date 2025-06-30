@@ -4,7 +4,7 @@ on:
   # Dispara o workflow em push para a branch 'refact/nginx'.
   # IMPORTANTE: Altere 'refact/nginx' para a sua branch principal de deploy (ex: 'main' ou 'pipeline') quando estiver pronto.
   push:
-    branches: [ "refact/nginx" ]
+    branches: [ "pipeline" ]
 
   # Permite que você rode este workflow manualmente pela aba Actions
   workflow_dispatch:
@@ -19,14 +19,41 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # Passo 2: Parar, reconstruir e iniciar toda a aplicação com Docker Compose
-      #   - 'docker-compose down' para e remove os containers antigos para uma atualização limpa.
-      #   - 'docker-compose up --build -d' reconstrói as imagens que mudaram (como o nosso proxy) e sobe a nova versão.
+      # Passo 2: Criar o arquivo .env no servidor usando os valores fornecidos.
+      # O comando 'cat << EOF > .env' é uma forma eficiente de criar um arquivo com múltiplas linhas.
+      - name: Create .env file
+        run: |
+          cat << EOF > .env
+          FLASK_APP=app.py
+          FLASK_ENV=production
+          FLASK_PORT=5000
+          JWT_SECRET_KEY=065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+          JWT_EXPIRATION_MINUTES=1440
+          PYTHONPATH=/:/api
+          DB_HOST=lure_mysql_srvr
+          DB_PORT=3306
+          DB_DATABASE=Lure
+          DB_USERNAME=65CC63A4E10EE8F05BE4E1A8
+          DB_PASSWORD=1C969B094797CB3AF27FF949
+          MYSQL_HOST=lure_mysql_srvr
+          MYSQL_PORT=3306
+          MYSQL_ROOT_PASSWORD=1C969B094797CB3AF27FF949
+          MYSQL_DATABASE=Lure
+          MYSQL_USER=65CC63A4E10EE8F05BE4E1A8
+          MYSQL_PASSWORD=1C969B094797CB3AF27FF949
+          REDIS_HOST=lure_redis_srvr
+          REDIS_PORT=6379
+          REDIS_PASSWORD=redis_password
+          REDIS_DB=0
+          EOF
+
+      # Passo 3: Parar, reconstruir e iniciar a aplicação.
+      # Agora o docker-compose encontrará o .env e funcionará corretamente.
       - name: Rebuild and Deploy Docker Stack
         run: |
           docker-compose down
           docker-compose up --build -d
 
-      # Passo 3: (Opcional, mas recomendado) Limpa imagens Docker antigas e não utilizadas para liberar espaço em disco.
+      # Passo 4: (Opcional) Limpar imagens Docker antigas.
       - name: Clean up old Docker images
         run: docker image prune -f
