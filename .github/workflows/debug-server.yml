@@ -1,0 +1,90 @@
+name: Debug Server State
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  debug:
+    name: Debug Server Status
+    runs-on: self-hosted
+    
+    steps:
+      - name: Check Docker Containers
+        run: |
+          echo "=== CONTAINERS RODANDO NO SERVIDOR ==="
+          docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Ports}}\t{{.Status}}"
+          echo ""
+          
+      - name: Check Nginx Container Config
+        run: |
+          echo "=== CONFIGURAÇÃO DO NGINX NO CONTAINER ==="
+          if docker ps --format "{{.Names}}" | grep -q "lure_proxy_srvr"; then
+            echo "✅ Container lure_proxy_srvr encontrado"
+            echo ""
+            echo "Testando configuração nginx:"
+            docker exec lure_proxy_srvr nginx -t
+            echo ""
+            echo "Conteúdo da configuração:"
+            docker exec lure_proxy_srvr cat /etc/nginx/conf.d/default.conf
+          else
+            echo "❌ Container lure_proxy_srvr não encontrado"
+            echo "Containers disponíveis:"
+            docker ps --format "{{.Names}}"
+          fi
+          echo ""
+          
+      - name: Check Nginx Logs
+        run: |
+          echo "=== LOGS DO NGINX ==="
+          if docker ps --format "{{.Names}}" | grep -q "lure_proxy_srvr"; then
+            echo "Últimas 10 linhas do error log:"
+            docker exec lure_proxy_srvr tail -n 10 /var/log/nginx/error.log 2>/dev/null || echo "Sem logs de erro"
+            echo ""
+            echo "Últimas 10 linhas do access log:"
+            docker exec lure_proxy_srvr tail -n 10 /var/log/nginx/access.log 2>/dev/null || echo "Sem logs de acesso"
+          else
+            echo "❌ Container não encontrado para verificar logs"
+          fi
+          echo ""
+          
+      - name: Test Internal API Connection
+        run: |
+          echo "=== TESTE DE CONECTIVIDADE INTERNA ==="
+          if docker ps --format "{{.Names}}" | grep -q "lure_api_srvr"; then
+            echo "✅ Container lure_api_srvr encontrado"
+            echo "Testando conexão direta na API:"
+            docker exec lure_api_srvr curl -s -I http://localhost:5000/ || echo "❌ API não responde"
+          else
+            echo "❌ Container lure_api_srvr não encontrado"
+          fi
+          echo ""
+          
+      - name: Check Docker Compose Status
+        run: |
+          echo "=== STATUS DO DOCKER COMPOSE ==="
+          if [ -f compose.yml ]; then
+            docker-compose ps
+          else
+            echo "❌ Arquivo compose.yml não encontrado"
+          fi
+          echo ""
+          
+      - name: Check Ports
+        run: |
+          echo "=== PORTAS EM USO NO SERVIDOR ==="
+          echo "Porta 80:"
+          lsof -i :80 2>/dev/null || echo "Nenhum processo encontrado na porta 80"
+          echo ""
+          echo "Porta 443:"
+          lsof -i :443 2>/dev/null || echo "Nenhum processo encontrado na porta 443"
+          echo ""
+          
+      - name: Test External API
+        run: |
+          echo "=== TESTE EXTERNO DA API ==="
+          echo "Testando GET na homepage:"
+          curl -s -I https://locked.lureclo.com | head -5
+          echo ""
+          echo "Testando POST no endpoint que falha:"
+          curl -s -I -X POST https://locked.lureclo.com/api/user/login | head -5
+          echo "" 
