@@ -5,7 +5,7 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8088:80"
     networks:
       - lure-net
     depends_on:

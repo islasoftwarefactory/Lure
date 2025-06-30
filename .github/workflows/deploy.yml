@@ -72,9 +72,6 @@ jobs:
       # Agora o docker-compose encontrará o .env e funcionará corretamente.
       - name: Stop, Rebuild, and Deploy Docker Stack
         run: |
-          echo "--- Attempting to stop and remove lure_proxy_srvr ---"
-          docker stop lure_proxy_srvr || true
-          docker rm lure_proxy_srvr || true
           echo "--- Building new proxy image without cache ---"
           docker-compose build --no-cache proxy
           echo "--- Tearing down existing services ---"
