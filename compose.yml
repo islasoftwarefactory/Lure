@@ -63,6 +63,7 @@ services:
     container_name: lure_mysql_srvr
     image: mysql:latest
     healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 20s
       retries: 10
