@@ -15,10 +15,10 @@ jobs:
     runs-on: self-hosted # Este job roda diretamente no seu servidor
 
     steps:
-      # PASSO NOVO: Limpar o diretório usando um container Docker privilegiado.
-      # Isto contorna o problema de permissão sem precisar de 'sudo'.
+      # PASSO CORRIGIDO: Usando um comando 'find' mais seguro para limpar o diretório.
+      # Isso evita o erro 'rm: can't remove . or ..'
       - name: Force Clean Workspace with Docker
-        run: docker run --rm -v ${{ github.workspace }}:/workspace alpine sh -c "rm -rf /workspace/* /workspace/.*"
+        run: docker run --rm -v ${{ github.workspace }}:/workspace alpine sh -c "find /workspace/. -mindepth 1 -delete"
 
       # Passo 1: Baixar o código mais recente do repositório
       - name: Check out repository
