@@ -47,6 +47,11 @@ jobs:
           REDIS_DB=0
           EOF
 
+      # NOVO PASSO DE DIAGNÓSTICO:
+      # Este comando vai mostrar o que o docker-compose está lendo.
+      - name: Validate and Display Docker-Compose Configuration
+        run: docker-compose config
+
       # Passo 3: Parar, reconstruir e iniciar a aplicação.
       # Agora o docker-compose encontrará o .env e funcionará corretamente.
       - name: Rebuild and Deploy Docker Stack
