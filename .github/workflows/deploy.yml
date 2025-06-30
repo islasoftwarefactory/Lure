@@ -73,7 +73,7 @@ jobs:
       - name: Stop, Rebuild, and Deploy Docker Stack
         run: |
           echo "--- Building new proxy image without cache ---"
-          docker-compose build --no-cache proxy
+          docker-compose build --no-cache app proxy
           echo "--- Tearing down existing services ---"
           docker-compose down || true
           echo "--- Starting all services ---"
