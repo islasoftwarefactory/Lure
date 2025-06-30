@@ -8,7 +8,7 @@ console.log('NODE_ENV:', import.meta.env.NODE_ENV);
 console.log('Todas as vars de ambiente VITE_:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
 
 const api = axios.create({
-  baseURL: 'https://locked.lureclo.com',  // ← HARDCODED - GARANTIDO
+  baseURL: 'https://locked.lureclo.com:8088',
   timeout: 15000, // Aumentar timeout para 15 segundos
   headers: {
     'Content-Type': 'application/json',
