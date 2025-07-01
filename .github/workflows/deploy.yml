@@ -4,11 +4,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "fix/locked-age" branch
+  # Triggers the workflow on push or pull request events but only for the "fix/locked-page" branch
   push:
-    branches: [ "fix/locked-age" ]
+    branches: [ "fix/locked-page" ]
   pull_request:
-    branches: [ "fix/locked-age" ]
+    branches: [ "fix/locked-page" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,9 +28,9 @@ jobs:
       # Runs a single command using the runners shell
       - name: Start container and build application
         run: |
-          git fetch origin fix/locked-age
-          git checkout fix/locked-age
-          git pull origin fix/locked-age
+          git fetch origin fix/locked-page
+          git checkout fix/locked-page
+          git pull origin fix/locked-page
           docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
           
       - name: Upload build artifacts
@@ -48,14 +48,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: fix/locked-age
+          ref: fix/locked-page
 
-      # Update repository to latest fix/locked-age branch
-      - name: Update repository to latest fix/locked-age
+      # Update repository to latest fix/locked-page branch
+      - name: Update repository to latest fix/locked-page
         run: |
-          git fetch origin fix/locked-age
-          git checkout fix/locked-age
-          git pull origin fix/locked-age
+          git fetch origin fix/locked-page
+          git checkout fix/locked-page
+          git pull origin fix/locked-page
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
