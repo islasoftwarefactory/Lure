@@ -44,6 +44,16 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      # Clean workspace with Docker to fix permission issues
+      - name: Clean workspace with Docker
+        run: |
+          echo "=== Cleaning workspace with Docker ==="
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            alpine:latest \
+            sh -c "find /workspace -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true"
+          echo "✅ Workspace cleanup completed"
+      
       # Checkout repository to get updated compose.yml
       - uses: actions/checkout@v4
       
