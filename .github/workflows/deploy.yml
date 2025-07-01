@@ -44,6 +44,9 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      # Checkout repository to get updated compose.yml
+      - uses: actions/checkout@v4
+      
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
