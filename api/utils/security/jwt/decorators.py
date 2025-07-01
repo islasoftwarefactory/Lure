@@ -23,7 +23,7 @@ def token_required(f):
         # Flask-CORS agora lida com OPTIONS automaticamente
         # if request.method == 'OPTIONS':
         #     response = make_response()
-        #     response.headers.add('Access-Control-Allow-Origin', 'http://localhost:60123')
+        #     response.headers.add('Access-Control-Allow-Origin', 'https://locked.lureclo.com')
         #     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
         #     response.headers.add('Access-Control-Allow-Methods', 'GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS')
         #     response.headers.add('Access-Control-Allow-Credentials', 'true')

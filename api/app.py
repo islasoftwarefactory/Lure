@@ -55,14 +55,8 @@ application = Flask(__name__)
 # Chamar a configuração de logging após criar a aplicação
 setup_logging(application)
 
-# --- Inicializar Flask-CORS AQUI ---
-# Permitir requisições do domínio de produção e localhost para desenvolvimento
 allowed_origins = [
     "https://locked.lureclo.com",  # Produção
-    "http://localhost:5173",       # Desenvolvimento (Vite)
-    "http://localhost:3000",       # Desenvolvimento (alternativo)
-    "http://127.0.0.1:5173",       # Desenvolvimento (IP local)
-    "http://localhost:5000",       # API local
 ]
 
 CORS(application, resources={
