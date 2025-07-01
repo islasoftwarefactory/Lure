@@ -44,11 +44,26 @@ jobs:
     runs-on: self-hosted
     
     steps:
+      # Clean workspace before checkout to avoid permission issues
+      - name: Clean workspace with Docker
+        run: |
+          # Use Docker to clean files with different permissions
+          if [ -d "${{ github.workspace }}" ]; then
+            docker run --rm \
+              -v ${{ github.workspace }}:/workspace \
+              alpine:latest \
+              sh -c "find /workspace -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true; \
+                     find /workspace -name '*.pyc' -exec rm -f {} + 2>/dev/null || true; \
+                     find /workspace -name '.DS_Store' -exec rm -f {} + 2>/dev/null || true"
+          fi
+
       # Checkout code to ensure backend code is updated
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: pipeline
+          clean: true
+          fetch-depth: 0
 
       # Update repository to latest pipeline branch
       - name: Update repository to latest pipeline
@@ -84,6 +99,13 @@ jobs:
           # Remove backend images to ensure clean build
           docker rmi lure_api_srvr || true
           docker image prune -f
+          
+          # Clean any Python cache files that might cause issues
+          docker run --rm \
+            -v ${{ github.workspace }}/api:/api \
+            alpine:latest \
+            sh -c "find /api -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true; \
+                   find /api -name '*.pyc' -exec rm -f {} + 2>/dev/null || true"
           
           # Build backend without cache and pull latest base images
           docker-compose build --no-cache --pull api
