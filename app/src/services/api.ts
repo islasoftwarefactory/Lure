@@ -8,7 +8,7 @@ console.log('NODE_ENV:', import.meta.env.NODE_ENV);
 console.log('Todas as vars de ambiente VITE_:', Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com',
+  baseURL: (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com') + '/api',
   timeout: 15000, // Aumentar timeout para 15 segundos
   headers: {
     'Content-Type': 'application/json',
@@ -16,6 +16,9 @@ const api = axios.create({
 });
 
 console.log('API configurada com baseURL:', api.defaults.baseURL);
+console.log('URLs que serão geradas:');
+console.log('- /scraping/contact-types → ', api.defaults.baseURL + '/scraping/contact-types');
+console.log('- /scraping/create → ', api.defaults.baseURL + '/scraping/create');
 
 // Adicionar interceptors para melhor logging
 api.interceptors.request.use(

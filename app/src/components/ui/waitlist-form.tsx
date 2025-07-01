@@ -47,7 +47,7 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
     try {
       // Teste 1: Fetch simples
       console.log('Testando conectividade com fetch...');
-      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/scraping/contact-types`;
+      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/api/scraping/contact-types`;
       console.log('URL de teste:', testUrl);
       
       const fetchResponse = await fetch(testUrl, {
