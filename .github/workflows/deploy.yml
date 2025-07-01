@@ -4,11 +4,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "pipeline" branch
+  # Triggers the workflow on push or pull request events but only for the "fix/locked-age" branch
   push:
-    branches: [ "pipeline" ]
+    branches: [ "fix/locked-age" ]
   pull_request:
-    branches: [ "pipeline" ]
+    branches: [ "fix/locked-age" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,9 +28,9 @@ jobs:
       # Runs a single command using the runners shell
       - name: Start container and build application
         run: |
-          git fetch origin pipeline
-          git checkout pipeline
-          git pull origin pipeline
+          git fetch origin fix/locked-age
+          git checkout fix/locked-age
+          git pull origin fix/locked-age
           docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
           
       - name: Upload build artifacts
@@ -48,14 +48,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: pipeline
+          ref: fix/locked-age
 
-      # Update repository to latest pipeline branch
-      - name: Update repository to latest pipeline
+      # Update repository to latest fix/locked-age branch
+      - name: Update repository to latest fix/locked-age
         run: |
-          git fetch origin pipeline
-          git checkout pipeline
-          git pull origin pipeline
+          git fetch origin fix/locked-age
+          git checkout fix/locked-age
+          git pull origin fix/locked-age
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -72,46 +72,24 @@ jobs:
             alpine:latest \
             sh -c "cp -r /dist/* /var/www/lureclo/"
 
-             # Clean rebuild backend without cache
-       - name: Rebuild backend without cache
-         env:
-           FLASK_APP: app.py
-           FLASK_ENV: production
-           FLASK_PORT: 5000
-           JWT_SECRET_KEY: 065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
-           JWT_EXPIRATION_MINUTES: 1440
-           PYTHONPATH: /:/api
-           DB_HOST: lure_mysql_srvr
-           DB_PORT: 3306
-           DB_DATABASE: Lure
-           DB_USERNAME: 65CC63A4E10EE8F05BE4E1A8
-           DB_PASSWORD: 1C969B094797CB3AF27FF949
-           MYSQL_HOST: lure_mysql_srvr
-           MYSQL_PORT: 3306
-           MYSQL_ROOT_PASSWORD: 1C969B094797CB3AF27FF949
-           MYSQL_DATABASE: Lure
-           MYSQL_USER: 65CC63A4E10EE8F05BE4E1A8
-           MYSQL_PASSWORD: 1C969B094797CB3AF27FF949
-           REDIS_HOST: lure_redis_srvr
-           REDIS_PORT: 6379
-           REDIS_PASSWORD: redis_password
-           REDIS_DB: 0
-         run: |
-           # Stop current backend container
-           docker-compose stop api || true
-           
-           # Remove current backend container
-           docker-compose rm -f api || true
-           
-           # Remove backend images to ensure clean build
-           docker rmi lure_api_srvr || true
-           docker image prune -f
-           
-           # Build backend without cache and pull latest base images
-           docker-compose build --no-cache --pull api
-           
-           # Start backend with force recreate
-           docker-compose up -d --force-recreate api
+      # Clean rebuild backend without cache
+      - name: Rebuild backend without cache
+        run: |
+          # Stop current backend container
+          docker-compose stop api || true
+          
+          # Remove current backend container
+          docker-compose rm -f api || true
+          
+          # Remove backend images to ensure clean build
+          docker rmi lure_api_srvr || true
+          docker image prune -f
+          
+          # Build backend without cache and pull latest base images
+          docker-compose build --no-cache --pull api
+          
+          # Start backend with force recreate
+          docker-compose up -d --force-recreate api
 
              # Verify backend health after deployment
        - name: Verify backend deployment
