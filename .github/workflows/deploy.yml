@@ -44,26 +44,11 @@ jobs:
     runs-on: self-hosted
     
     steps:
-      # Clean workspace before checkout to avoid permission issues
-      - name: Clean workspace with Docker
-        run: |
-          # Use Docker to clean files with different permissions
-          if [ -d "${{ github.workspace }}" ]; then
-            docker run --rm \
-              -v ${{ github.workspace }}:/workspace \
-              alpine:latest \
-              sh -c "find /workspace -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true; \
-                     find /workspace -name '*.pyc' -exec rm -f {} + 2>/dev/null || true; \
-                     find /workspace -name '.DS_Store' -exec rm -f {} + 2>/dev/null || true"
-          fi
-
       # Checkout code to ensure backend code is updated
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: pipeline
-          clean: true
-          fetch-depth: 0
 
       # Update repository to latest pipeline branch
       - name: Update repository to latest pipeline
@@ -87,51 +72,88 @@ jobs:
             alpine:latest \
             sh -c "cp -r /dist/* /var/www/lureclo/"
 
-      # Clean rebuild backend without cache
-      - name: Rebuild backend without cache
-        run: |
-          # Stop current backend container
-          docker-compose stop api || true
-          
-          # Remove current backend container
-          docker-compose rm -f api || true
-          
-          # Remove backend images to ensure clean build
-          docker rmi lure_api_srvr || true
-          docker image prune -f
-          
-          # Clean any Python cache files that might cause issues
-          docker run --rm \
-            -v ${{ github.workspace }}/api:/api \
-            alpine:latest \
-            sh -c "find /api -name '__pycache__' -type d -exec rm -rf {} + 2>/dev/null || true; \
-                   find /api -name '*.pyc' -exec rm -f {} + 2>/dev/null || true"
-          
-          # Build backend without cache and pull latest base images
-          docker-compose build --no-cache --pull api
-          
-          # Start backend with force recreate
-          docker-compose up -d --force-recreate api
+             # Clean rebuild backend without cache
+       - name: Rebuild backend without cache
+         env:
+           FLASK_APP: app.py
+           FLASK_ENV: production
+           FLASK_PORT: 5000
+           JWT_SECRET_KEY: 065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+           JWT_EXPIRATION_MINUTES: 1440
+           PYTHONPATH: /:/api
+           DB_HOST: lure_mysql_srvr
+           DB_PORT: 3306
+           DB_DATABASE: Lure
+           DB_USERNAME: 65CC63A4E10EE8F05BE4E1A8
+           DB_PASSWORD: 1C969B094797CB3AF27FF949
+           MYSQL_HOST: lure_mysql_srvr
+           MYSQL_PORT: 3306
+           MYSQL_ROOT_PASSWORD: 1C969B094797CB3AF27FF949
+           MYSQL_DATABASE: Lure
+           MYSQL_USER: 65CC63A4E10EE8F05BE4E1A8
+           MYSQL_PASSWORD: 1C969B094797CB3AF27FF949
+           REDIS_HOST: lure_redis_srvr
+           REDIS_PORT: 6379
+           REDIS_PASSWORD: redis_password
+           REDIS_DB: 0
+         run: |
+           # Stop current backend container
+           docker-compose stop api || true
+           
+           # Remove current backend container
+           docker-compose rm -f api || true
+           
+           # Remove backend images to ensure clean build
+           docker rmi lure_api_srvr || true
+           docker image prune -f
+           
+           # Build backend without cache and pull latest base images
+           docker-compose build --no-cache --pull api
+           
+           # Start backend with force recreate
+           docker-compose up -d --force-recreate api
 
-      # Verify backend health after deployment
-      - name: Verify backend deployment
-        run: |
-          echo "Waiting for backend to start..."
-          sleep 30
-          
-          # Check if backend container is running
-          if docker-compose ps api | grep -q "Up"; then
-            echo "✅ Backend container is running"
-          else
-            echo "❌ Backend container failed to start"
-            docker-compose logs api
-            exit 1
-          fi
-          
-          # Check backend health endpoint
-          if curl -f http://localhost:60123/health; then
-            echo "✅ Backend health check passed"
-          else
-            echo "❌ Backend health check failed"
-            exit 1
-          fi
+             # Verify backend health after deployment
+       - name: Verify backend deployment
+         env:
+           FLASK_APP: app.py
+           FLASK_ENV: production
+           FLASK_PORT: 5000
+           JWT_SECRET_KEY: 065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+           JWT_EXPIRATION_MINUTES: 1440
+           PYTHONPATH: /:/api
+           DB_HOST: lure_mysql_srvr
+           DB_PORT: 3306
+           DB_DATABASE: Lure
+           DB_USERNAME: 65CC63A4E10EE8F05BE4E1A8
+           DB_PASSWORD: 1C969B094797CB3AF27FF949
+           MYSQL_HOST: lure_mysql_srvr
+           MYSQL_PORT: 3306
+           MYSQL_ROOT_PASSWORD: 1C969B094797CB3AF27FF949
+           MYSQL_DATABASE: Lure
+           MYSQL_USER: 65CC63A4E10EE8F05BE4E1A8
+           MYSQL_PASSWORD: 1C969B094797CB3AF27FF949
+           REDIS_HOST: lure_redis_srvr
+           REDIS_PORT: 6379
+           REDIS_PASSWORD: redis_password
+           REDIS_DB: 0
+         run: |
+           echo "Waiting for backend to start..."
+           sleep 30
+           
+           # Check if backend container is running
+           if docker-compose ps api | grep -q "Up"; then
+             echo "✅ Backend container is running"
+           else
+             echo "❌ Backend container failed to start"
+             docker-compose logs api
+             exit 1
+           fi
+           
+           # Check backend health endpoint
+           if curl -f http://localhost:60123/health; then
+             echo "✅ Backend health check passed"
+           else
+             echo "❌ Backend health check failed"
+             exit 1
+           fi
