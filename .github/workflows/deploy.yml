@@ -204,3 +204,10 @@ jobs:
             docker-compose logs proxy
             exit 1
           fi
+
+healthcheck:
+  test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]     # ← verifica porta 80
+  interval: 10s
+  timeout: 5s
+  retries: 5                                              # ← mais tentativas
+  start_period: 45s                                       # ← mais tempo para inicializar
