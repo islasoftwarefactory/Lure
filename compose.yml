@@ -48,6 +48,28 @@ services:
       retries: 5
       start_period: 40s
 
+  proxy:
+    container_name: lure_proxy_srvr
+    build:
+      context: ./proxy
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - lure-net
+    depends_on:
+      api:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   mysql:
     container_name: lure_mysql_srvr
     image: mysql:latest
