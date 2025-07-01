@@ -44,19 +44,6 @@ jobs:
     runs-on: self-hosted
     
     steps:
-      # Checkout code to ensure backend code is updated
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: fix/locked-page
-
-      # Update repository to latest fix/locked-page branch
-      - name: Update repository to latest fix/locked-page
-        run: |
-          git fetch origin fix/locked-page
-          git checkout fix/locked-page
-          git pull origin fix/locked-page
-
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -74,6 +61,28 @@ jobs:
 
       # Clean rebuild backend without cache
       - name: Rebuild backend without cache
+        env:
+          FLASK_APP: app.py
+          FLASK_ENV: production
+          FLASK_PORT: 5000
+          JWT_SECRET_KEY: 065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+          JWT_EXPIRATION_MINUTES: 1440
+          PYTHONPATH: /:/api
+          DB_HOST: lure_mysql_srvr
+          DB_PORT: 3306
+          DB_DATABASE: Lure
+          DB_USERNAME: 65CC63A4E10EE8F05BE4E1A8
+          DB_PASSWORD: 1C969B094797CB3AF27FF949
+          MYSQL_HOST: lure_mysql_srvr
+          MYSQL_PORT: 3306
+          MYSQL_ROOT_PASSWORD: 1C969B094797CB3AF27FF949
+          MYSQL_DATABASE: Lure
+          MYSQL_USER: 65CC63A4E10EE8F05BE4E1A8
+          MYSQL_PASSWORD: 1C969B094797CB3AF27FF949
+          REDIS_HOST: lure_redis_srvr
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: redis_password
+          REDIS_DB: 0
         run: |
           # Stop current backend container
           docker-compose stop api || true
@@ -91,47 +100,25 @@ jobs:
           # Start backend with force recreate
           docker-compose up -d --force-recreate api
 
-             # Verify backend health after deployment
-       - name: Verify backend deployment
-         env:
-           FLASK_APP: app.py
-           FLASK_ENV: production
-           FLASK_PORT: 5000
-           JWT_SECRET_KEY: 065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
-           JWT_EXPIRATION_MINUTES: 1440
-           PYTHONPATH: /:/api
-           DB_HOST: lure_mysql_srvr
-           DB_PORT: 3306
-           DB_DATABASE: Lure
-           DB_USERNAME: 65CC63A4E10EE8F05BE4E1A8
-           DB_PASSWORD: 1C969B094797CB3AF27FF949
-           MYSQL_HOST: lure_mysql_srvr
-           MYSQL_PORT: 3306
-           MYSQL_ROOT_PASSWORD: 1C969B094797CB3AF27FF949
-           MYSQL_DATABASE: Lure
-           MYSQL_USER: 65CC63A4E10EE8F05BE4E1A8
-           MYSQL_PASSWORD: 1C969B094797CB3AF27FF949
-           REDIS_HOST: lure_redis_srvr
-           REDIS_PORT: 6379
-           REDIS_PASSWORD: redis_password
-           REDIS_DB: 0
-         run: |
-           echo "Waiting for backend to start..."
-           sleep 30
-           
-           # Check if backend container is running
-           if docker-compose ps api | grep -q "Up"; then
-             echo "✅ Backend container is running"
-           else
-             echo "❌ Backend container failed to start"
-             docker-compose logs api
-             exit 1
-           fi
-           
-           # Check backend health endpoint
-           if curl -f http://localhost:60123/health; then
-             echo "✅ Backend health check passed"
-           else
-             echo "❌ Backend health check failed"
-             exit 1
-           fi
+      # Verify backend health after deployment
+      - name: Verify backend deployment
+        run: |
+          echo "Waiting for backend to start..."
+          sleep 30
+          
+          # Check if backend container is running
+          if docker-compose ps api | grep -q "Up"; then
+            echo "✅ Backend container is running"
+          else
+            echo "❌ Backend container failed to start"
+            docker-compose logs api
+            exit 1
+          fi
+          
+          # Check backend health endpoint
+          if curl -f http://localhost:60123/health; then
+            echo "✅ Backend health check passed"
+          else
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
