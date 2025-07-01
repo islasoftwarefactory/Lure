@@ -30,7 +30,7 @@ jobs:
         run: |
           git fetch origin fix/proxy-nginx2.0
           git checkout fix/proxy-nginx2.0
-          git pull origin fix/proxy-nginx.2.0
+          git pull origin fix/proxy-nginx2.0
           docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
           
       - name: Upload build artifacts
