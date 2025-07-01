@@ -191,7 +191,10 @@ jobs:
             echo "✅ Proxy container is running"
           else
             echo "❌ Proxy container failed to start"
+            echo "=== PROXY LOGS ==="
             docker-compose logs proxy
+            echo "=== ALL CONTAINER STATUS ==="
+            docker-compose ps
             exit 1
           fi
           

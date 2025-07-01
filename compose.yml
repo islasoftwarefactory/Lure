@@ -61,17 +61,6 @@ services:
       - "443:443"
     networks:
       - lure-net
-    depends_on:
-      api:
-        condition: service_healthy
-      app:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "netstat -ln | grep :80 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
 
   mysql:
     container_name: lure_mysql_srvr
