@@ -86,30 +86,61 @@ jobs:
           REDIS_DB=0
           EOF
 
+      # Aggressive cleanup to prevent ContainerConfig errors
+      - name: Aggressive Docker cleanup
+        run: |
+          echo "=== Starting aggressive Docker cleanup ==="
+          
+          # Stop all compose services
+          docker-compose down --remove-orphans --volumes || true
+          
+          # Stop all running containers
+          docker stop $(docker ps -aq) 2>/dev/null || true
+          
+          # Remove all containers
+          docker rm $(docker ps -aq) 2>/dev/null || true
+          
+          # Remove all images related to this project
+          docker rmi $(docker images | grep -E "(lure|app-srvr|mysql|redis)" | awk '{print $3}') 2>/dev/null || true
+          
+          # Docker system prune (removes unused data)
+          docker system prune -af --volumes
+          
+          # Docker builder prune (removes build cache)
+          docker builder prune -af
+          
+          echo "✅ Docker cleanup completed"
+
       # Clean rebuild backend without cache
       - name: Rebuild backend without cache
         run: |
-          # Stop current backend container
-          docker-compose stop api || true
+          echo "=== Building backend with clean slate ==="
           
-          # Remove current backend container
-          docker-compose rm -f api || true
+          # Verify .env exists
+          if [ -f ".env" ]; then
+            echo "✅ .env file found"
+          else
+            echo "❌ .env file not found"
+            exit 1
+          fi
           
-          # Remove backend images to ensure clean build
-          docker rmi lure_api_srvr || true
-          docker image prune -f
+          # Build all services without cache and pull latest base images
+          docker-compose build --no-cache --pull
           
-          # Build backend without cache and pull latest base images
-          docker-compose build --no-cache --pull api
+          # Start all services with force recreate
+          docker-compose up -d --force-recreate
           
-          # Start backend with force recreate
-          docker-compose up -d --force-recreate api
+          echo "✅ Backend rebuild completed"
 
       # Verify backend health after deployment
       - name: Verify backend deployment
         run: |
-          echo "Waiting for backend to start..."
-          sleep 30
+          echo "Waiting for services to start..."
+          sleep 45
+          
+          # Check if all containers are running
+          echo "=== Container Status ==="
+          docker-compose ps
           
           # Check if backend container is running
           if docker-compose ps api | grep -q "Up"; then
@@ -120,10 +151,30 @@ jobs:
             exit 1
           fi
           
+          # Check if MySQL container is running
+          if docker-compose ps mysql | grep -q "Up"; then
+            echo "✅ MySQL container is running"
+          else
+            echo "❌ MySQL container failed to start"
+            docker-compose logs mysql
+            exit 1
+          fi
+          
+          # Check if Redis container is running  
+          if docker-compose ps redis | grep -q "Up"; then
+            echo "✅ Redis container is running"
+          else
+            echo "❌ Redis container failed to start"
+            docker-compose logs redis
+            exit 1
+          fi
+          
           # Check backend health endpoint
+          echo "=== Testing Backend Health ==="
           if curl -f http://localhost:60123/health; then
             echo "✅ Backend health check passed"
           else
-            echo "❌ Backend health check failed"
+            echo "❌ Backend health check failed - checking logs..."
+            docker-compose logs api
             exit 1
           fi
