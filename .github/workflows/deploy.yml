@@ -86,30 +86,33 @@ jobs:
           REDIS_DB=0
           EOF
 
-      # Aggressive cleanup to prevent ContainerConfig errors
-      - name: Aggressive Docker cleanup
+      # Targeted cleanup only for Lure containers
+      - name: Cleanup Lure containers only
         run: |
-          echo "=== Starting aggressive Docker cleanup ==="
+          echo "=== Starting targeted Lure cleanup ==="
           
-          # Stop all compose services
-          docker-compose down --remove-orphans --volumes || true
+          # Stop compose services gracefully
+          docker-compose down --remove-orphans || true
           
-          # Stop all running containers
-          docker stop $(docker ps -aq) 2>/dev/null || true
+          # Remove specific Lure containers by name
+          docker rm -f lure_api_srvr 2>/dev/null || true
+          docker rm -f lure_mysql_srvr 2>/dev/null || true
+          docker rm -f lure_redis_srvr 2>/dev/null || true
+          docker rm -f app-srvr 2>/dev/null || true
           
-          # Remove all containers
-          docker rm $(docker ps -aq) 2>/dev/null || true
+          # Remove specific Lure images by name/tag
+          docker rmi lure_api_srvr 2>/dev/null || true
+          docker rmi lure_app-srvr 2>/dev/null || true
+          docker rmi $(docker images | grep "lure" | awk '{print $3}') 2>/dev/null || true
           
-          # Remove all images related to this project
-          docker rmi $(docker images | grep -E "(lure|app-srvr|mysql|redis)" | awk '{print $3}') 2>/dev/null || true
+          # Remove only Lure-related volumes
+          docker volume rm lure_mysql-data 2>/dev/null || true
+          docker volume rm lure_redis-data 2>/dev/null || true
           
-          # Docker system prune (removes unused data)
-          docker system prune -af --volumes
+          # Remove only dangling images (safe cleanup)
+          docker image prune -f
           
-          # Docker builder prune (removes build cache)
-          docker builder prune -af
-          
-          echo "✅ Docker cleanup completed"
+          echo "✅ Targeted Lure cleanup completed"
 
       # Clean rebuild backend without cache
       - name: Rebuild backend without cache
