@@ -42,13 +42,37 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
   };
 
   const testConnectivity = async () => {
-    console.log('=== TESTE DE CONECTIVIDADE ===');
+    console.log('=== TESTE DE CONECTIVIDADE COMPLETO ===');
     
+    // Teste 1: Health Check (está configurado diretamente no nginx)
     try {
-      // Teste 1: Fetch simples
-      console.log('Testando conectividade com fetch...');
-      const testUrl = `${import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'https://locked.lureclo.com'}/api/scraping/contact-types`;
-      console.log('URL de teste:', testUrl);
+      console.log('🏥 TESTE 1: Health Check...');
+      const healthUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://locked.lureclo.com'}/health`;
+      console.log('URL de health:', healthUrl);
+      
+      const healthResponse = await fetch(healthUrl, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+      
+      console.log('✅ HEALTH CHECK SUCESSO:', {
+        status: healthResponse.status,
+        statusText: healthResponse.statusText,
+        headers: Object.fromEntries(healthResponse.headers.entries())
+      });
+      
+      const healthData = await healthResponse.text();
+      console.log('Health data:', healthData);
+      
+    } catch (error) {
+      console.error('❌ HEALTH CHECK FALHOU:', error);
+    }
+    
+    // Teste 2: API Contact Types (via proxy /api/)
+    try {
+      console.log('📞 TESTE 2: API Contact Types...');
+      const testUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://locked.lureclo.com'}/api/scraping/contact-types`;
+      console.log('URL de teste API:', testUrl);
       
       const fetchResponse = await fetch(testUrl, {
         method: 'GET',
@@ -58,19 +82,27 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
         }
       });
       
-      console.log('Resposta do fetch:', {
+      console.log('✅ API CONTACT TYPES SUCESSO:', {
         status: fetchResponse.status,
         statusText: fetchResponse.statusText,
         headers: Object.fromEntries(fetchResponse.headers.entries())
       });
       
-      // Teste 2: Axios para endpoint de teste
-      console.log('Testando conectividade com axios...');
-      const axiosResponse = await api.get('scraping/contact-types');
-      console.log('Resposta do axios:', axiosResponse);
+      const apiData = await fetchResponse.text();
+      console.log('API data:', apiData);
       
     } catch (error) {
-      console.error('Erro no teste de conectividade:', error);
+      console.error('❌ API CONTACT TYPES FALHOU:', error);
+    }
+    
+    // Teste 3: Axios (usando baseURL configurado)
+    try {
+      console.log('⚡ TESTE 3: Axios com baseURL...');
+      const axiosResponse = await api.get('scraping/contact-types');
+      console.log('✅ AXIOS SUCESSO:', axiosResponse);
+      
+    } catch (error) {
+      console.error('❌ AXIOS FALHOU:', error);
     }
   };
 
