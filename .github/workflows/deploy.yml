@@ -112,6 +112,7 @@ jobs:
           docker rm -f lure_mysql_srvr 2>/dev/null || true
           docker rm -f lure_redis_srvr 2>/dev/null || true
           docker rm -f app-srvr 2>/dev/null || true
+          docker rm -f lure_proxy_srvr 2>/dev/null || true
           
           # Remove specific Lure images by name/tag
           docker rmi lure_api_srvr 2>/dev/null || true
@@ -185,12 +186,21 @@ jobs:
             exit 1
           fi
           
-          # Check backend health endpoint
-          echo "=== Testing Backend Health ==="
-          if curl -f http://localhost:60123/health; then
-            echo "✅ Backend health check passed"
+          # Check if Proxy container is running
+          if docker-compose ps proxy | grep -q "Up"; then
+            echo "✅ Proxy container is running"
           else
-            echo "❌ Backend health check failed - checking logs..."
-            docker-compose logs api
+            echo "❌ Proxy container failed to start"
+            docker-compose logs proxy
+            exit 1
+          fi
+          
+          # Check backend health endpoint via proxy (main test!)
+          echo "=== Testing Health via Proxy ==="
+          if curl -f http://localhost/health; then
+            echo "✅ Proxy health check passed - Cloudflare should work!"
+          else
+            echo "❌ Proxy health check failed - checking logs..."
+            docker-compose logs proxy
             exit 1
           fi
