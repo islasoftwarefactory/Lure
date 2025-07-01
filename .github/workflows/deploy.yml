@@ -4,11 +4,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "fixproxy-nginx.2.0" branch
+  # Triggers the workflow on push or pull request events but only for the "fix/proxy-nginx.2.0" branch
   push:
-    branches: [ "fixproxy-nginx.2.0" ]
+    branches: [ "fix/proxy-nginx.2.0" ]
   pull_request:
-    branches: [ "fixproxy-nginx.2.0" ]
+    branches: [ "fix/proxy-nginx.2.0" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,9 +28,9 @@ jobs:
       # Runs a single command using the runners shell
       - name: Start container and build application
         run: |
-          git fetch origin fixproxy-nginx.2.0
-          git checkout fixproxy-nginx.2.0
-          git pull origin fixproxy-nginx.2.0
+          git fetch origin fix/proxy-nginx.2.0
+          git checkout fix/proxy-nginx.2.0
+          git pull origin fix/proxy-nginx.2.
           docker run --rm --name lure-app-build -w /app -v $GITHUB_WORKSPACE/app:/app node:lts bash -c "npm i && npm run build"
           
       - name: Upload build artifacts
