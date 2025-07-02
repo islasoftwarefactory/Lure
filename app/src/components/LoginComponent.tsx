@@ -51,7 +51,7 @@ export function LoginComponent() {
           return;
         }
 
-        const fullApiUrl = `${apiUrl}/user/create`;
+        const fullApiUrl = `${apiUrl}/api/user/create`;
         console.log('Sending request to:', fullApiUrl);
 
         const response = await fetch(fullApiUrl, {
