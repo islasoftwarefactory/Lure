@@ -130,6 +130,7 @@ def verify_jwt():
         'health',
         'user.get_anonymous_token',
         'scraping.create',
+        'scraping.read_all',
         'user.create_or_login_oauth',
         'static',
         'contact_type.create',
@@ -146,9 +147,11 @@ def verify_jwt():
     public_paths = [
         '/contact/create',
         '/scraping/create',
+        '/scraping/read/all',
         '/scraping/update-password',
         '/scraping/login',
-        '/webhooks/stripe/create'
+        '/webhooks/stripe/create',
+        '/api/scraping/read/all'  # Para requisições que chegam com prefixo /api
     ]
  
  
