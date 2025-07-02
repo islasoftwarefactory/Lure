@@ -97,10 +97,10 @@ jobs:
           
           echo "✅ Targeted Lure cleanup completed"
 
-      # Clean rebuild backend without cache
-      - name: Rebuild backend without cache
+      # Simple restart of services
+      - name: Restart services
         run: |
-          echo "=== Building backend with clean slate ==="
+          echo "=== Restarting services ==="
           
           # Verify .env exists
           if [ -f ".env" ]; then
@@ -110,13 +110,13 @@ jobs:
             exit 1
           fi
           
-          # Build all services without cache and pull latest base images
-          docker-compose build --no-cache --pull
+          # Stop all services
+          docker-compose down
           
-          # Start all services with force recreate
-          docker-compose up -d --force-recreate
+          # Start all services
+          docker-compose up -d
           
-          echo "✅ Backend rebuild completed"
+          echo "✅ Services restart completed"
 
       # Verify backend health after deployment
       - name: Verify backend deployment
