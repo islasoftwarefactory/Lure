@@ -33,18 +33,32 @@ def create_tables():
             # Criar tipos de contato padrão
             from api.scraping.type.model import ContactType
             
-            # Verificar se já existem os tipos
-            if not ContactType.query.filter_by(name='email').first():
-                email_type = ContactType(name='email', disabled=False)
+            # Verificar se já existe o tipo email
+            if not ContactType.query.filter_by(name='e-mail').first():
+                email_type = ContactType(name='e-mail', disabled=False)
                 db.session.add(email_type)
             
-            if not ContactType.query.filter_by(name='sms').first():
-                sms_type = ContactType(name='sms', disabled=False)
-                db.session.add(sms_type)
+            # Criar status de pagamento padrão
+            from api.payment_status.model import PaymentStatus
+            
+            # Lista de status necessários para o sistema de pagamentos
+            payment_statuses = [
+                'Pending',    # Status inicial quando transação é criada
+                'Paid',       # Pagamento confirmado pela Stripe
+                'Failed',     # Pagamento falhou
+                'Cancelled',  # Pagamento cancelado
+                'Refunded'    # Pagamento reembolsado
+            ]
+            
+            # Criar cada status se não existir
+            for status_name in payment_statuses:
+                if not PaymentStatus.query.filter_by(name=status_name).first():
+                    payment_status = PaymentStatus(name=status_name)
+                    db.session.add(payment_status)
         
         # Commit da transação principal
         db.session.commit()
-        print("Tables and default contact types created successfully")
+        print("Tables, default contact types and payment statuses created successfully")
         
     except Exception as e:
         print(f"Error creating tables: {str(e)}")
