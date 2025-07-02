@@ -24,6 +24,7 @@ import Home from './components/page';
 import { LockProvider } from './context/LockContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { SalesDashboard } from './components/SalesDashboard';
+import { WaitlistDashboard } from './components/WaitlistDashboard';
 
 // Importe diretamente o AuthProvider do seu arquivo existente
 // import { AuthProvider } from './context/AuthContext'; 
@@ -103,6 +104,7 @@ export default function App() {
                     <Route path="/favorites" element={<FavoritesPage />} />
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/dashboard" element={<SalesDashboard />} />
+                    <Route path="/waitlist-dashboard" element={<WaitlistDashboard />} />
                   </Route>
                   <Route path="*" element={<Navigate to="/locked" replace />} />
                 </Routes>
