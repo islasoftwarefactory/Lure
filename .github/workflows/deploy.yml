@@ -41,7 +41,7 @@ jobs:
           echo "Container builds and serves optimized production files via nginx"
           echo "✅ Frontend deployment strategy confirmed"
 
-      # Create .env file for docker-compose
+      # Create .env file for docker-compose (backend)
       - name: Create environment file
         run: |
           cat > .env << EOF
@@ -66,6 +66,16 @@ jobs:
           REDIS_PORT=6379
           REDIS_PASSWORD=redis_password
           REDIS_DB=0
+          EOF
+
+      # Create .env file for frontend
+      - name: Create frontend environment file
+        run: |
+          cat > app/.env << EOF
+          # Frontend Environment Variables
+          VITE_API_BASE_URL=https://locked.lureclo.com
+          VITE_API_URL=https://locked.lureclo.com
+          VITE_GOOGLE_CLIENT_ID=1004875322245-lahdifmljpmem3a1qgrnkdmv1fioukel.apps.googleusercontent.com
           EOF
 
       # Targeted cleanup only for Lure containers
