@@ -79,7 +79,7 @@ export default function App() {
     return <div>Verificando sessão...</div>; // Use um componente de Spinner se preferir
   } */
 
-  const GOOGLE_CLIENT_ID = "2202647269-903kc0a4eh3pfn781rp5b4n42a8sov9n.apps.googleusercontent.com"; // Substitua pelo seu Client ID do Google
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   
   // Aninhamos os providers necessários para toda a aplicação
   return (

@@ -9,10 +9,7 @@ import svgr from 'vite-plugin-svgr'
 export default defineConfig({
   // Load environment variables from app/ directory
   envDir: path.resolve(__dirname),
-  // Define environment variables here
-  define: {
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('https://locked.lureclo.com')
-  },
+  // Environment variables will be loaded from .env file automatically
   plugins: [react(), svgr()],
   resolve: {
     alias: {
