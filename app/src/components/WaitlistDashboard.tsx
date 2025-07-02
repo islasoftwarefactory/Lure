@@ -53,8 +53,8 @@ export function WaitlistDashboard() {
             try {
                 // Fetch waitlist entries and contact types in parallel
                 const [entriesResponse, contactTypesResponse] = await Promise.all([
-                    api.get<{ data: WaitlistEntry[] }>('/scraping/read/all'),
-                    api.get<{ data: ContactType[] }>('/scraping/contact-types')
+                    api.get<{ data: WaitlistEntry[] }>('/api/scraping/read/all'),
+                    api.get<{ data: ContactType[] }>('/api/scraping/contact-types')
                 ]);
 
                 const entries = entriesResponse.data.data;
