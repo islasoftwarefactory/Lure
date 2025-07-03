@@ -12,7 +12,7 @@ const queryClient = new QueryClient();
 
 // Initialize stripe with the publishable key directly
 // const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
-const stripePromise = loadStripe("pk_test_51REHMcDClD4v1eQKQXawRtfdFesGdsmwEIcWyx0INLqS8IfMyDiqfo85zuLT3CT77Bst9uICCF0QD7OQYM7dPsCJ00Q7sMlzub")
+const stripePromise = loadStripe("pk_test_51REHMcDClD4v1eQKh1YOH3d8bI8o89gfUcdN1Mpi5YeCfTZ8DAOLwLoCZA768Jv47ghv4FmykNX5cqVKmxjeQSOD00ScH27ek3")
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
