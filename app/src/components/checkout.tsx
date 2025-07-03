@@ -63,7 +63,7 @@ interface CartItem {
 }
 
 // const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
-const stripeKey = "pk_test_51REHMcDClD4v1eQKQXawRtfdFesGdsmwEIcWyx0INLqS8IfMyDiqfo85zuLT3CT77Bst9uICCF0QD7OQYM7dPsCJ00Q7sMlzub"
+const stripeKey = "pk_test_51REHMcDClD4v1eQKh1YOH3d8bI8o89gfUcdN1Mpi5YeCfTZ8DAOLwLoCZA768Jv47ghv4FmykNX5cqVKmxjeQSOD00ScH27ek3"
 console.log("Stripe public key used: ", stripeKey)
 const stripePromise = loadStripe(stripeKey)
 

@@ -41,14 +41,14 @@ jobs:
           echo "Container builds and serves optimized production files via nginx"
           echo "✅ Frontend deployment strategy confirmed"
 
-      # Create .env file for docker-compose (backend)
+      # Create .env file for docker-compose (backend) - USANDO GITHUB SECRETS
       - name: Create environment file
         run: |
           cat > .env << EOF
           FLASK_APP=app.py
           FLASK_ENV=production
           FLASK_PORT=5000
-          JWT_SECRET_KEY=065997468111a63c1a6927b1875dc5334fce64729c038800baa5464a2b4e2a7b
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           JWT_EXPIRATION_MINUTES=1440
           PYTHONPATH=/:/api
           DB_HOST=lure_mysql_srvr
@@ -66,6 +66,8 @@ jobs:
           REDIS_PORT=6379
           REDIS_PASSWORD=redis_password
           REDIS_DB=0
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
           EOF
 
       # Create .env file for frontend
@@ -78,41 +80,12 @@ jobs:
           VITE_GOOGLE_CLIENT_ID=1004875322245-lahdifmljpmem3a1qgrnkdmv1fioukel.apps.googleusercontent.com
           EOF
 
-      # Targeted cleanup only for Lure containers
-      - name: Cleanup Lure containers only
+      # Restart simples - MANTÉM VOLUMES E DADOS
+      - name: Simple restart without data loss
         run: |
-          echo "=== Starting targeted Lure cleanup ==="
+          echo "=== Restart simples mantendo dados ==="
           
-          # Stop compose services gracefully
-          docker-compose down --remove-orphans || true
-          
-          # Remove specific Lure containers by name
-          docker rm -f lure_api_srvr 2>/dev/null || true
-          docker rm -f lure_mysql_srvr 2>/dev/null || true
-          docker rm -f lure_redis_srvr 2>/dev/null || true
-          docker rm -f app-srvr 2>/dev/null || true
-          docker rm -f lure_proxy_srvr 2>/dev/null || true
-          
-          # Remove specific Lure images by name/tag
-          docker rmi lure_api_srvr 2>/dev/null || true
-          docker rmi lure_app-srvr 2>/dev/null || true
-          docker rmi $(docker images | grep "lure" | awk '{print $3}') 2>/dev/null || true
-          
-          # Remove only Lure-related volumes
-          docker volume rm lure_mysql-data 2>/dev/null || true
-          docker volume rm lure_redis-data 2>/dev/null || true
-          
-          # Remove only dangling images (safe cleanup)
-          docker image prune -f
-          
-          echo "✅ Targeted Lure cleanup completed"
-
-      # Simple restart of services
-      - name: Restart services
-        run: |
-          echo "=== Restarting services ==="
-          
-          # Verify .env exists
+          # Verificar se .env existe
           if [ -f ".env" ]; then
             echo "✅ .env file found"
           else
@@ -120,17 +93,19 @@ jobs:
             exit 1
           fi
           
-          # Stop all services
+          # Para os serviços mas MANTÉM volumes
+          echo "Parando serviços..."
           docker-compose down
           
-          # Start all services
+          # Inicia os serviços novamente
+          echo "Iniciando serviços..."
           docker-compose up -d
           
-          echo "✅ Services restart completed"
+          echo "✅ Restart concluído - dados preservados"
 
       # Verify backend health after deployment
       - name: Verify backend deployment
-        run: |
+        run: |     
           echo "Waiting for services to start..."
           sleep 45
           
