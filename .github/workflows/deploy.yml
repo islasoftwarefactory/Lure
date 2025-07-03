@@ -78,6 +78,7 @@ jobs:
           VITE_API_BASE_URL=https://locked.lureclo.com
           VITE_API_URL=https://locked.lureclo.com
           VITE_GOOGLE_CLIENT_ID=1004875322245-lahdifmljpmem3a1qgrnkdmv1fioukel.apps.googleusercontent.com
+          VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
           EOF
 
       # Restart simples - MANTÉM VOLUMES E DADOS
@@ -97,11 +98,11 @@ jobs:
           echo "Parando serviços..."
           docker-compose down
           
-          # Inicia os serviços novamente
-          echo "Iniciando serviços..."
-          docker-compose up -d
+          # Inicia os serviços novamente, forçando rebuild das imagens
+          echo "Iniciando serviços com rebuild..."
+          docker-compose up -d --build
           
-          echo "✅ Restart concluído - dados preservados"
+          echo "✅ Restart concluído - dados preservados e imagens reconstruídas"
 
       # Verify backend health after deployment
       - name: Verify backend deployment

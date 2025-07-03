@@ -10,9 +10,9 @@ import { loadStripe } from '@stripe/stripe-js';
 
 const queryClient = new QueryClient();
 
-// Initialize stripe with the publishable key directly
-// const stripePromise = loadStripe(import.meta.env.STRIPE_PUBLISHABLE_KEY)
-const stripePromise = loadStripe("pk_test_51REHMcDClD4v1eQKh1YOH3d8bI8o89gfUcdN1Mpi5YeCfTZ8DAOLwLoCZA768Jv47ghv4FmykNX5cqVKmxjeQSOD00ScH27ek3")
+// Carrega a chave pública da Stripe a partir das variáveis de ambiente (Vite)
+// Esta é a forma segura e correta, evitando chaves no código
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
