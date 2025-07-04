@@ -8,7 +8,7 @@ from api.utils.security.DDOS.cookie_manager import CookieManager
 from datetime import datetime
 import pytz
 from flask_bcrypt import Bcrypt
-from api.utils.security.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required, admin_required
 
 blueprint = Blueprint('scraping', __name__)
 bcrypt = Bcrypt()

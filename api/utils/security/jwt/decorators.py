@@ -58,6 +58,44 @@ def token_required(f):
             
     return decorated
 
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        print("\n=== INÍCIO DA REQUISIÇÃO ADMIN (decorator) ===", flush=True)
+        print(f"Método: {request.method}", flush=True)
+        
+        token = request.headers.get("Authorization")
+        if not token:
+            print("❌ Token ausente no header (admin_required)", flush=True)
+            return jsonify({"message": "Token ausente!"}), 401
+
+        if token.startswith("Bearer "):
+            token = token.split()[1]
+            print("✓ Bearer token encontrado (admin_required)", flush=True)
+        
+        print(f"Token recebido (admin_required): {token[:20]}...", flush=True)
+        
+        try:
+            user_id = verify_token(token)
+            print(f"✓ Token válido para user_id: {user_id} (admin_required)", flush=True)
+            
+            # Importação dinâmica para evitar circular imports
+            from api.user.model import is_admin
+            
+            if not is_admin(user_id):
+                print(f"❌ Usuário ID {user_id} não tem privilégios de admin", flush=True)
+                current_app.logger.warning(f"Usuário ID {user_id} tentou acessar endpoint admin sem permissão.")
+                return jsonify({"message": "Acesso negado. Privilégios de administrador necessários."}), 403
+                
+            print(f"✓ Usuário ID {user_id} confirmado como admin", flush=True)
+            kwargs['current_user_id'] = user_id
+            return f(*args, **kwargs)
+        except Exception as e:
+            print(f"❌ Erro na validação do token (admin_required): {str(e)}", flush=True)
+            return jsonify({"message": "Token inválido ou expirado!"}), 401
+            
+    return decorated
+
 def optional_token(f):
     @wraps(f)
     def decorated(*args, **kwargs):
