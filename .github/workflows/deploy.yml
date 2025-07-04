@@ -77,7 +77,7 @@ jobs:
           # Frontend Environment Variables
           VITE_API_BASE_URL=https://locked.lureclo.com
           VITE_API_URL=https://locked.lureclo.com
-          VITE_GOOGLE_CLIENT_ID=1004875322245-lahdifmljpmem3a1qgrnkdmv1fioukel.apps.googleusercontent.com
+          VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
           EOF
 
