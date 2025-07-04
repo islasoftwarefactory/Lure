@@ -18,6 +18,7 @@ class User(db.Model):
     email = db.Column(db.String(256), unique=True, nullable=False)
     name = db.Column(db.String(40), nullable=False)
     photo = db.Column(db.String(256), nullable=True)
+    admin = db.Column(db.Boolean, nullable=False, default=False)
     auth_provider = db.Column(SQLAlchemyEnum(AuthProviderEnum, name='auth_provider_enum'), nullable=False)
     provider_id = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
@@ -29,7 +30,7 @@ class User(db.Model):
     favorites = db.relationship('Favorite', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<User id={self.id} email='{self.email}' provider='{self.auth_provider.value}' provider_id='{self.provider_id}'>"
+        return f"<User id={self.id} email='{self.email}' provider='{self.auth_provider.value}' provider_id='{self.provider_id}' admin={self.admin}>"
 
     def serialize(self):
         return {
@@ -37,6 +38,7 @@ class User(db.Model):
             "name": self.name,
             "email": self.email,
             "photo": self.photo,
+            "admin": self.admin,
             "auth_provider": self.auth_provider.value,
             "provider_id": self.provider_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
@@ -77,6 +79,7 @@ def create_user(user_data: Dict) -> User:
             name=user_data["name"],
             email=user_data["email"],
             photo=user_data.get("photo"),
+            admin=user_data.get("admin", False),
             auth_provider=auth_provider_enum,
             provider_id=user_data["provider_id"]
         )
@@ -94,7 +97,7 @@ def get_user(user_id: int) -> Optional[User]:
     return User.query.get(user_id)
 
 def update_user(user_id: int, user_data: Dict) -> Optional[User]:
-    """Atualiza dados de um usuário existente (ex: nome, foto)."""
+    """Atualiza dados de um usuário existente (ex: nome, foto, admin)."""
     user = get_user(user_id)
     if not user:
         current_app.logger.warning(f"Tentativa de atualizar usuário inexistente: ID {user_id}")
@@ -102,7 +105,7 @@ def update_user(user_id: int, user_data: Dict) -> Optional[User]:
 
     current_app.logger.info(f"Atualizando usuário ID {user_id}")
     try:
-        allowed_updates = ['name', 'photo']
+        allowed_updates = ['name', 'photo', 'admin']
         updated = False
         for key, value in user_data.items():
             if key in allowed_updates:
@@ -140,3 +143,54 @@ def delete_user(user_id: int) -> bool:
             raise
     current_app.logger.warning(f"Tentativa de deletar usuário inexistente: ID {user_id}")
     return False
+
+def is_admin(user_id: int) -> bool:
+    """Verifica se um usuário é admin."""
+    user = get_user(user_id)
+    return user.admin if user else False
+
+def get_all_admins() -> List[User]:
+    """Recupera todos os usuários que são administradores."""
+    return User.query.filter_by(admin=True).all()
+
+def promote_to_admin(user_id: int) -> Optional[User]:
+    """Promove um usuário para administrador."""
+    user = get_user(user_id)
+    if not user:
+        current_app.logger.warning(f"Tentativa de promover usuário inexistente: ID {user_id}")
+        return None
+    
+    if user.admin:
+        current_app.logger.info(f"Usuário ID {user_id} já é administrador.")
+        return user
+    
+    try:
+        user.admin = True
+        db.session.commit()
+        current_app.logger.info(f"Usuário ID {user_id} ({user.email}) promovido para administrador.")
+        return user
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao promover usuário ID {user_id} para admin: {str(e)}")
+        raise
+
+def demote_from_admin(user_id: int) -> Optional[User]:
+    """Remove privilégios de administrador de um usuário."""
+    user = get_user(user_id)
+    if not user:
+        current_app.logger.warning(f"Tentativa de rebaixar usuário inexistente: ID {user_id}")
+        return None
+    
+    if not user.admin:
+        current_app.logger.info(f"Usuário ID {user_id} não é administrador.")
+        return user
+    
+    try:
+        user.admin = False
+        db.session.commit()
+        current_app.logger.info(f"Usuário ID {user_id} ({user.email}) rebaixado de administrador.")
+        return user
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erro ao rebaixar usuário ID {user_id} de admin: {str(e)}")
+        raise

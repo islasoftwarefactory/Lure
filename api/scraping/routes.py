@@ -175,6 +175,7 @@ def create():
 
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
+@admin_required
 def read(id):
     scraping = get_scraping(id)
     if scraping is None:
@@ -186,6 +187,7 @@ def read(id):
     }), 200
 
 @blueprint.route("/read/all", methods=["GET"])
+@admin_required
 def read_all():
     scrapings = Scraping.query.all()
     scrapings_data = [scraping.serialize() for scraping in scrapings]
@@ -197,7 +199,7 @@ def read_all():
 
 # Update
 @blueprint.route("/update/<int:id>", methods=["PUT"])
-@token_required
+@admin_required
 def update(current_user_id, id):
     data = request.get_json()
 
@@ -239,6 +241,7 @@ def update(current_user_id, id):
 
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
+@admin_required
 def delete(id):
     try:
         scraping = delete_scraping(id)
@@ -309,6 +312,7 @@ def login():
 
 # Update Password
 @blueprint.route("/update-password/<int:id>", methods=["PUT"])
+@admin_required
 def update_password_route(id):
     """Update password for existing scraping entry"""
     try:

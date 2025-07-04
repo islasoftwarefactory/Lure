@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint, current_app
-from api.user.model import User, create_user, get_user, update_user, delete_user
+from api.user.model import User, create_user, get_user, update_user, delete_user, is_admin, get_all_admins, promote_to_admin, demote_from_admin
 from api.utils.security.jwt.decorators import token_required
 from api.utils.security.jwt.jwt_utils import generate_token, verify_token
 from functools import wraps
@@ -17,6 +17,24 @@ def token_required(f):
         user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
         if not user_id:
             return jsonify({"message": "Token inválido ou expirado!"}), 401
+
+        return f(user_id, *args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"message": "Token ausente!"}), 401
+
+        user_id = verify_token(token.split()[1] if token.startswith("Bearer ") else token)
+        if not user_id:
+            return jsonify({"message": "Token inválido ou expirado!"}), 401
+
+        if not is_admin(user_id):
+            current_app.logger.warning(f"Usuário ID {user_id} tentou acessar endpoint admin sem permissão.")
+            return jsonify({"message": "Acesso negado. Privilégios de administrador necessários."}), 403
 
         return f(user_id, *args, **kwargs)
     return decorated
@@ -247,6 +265,95 @@ def delete(current_user_id, id):
 def refresh_token(current_user_id):
     new_token = generate_token(current_user_id)
     return jsonify({'token': new_token}), 200
+
+# Admin management routes
+@blueprint.route('/admin/all', methods=['GET'])
+@admin_required
+def get_admins(current_user_id):
+    """Recupera todos os usuários administradores. Requer que o usuário logado seja admin."""
+    current_app.logger.info(f"Recebida requisição GET em /user/admin/all do usuário ID: {current_user_id}")
+    
+    try:
+        admins = get_all_admins()
+        admins_data = [admin.serialize() for admin in admins]
+        
+        current_app.logger.info(f"Lista de administradores recuperada com sucesso. Total: {len(admins_data)}")
+        return jsonify({
+            "data": admins_data,
+            "message": "Administrators retrieved successfully."
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Erro inesperado ao buscar administradores: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to retrieve administrators due to an internal server error."}), 500
+
+@blueprint.route('/admin/promote/<int:user_id>', methods=['POST'])
+@admin_required
+def promote_user_to_admin(current_user_id, user_id):
+    """Promove um usuário para administrador. Requer que o usuário logado seja admin."""
+    current_app.logger.info(f"Recebida requisição POST em /user/admin/promote/{user_id} do usuário ID: {current_user_id}")
+    
+    try:
+        user = promote_to_admin(user_id)
+        if not user:
+            current_app.logger.warning(f"Tentativa de promover usuário inexistente: ID {user_id}")
+            return jsonify({"error": "User not found"}), 404
+        
+        current_app.logger.info(f"Usuário ID {user_id} promovido para administrador com sucesso.")
+        return jsonify({
+            "data": user.serialize(),
+            "message": "User promoted to administrator successfully."
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Erro inesperado ao promover usuário ID {user_id}: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to promote user due to an internal server error."}), 500
+
+@blueprint.route('/admin/demote/<int:user_id>', methods=['POST'])
+@admin_required
+def demote_user_from_admin(current_user_id, user_id):
+    """Remove privilégios de administrador de um usuário. Requer que o usuário logado seja admin."""
+    current_app.logger.info(f"Recebida requisição POST em /user/admin/demote/{user_id} do usuário ID: {current_user_id}")
+    
+    # Impede que o usuário remova seus próprios privilégios
+    if current_user_id == user_id:
+        current_app.logger.warning(f"Usuário ID {current_user_id} tentou remover seus próprios privilégios de admin.")
+        return jsonify({"error": "Cannot demote yourself from admin."}), 400
+    
+    try:
+        user = demote_from_admin(user_id)
+        if not user:
+            current_app.logger.warning(f"Tentativa de rebaixar usuário inexistente: ID {user_id}")
+            return jsonify({"error": "User not found"}), 404
+        
+        current_app.logger.info(f"Usuário ID {user_id} rebaixado de administrador com sucesso.")
+        return jsonify({
+            "data": user.serialize(),
+            "message": "User demoted from administrator successfully."
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Erro inesperado ao rebaixar usuário ID {user_id}: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to demote user due to an internal server error."}), 500
+
+@blueprint.route('/admin/check/<int:user_id>', methods=['GET'])
+@admin_required
+def check_admin_status(current_user_id, user_id):
+    """Verifica se um usuário é administrador. Requer que o usuário logado seja admin."""
+    current_app.logger.info(f"Recebida requisição GET em /user/admin/check/{user_id} do usuário ID: {current_user_id}")
+    
+    try:
+        admin_status = is_admin(user_id)
+        current_app.logger.info(f"Status de admin verificado para usuário ID {user_id}: {admin_status}")
+        return jsonify({
+            "user_id": user_id,
+            "is_admin": admin_status,
+            "message": "Admin status checked successfully."
+        }), 200
+    except Exception as e:
+        current_app.logger.error(f"Erro inesperado ao verificar status de admin para usuário ID {user_id}: {str(e)}")
+        current_app.logger.error(traceback.format_exc())
+        return jsonify({"error": "Failed to check admin status due to an internal server error."}), 500
 
 @blueprint.route('/anonymous-token', methods=['GET'])
 def get_anonymous_token():
