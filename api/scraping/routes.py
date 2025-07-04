@@ -176,7 +176,7 @@ def create():
 # Read
 @blueprint.route("/read/<int:id>", methods=["GET"])
 @admin_required
-def read(id):
+def read(current_user_id, id):
     scraping = get_scraping(id)
     if scraping is None:
         return jsonify({"error": "Scraping entry not found"}), 404
@@ -188,7 +188,7 @@ def read(id):
 
 @blueprint.route("/read/all", methods=["GET"])
 @admin_required
-def read_all():
+def read_all(current_user_id):
     scrapings = Scraping.query.all()
     scrapings_data = [scraping.serialize() for scraping in scrapings]
 
@@ -242,7 +242,7 @@ def update(current_user_id, id):
 # Delete
 @blueprint.route("/delete/<int:id>", methods=["DELETE"])
 @admin_required
-def delete(id):
+def delete(current_user_id, id):
     try:
         scraping = delete_scraping(id)
         if scraping is None:
@@ -313,7 +313,7 @@ def login():
 # Update Password
 @blueprint.route("/update-password/<int:id>", methods=["PUT"])
 @admin_required
-def update_password_route(id):
+def update_password_route(current_user_id, id):
     """Update password for existing scraping entry"""
     try:
         scraping = get_scraping(id)
