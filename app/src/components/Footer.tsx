@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import backgroundImage from '../assets/icons/home/footer.svg';
 
 export function Footer() {
@@ -18,36 +19,14 @@ export function Footer() {
         }}>
           {/* Grupo das 4 primeiras colunas */}
           <div className="flex" style={{ marginLeft: '-100px' }}>
-            {/* Support Column */}
+            {/* Shopping Information Column */}
             <div className="w-48">
-              <h3 className="font-semibold mb-4">Support</h3>
+              <h3 className="font-semibold mb-4">Shopping Information</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
-                <li><a href="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns & Exchanges</a></li>
-                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
-              </ul>
-            </div>
-
-            {/* Company Column */}
-            <div className="w-48 ml-32">  
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-3">
-                <li><a href="/about-us" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</a></li>
-                <li><a href="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
-                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Customer Service</a></li>
-              </ul>
-            </div>
-
-            {/* Legal & Policies Column */}
-            <div className="w-48 ml-32">
-              <h3 className="font-semibold mb-4">Legal & Policies</h3>
-              <ul className="space-y-3">
-                <li><a href="/terms-of-service" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</a></li>
-                <li><a href="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
-                <li><a href="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns Policy</a></li>
+                <li><Link to="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns & Exchanges</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Payment Methods</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Order Tracking</Link></li>
               </ul>
             </div>
 
@@ -55,29 +34,34 @@ export function Footer() {
             <div className="w-48 ml-32">
               <h3 className="font-semibold mb-4">Help & Support</h3>
               <ul className="space-y-3">
-                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Order Tracking</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</a></li>
+                <li><Link to="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Customer Service</Link></li>
+              </ul>
+            </div>
+
+            {/* About Company Column */}
+            <div className="w-48 ml-32">
+              <h3 className="font-semibold mb-4">About Company</h3>
+              <ul className="space-y-3">
+                <li><Link to="/about-us" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Accessibility</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal Column */}
+            <div className="w-48 ml-32">
+              <h3 className="font-semibold mb-4">Legal</h3>
+              <ul className="space-y-3">
+                <li><Link to="/terms-of-service" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</Link></li>
+                <li><Link to="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</Link></li>
+                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Manage Cookies</Link></li>
               </ul>
             </div>
           </div>
 
-          {/* Newsletter Column - Temporariamente comentado
-          <div className="w-80 ml-64">
-            <h3 className="text-sm mb-4 font-semibold">Explore with us! Sign up to receive exclusive access to product drops, company news, and more.</h3>
-            <div className="flex items-center gap-2">
-              <input 
-                type="email" 
-                placeholder="Email" 
-                className="flex-1 px-4 py-2 border rounded-full bg-white font-semibold text-xs shadow-xl border-black/10"
-              />
-              <button className="px-4 py-2 bg-white text-black rounded-full border border-black/10 hover:bg-gray-50 font-semibold text-xs shadow-xl">
-                Submit
-              </button>
-            </div>
-          </div>
-          */}
+          {/* Newsletter Column - Temporariamente comentado */}
         </div>
 
         {/* Divider Line with Lure text */}
@@ -94,18 +78,8 @@ export function Footer() {
           <span className="absolute top-4 left-0 text-[#79808a] font-semibold text-sm">
             2025 Lure® All rights reserved.
           </span>
+          {/* Empty div where bottom links used to be, to keep layout consistent */}
           <div className="absolute top-4 right-0 space-x-4 text-[#79808a] font-semibold text-sm">
-            <a href="#" className="hover:text-gray-900">Manage Cookies</a>
-            <span>|</span>
-            <a href="/privacy-policy" className="hover:text-gray-900">Privacy Policy</a>
-            <span>|</span>
-            <a href="/terms-of-service" className="hover:text-gray-900">Terms of Service</a>
-            <span>|</span>
-            <a href="#" className="hover:text-gray-900">Payment Methods</a>
-            <span>|</span>
-            <a href="/shipping-policy" className="hover:text-gray-900">Shipping Policy</a>
-            <span>|</span>
-            <a href="#" className="hover:text-gray-900">Accessibility</a>
           </div>
         </div>
       </div>
