@@ -1,0 +1,116 @@
+---
+description: Prompt to refactor the Footer.tsx component to be fully responsive for mobile devices.
+globs: ["app/src/components/Footer.tsx"]
+alwaysApply: false
+---
+
+# 🎯 **PROMPT DE TAREFA: FOOTER RESPONSIVO PARA MOBILE**
+
+## **Visão Geral da Tarefa**
+Refatorar o componente `Footer.tsx` para ser totalmente responsivo, garantindo uma experiência de usuário excelente em dispositivos móveis. A abordagem principal será transformar o layout de colunas horizontais em uma pilha vertical em telas pequenas.
+
+---
+
+## **Problema Atual**
+O layout atual do Footer foi projetado apenas para desktop e quebra completamente em telas menores:
+- **Margens Negativas Fixas**: Estilos como `marginRight: '-400px'` e `marginLeft: '-100px'` empurram o conteúdo para fora da tela em dispositivos móveis.
+- **Layout Horizontal Fixo**: O `flex` com `ml-32` entre as colunas não permite que elas se ajustem verticalmente.
+- **Linha Divisória**: A linha na parte inferior também usa margens negativas, quebrando o layout em telas estreitas.
+- **Legibilidade**: O texto fica muito pequeno e as colunas se sobrepõem, tornando o conteúdo ilegível.
+
+---
+
+## **Solução Proposta: Layout Vertical Empilhado**
+
+### **Estratégia Principal: Tailwind CSS Responsivo**
+Utilizar os prefixos responsivos do Tailwind CSS (como `md:`, `lg:`) para aplicar estilos diferentes para telas maiores e menores.
+
+#### **Desktop (Telas `md` e maiores):**
+- Manter o layout atual com colunas horizontais.
+- Os estilos de desktop devem ser prefixados (ex: `md:flex-row`, `md:ml-32`).
+
+#### **Mobile (Telas menores que `md`):**
+- As colunas de links devem se empilhar verticalmente (`flex-col`).
+- As margens negativas devem ser removidas ou ajustadas para zero.
+- O espaçamento entre as seções empilhadas deve ser consistente (ex: `space-y-10`).
+- A linha divisória e os links inferiores devem se ajustar à largura da tela.
+
+---
+
+## **Critérios de Aceitação**
+
+### **Layout das Colunas:**
+- [ ] Em telas menores que o breakpoint `md` (768px), as 4 colunas de links devem se empilhar verticalmente.
+- [ ] Em telas `md` e maiores, as colunas devem permanecer lado a lado, como no layout atual.
+- [ ] O espaçamento entre as colunas empilhadas (mobile) deve ser claro e consistente.
+
+### **Estilização e Margens:**
+- [ ] Todas as margens negativas (`marginRight`, `marginLeft`) devem ser removidas ou neutralizadas em telas mobile.
+- [ ] A transição entre o layout mobile e desktop deve ser suave, sem quebrar em breakpoints intermediários.
+
+### **Linha Divisória e Copyright:**
+- [ ] A linha divisória na parte inferior deve ter `width: 100%` em telas mobile, sem margens negativas.
+- [ ] O texto "LURE" e o copyright devem estar posicionados corretamente em relação à linha em ambas as visualizações.
+- [ ] Os links de `Privacy` e `Terms` (atualmente vazios, mas o espaço existe) na parte inferior devem quebrar a linha ou empilhar de forma legível em mobile.
+
+### **Background e Geral:**
+- [ ] A imagem de fundo deve se ajustar de forma agradável, possivelmente com `background-position: center bottom` para focar na parte mais importante da imagem em mobile.
+- [ ] A altura mínima (`minHeight`) pode precisar de ajuste para `auto` em mobile para acomodar o conteúdo empilhado.
+
+---
+
+## **Diretrizes de Implementação**
+
+### **1. Refatorar para Classes Responsivas do Tailwind:**
+- **Container Principal das Colunas:**
+  ```jsx
+  // DE: <div className="flex" style={{ marginLeft: '-100px' }}>
+  // PARA:
+  <div className="flex flex-col md:flex-row md:ml-[-100px] space-y-10 md:space-y-0"> 
+  ```
+- **Espaçamento entre Colunas:**
+  ```jsx
+  // DE: <div className="w-48 ml-32">
+  // PARA:
+  <div className="w-full md:w-48 md:ml-32">
+  ```
+  Isso faz com que a coluna ocupe toda a largura em mobile (`w-full`) e a largura fixa em desktop.
+
+### **2. Ajustar o Divisor Inferior:**
+```jsx
+// DE: <div className="relative" style={{ width: 'calc(100% + 400px)', marginLeft: '-200px', ... }}>
+// PARA:
+<div className="relative w-full md:w-[calc(100%+400px)] md:ml-[-200px] mt-[150px] mb-12">
+```
+Isso remove as margens problemáticas em mobile, aplicando-as apenas em telas de desktop.
+
+### **3. Lidar com Estilos Inline:**
+- Mover o máximo possível de estilos inline para classes do Tailwind CSS.
+- Usar prefixos responsivos para os estilos que precisam mudar (ex: `w-full md:w-auto`).
+
+---
+
+## **Plano de Verificação**
+
+### **Testes Manuais:**
+1. **Visualização Desktop:** Abra a página em uma tela larga e verifique se o layout do Footer permanece exatamente como está agora.
+2. **Redimensionamento da Janela:** Redimensione lentamente a janela do navegador. Observe o comportamento no breakpoint de 768px (`md`). A transição deve ser limpa.
+3. **Visualização Mobile:** Use as ferramentas de desenvolvedor do navegador para simular diferentes dispositivos (iPhone, Samsung Galaxy, etc.).
+   - Verifique se as colunas estão empilhadas verticalmente.
+   - Verifique se não há overflow horizontal (sem barra de rolagem horizontal).
+   - Verifique se o texto é legível e o espaçamento é adequado.
+
+### **Checklist de Verificação:**
+- [ ] Colunas empilhadas abaixo de 768px?
+- [ ] Colunas lado a lado acima de 768px?
+- [ ] Sem margens negativas quebrando o layout em mobile?
+- [ ] Linha divisória contida na largura da tela em mobile?
+- [ ] Fundo e texto estão visualmente corretos em todos os tamanhos?
+
+---
+
+**🚀 PRONTO PARA IMPLEMENTAR**: Esta tarefa garantirá que o Footer seja profissional e funcional em todos os dispositivos, melhorando significativamente a experiência do usuário mobile.
+description:
+globs:
+alwaysApply: false
+---
