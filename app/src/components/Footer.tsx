@@ -37,7 +37,6 @@ export function Footer() {
                 <li><Link to="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</Link></li>
                 <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</Link></li>
                 <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Customer Service</Link></li>
               </ul>
             </div>
 
