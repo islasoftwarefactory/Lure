@@ -23,42 +23,42 @@ export function Footer() {
               <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-3">
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns & Exchanges</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
               </ul>
             </div>
 
-            {/* About Column */}
+            {/* Company Column */}
             <div className="w-48 ml-32">  
-              <h3 className="font-semibold mb-4">About</h3>
+              <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-3">
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Sustainability</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Horween Leather</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Careers</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Customer Service</a></li>
               </ul>
             </div>
 
-            {/* Sales Column */}
+            {/* Legal & Policies Column */}
             <div className="w-48 ml-32">
-              <h3 className="font-semibold mb-4">Sales</h3>
+              <h3 className="font-semibold mb-4">Legal & Policies</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Press & Affiliates</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Where We're Sold</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Wholesale</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Discounted Gear</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns Policy</a></li>
               </ul>
             </div>
 
-            {/* Explore Column */}
+            {/* Help & Support Column */}
             <div className="w-48 ml-32">
-              <h3 className="font-semibold mb-4">Explore</h3>
+              <h3 className="font-semibold mb-4">Help & Support</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Become an Ambassador</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">The Nomadic Blog</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Wallpapers</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Limited Edition</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Order Tracking</a></li>
+                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</a></li>
               </ul>
             </div>
           </div>
@@ -97,11 +97,13 @@ export function Footer() {
           <div className="absolute top-4 right-0 space-x-4 text-[#79808a] font-semibold text-sm">
             <a href="#" className="hover:text-gray-900">Manage Cookies</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Privacy</a>
+            <a href="#" className="hover:text-gray-900">Privacy Policy</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Terms</a>
+            <a href="#" className="hover:text-gray-900">Terms of Service</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Payment</a>
+            <a href="#" className="hover:text-gray-900">Payment Methods</a>
+            <span>|</span>
+            <a href="#" className="hover:text-gray-900">Shipping Policy</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-900">Accessibility</a>
           </div>

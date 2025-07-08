@@ -1,0 +1,170 @@
+---
+description: Implementation prompt for updating Footer component with real business content (Solution 5)
+globs: ["app/src/components/Footer.tsx"]
+alwaysApply: false
+---
+
+# 🎯 **SOLUTION 5 IMPLEMENTATION PROMPT**
+## Footer Content Update - Replace Placeholders with Real Business Content
+
+### **TASK OVERVIEW**
+Update the Footer.tsx component to replace all placeholder/non-existent content with actual Lure business content while maintaining the exact current layout structure and styling.
+
+---
+
+## **EXACT CONTENT MAPPING**
+
+### **Column 1: "Support" (Keep Structure)**
+```typescript
+// CURRENT → NEW
+"Help Center"     → "Help Center" (keep)
+"Shipping"        → "Shipping Policy" 
+"Returns"         → "Returns & Exchanges"
+"Contact Us"      → "Contact Us" (keep)
+```
+
+### **Column 2: "About" → "Company"**
+```typescript
+// REMOVE these placeholders:
+❌ "Sustainability" 
+❌ "Horween Leather"
+❌ "Careers"
+
+// ADD real content:
+✅ "About Us"
+✅ "Privacy Policy" 
+✅ "Contact"
+✅ "Customer Service"
+```
+
+### **Column 3: "Sales" → "Legal & Policies"**
+```typescript
+// REMOVE entire current content:
+❌ "Press & Affiliates"
+❌ "Where We're Sold" 
+❌ "Wholesale"
+❌ "Discounted Gear"
+
+// ADD policy content:
+✅ "Terms of Service"
+✅ "Privacy Policy"
+✅ "Shipping Policy"
+✅ "Returns Policy"
+```
+
+### **Column 4: "Explore" → "Help & Support"**
+```typescript
+// REMOVE these placeholders:
+❌ "Become an Ambassador"
+❌ "The Nomadic Blog" 
+❌ "Wallpapers"
+❌ "Limited Edition"
+
+// ADD support content:
+✅ "Contact Us"
+✅ "Help Center" 
+✅ "Order Tracking"
+✅ "FAQs"
+```
+
+---
+
+## **BOTTOM FOOTER LINKS UPDATE**
+
+### **Current Bottom Links**
+```typescript
+// UPDATE these:
+"Privacy"      → "Privacy Policy"
+"Terms"        → "Terms of Service"  
+"Payment"      → "Payment Methods" (keep current)
+"Accessibility" → "Accessibility" (keep current)
+
+// ADD new:
++ "Shipping Policy"
+```
+
+---
+
+## **BUSINESS CONTENT CONTEXT**
+*Based on actual documents in `/docs/` folder:*
+
+### **✅ CONTENT WE HAVE:**
+- **Shipping Policy**: Comprehensive cross-docking model, international shipping from Brazil, delivery times
+- **Privacy Policy**: Complete CCPA-compliant privacy policy with Google OAuth, Stripe integration
+- **Terms of Service**: Full terms covering user accounts, payments, returns, arbitration
+- **About Us Structure**: Template ready for content (not full content yet)
+
+### **❌ CONTENT WE DON'T HAVE:**
+- Blog ("The Nomadic Blog")
+- Ambassador program
+- Wholesale operations  
+- Careers page
+- Sustainability initiatives
+- Horween Leather information
+- Wallpapers/downloads
+- Limited Edition info
+
+---
+
+## **IMPLEMENTATION REQUIREMENTS**
+
+### **1. Code Changes Required**
+```typescript
+// File: app/src/components/Footer.tsx
+// Lines to modify: ~15-50 (the column content sections)
+// Keep: All styling, layout, spacing, background
+// Change: Only the text content and href="#" links
+```
+
+### **2. Styling Requirements**
+- ✅ **KEEP**: All current CSS classes and inline styles
+- ✅ **KEEP**: Current spacing (ml-32, w-48, etc.)
+- ✅ **KEEP**: Background image and layout structure
+- ✅ **KEEP**: Responsive behavior
+- ✅ **KEEP**: Typography (font-semibold, text-gray-600, etc.)
+
+### **3. Link Requirements**
+```typescript
+// ALL links should be placeholder for now:
+href="#"  // Will be implemented in next phase
+```
+
+---
+
+## **VERIFICATION CHECKLIST**
+
+### **Content Verification**
+- [ ] No placeholder content remains (blog, careers, wholesale, etc.)
+- [ ] All content matches actual business documentation
+- [ ] Column headers updated to reflect new content grouping
+- [ ] Bottom footer links include all actual policies
+
+### **Technical Verification**  
+- [ ] Footer background image still displays correctly
+- [ ] All spacing and layout unchanged
+- [ ] Responsive design works on mobile/tablet/desktop
+- [ ] All links are set to href="#"
+- [ ] No console errors or styling breaks
+
+### **Business Verification**
+- [ ] Support column focuses on customer help
+- [ ] Company column reflects business information  
+- [ ] Legal column contains all compliance documents
+- [ ] Help column provides customer service options
+
+---
+
+## **SUCCESS CRITERIA**
+1. **User sees real business content** instead of placeholder/non-existent services
+2. **Professional appearance** with properly categorized information
+3. **Zero visual regressions** - footer looks identical except for text content
+4. **Accurate representation** of Lure's actual business offerings
+5. **Ready for next phase** where we'll add actual page links
+
+---
+
+## **EXAMPLE OUTPUT STRUCTURE**
+description:
+globs:
+alwaysApply: false
+---
