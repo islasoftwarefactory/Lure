@@ -1,8 +1,80 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import backgroundImage from '../assets/icons/home/footer.svg';
 
+interface FooterLink {
+  to: string;
+  label: string;
+}
+
+interface FooterSectionProps {
+  title: string;
+  links: FooterLink[];
+}
+
+// Reusable component for expandable sections
+const FooterSection = ({ title, links }: FooterSectionProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="w-full md:w-48">
+      <h3 
+        className="font-semibold mb-4 text-lg cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {title}
+      </h3>
+      {isOpen && (
+        <ul className="space-y-3">
+          {links.map((link, index) => (
+            <li key={index}>
+              <Link to={link.to} className="text-gray-600 hover:text-gray-900 font-semibold">
+                {link.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
 export function Footer() {
+  const sections: FooterSectionProps[] = [
+    {
+      title: 'Shopping Information',
+      links: [
+        { to: '/shipping-policy', label: 'Shipping Policy' },
+        { to: '#', label: 'Returns & Exchanges' },
+        { to: '#', label: 'Payment Methods' },
+        { to: '#', label: 'Order Tracking' },
+      ],
+    },
+    {
+      title: 'Help & Support',
+      links: [
+        { to: '/contact', label: 'Contact Us' },
+        { to: '#', label: 'Help Center' },
+        { to: '#', label: 'FAQs' },
+      ],
+    },
+    {
+      title: 'About Company',
+      links: [
+        { to: '/about-us', label: 'About Us' },
+        { to: '#', label: 'Accessibility' },
+      ],
+    },
+    {
+      title: 'Legal',
+      links: [
+        { to: '/terms-of-service', label: 'Terms of Service' },
+        { to: '/privacy-policy', label: 'Privacy Policy' },
+        { to: '#', label: 'Manage Cookies' },
+      ],
+    },
+  ];
+
   return (
     <footer 
       style={{
@@ -19,45 +91,9 @@ export function Footer() {
         }}>
           {/* Grupo das 4 primeiras colunas */}
           <div className="flex flex-col md:flex-row space-y-10 md:space-y-0 md:space-x-16 lg:space-x-32 md:ml-[-100px]">
-            {/* Shopping Information Column */}
-            <div className="w-full md:w-48">
-              <h3 className="font-semibold mb-4 text-lg">Shopping Information</h3>
-              <ul className="space-y-3">
-                <li><Link to="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns & Exchanges</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Payment Methods</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Order Tracking</Link></li>
-              </ul>
-            </div>
-
-            {/* Help & Support Column */}
-            <div className="w-full md:w-48">
-              <h3 className="font-semibold mb-4 text-lg">Help & Support</h3>
-              <ul className="space-y-3">
-                <li><Link to="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</Link></li>
-              </ul>
-            </div>
-
-            {/* About Company Column */}
-            <div className="w-full md:w-48">
-              <h3 className="font-semibold mb-4 text-lg">About Company</h3>
-              <ul className="space-y-3">
-                <li><Link to="/about-us" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Accessibility</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal Column */}
-            <div className="w-full md:w-48">
-              <h3 className="font-semibold mb-4 text-lg">Legal</h3>
-              <ul className="space-y-3">
-                <li><Link to="/terms-of-service" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</Link></li>
-                <li><Link to="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</Link></li>
-                <li><Link to="#" className="text-gray-600 hover:text-gray-900 font-semibold">Manage Cookies</Link></li>
-              </ul>
-            </div>
+            {sections.map((section, index) => (
+              <FooterSection key={index} title={section.title} links={section.links} />
+            ))}
           </div>
 
           {/* Newsletter Column - Temporariamente comentado */}
