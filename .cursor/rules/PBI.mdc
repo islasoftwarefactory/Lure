@@ -1,0 +1,221 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Lure Cursor Engineering Rules
+
+## Rationale
+These rules codify 30+ years of software engineering experience to transform "enthusiastic chaos" into "disciplined product engineering" when using Cursor AI in real projects.
+
+## Product Backlog Item (PBI) Disciplines
+
+### Rationale
+Maintain focus and quality through rigorous discipline in what can be worked on. Prevents scope creep and ensures every task has clear business value.
+
+### Allowed Content
+- **Bug fixes** with root cause analysis and impact assessment
+- **Feature implementations** with clear specification and acceptance criteria
+- **Refactoring** with performance/maintainability justification
+- **Security improvements** with threat model consideration
+- **Performance optimizations** with measurable targets
+
+### Not Allowed Content
+- Vague requests like "improve the system"
+- Features without clear business justification
+- "Nice to have" improvements without priority assessment
+- Experimental changes without rollback plan
+
+### Workflow Rules
+- **BACKLOG** → **IN PROGRESS** → **IN REVIEW** → **DONE**
+- Only tasks with complete analysis can move to IN PROGRESS
+- Only User can approve IN REVIEW → DONE transition
+- Tasks in IN PROGRESS must have assigned developer
+- No task can skip workflow stages
+
+### Linking Requirements
+- Each PBI must link to specific business requirement
+- Must reference related tasks or dependencies
+- Should include impact assessment on existing functionality
+
+## Task Management Disciplines
+
+### Rationale
+Well-defined tasks prevent scope creep and ensure consistent quality. Tasks are the atomic unit of work and must be complete and unambiguous.
+
+### Required Task Content
+Every task MUST contain:
+- [ ] **Problem Statement**: Clear description of what needs to be solved
+- [ ] **Acceptance Criteria**: Specific, measurable, testable requirements
+- [ ] **File Modification List**: Exhaustive list of files that will be changed
+- [ ] **Test Requirements**: Unit, integration, and manual tests to be implemented
+- [ ] **Rollback Plan**: How to undo changes if issues arise
+- [ ] **Dependencies**: Other tasks or systems that must be considered
+- [ ] **Estimated Impact**: Performance, security, user experience implications
+
+### Detail Level ("Goldilocks Principle")
+- **Not too abstract**: Causes confusion and multiple interpretations
+- **Not too detailed**: Constrains implementation unnecessarily
+- **Just right**: Exact enough for unambiguous implementation
+
+#### Examples:
+❌ **Too Abstract**: "Fix the login system"
+❌ **Too Detailed**: "Change line 47 in auth.py to use bcrypt.hashpw() instead of md5"
+✅ **Just Right**: "Implement secure password hashing using bcrypt in user authentication, replacing current MD5 implementation. Update login/register endpoints and add migration for existing passwords."
+
+### Workflow Enforcement Rules
+- **DO NOT** commit code until User has marked task as DONE
+- **DO NOT** modify files not listed in the task scope
+- **DO NOT** add features not specified in acceptance criteria
+- **DO NOT** perform refactoring not requested in the task
+- **DO NOT** change database schema without explicit permission
+- **DO NOT** modify security configurations without security review
+
+## Solution Analysis Protocol
+
+### Rationale
+Before any implementation begins, the LLM must conduct a structured logical analysis to ensure the chosen solution has the highest probability of success and fits within the project context.
+
+### Mandatory Pre-Implementation Process
+For every task, feature, or problem-solving request, the LLM MUST:
+
+1. **Present Initial Logical Explanation**
+   - Provide clear understanding of the problem/requirement
+   - Explain the context within the Lure project architecture
+   - Identify potential challenges and constraints
+
+2. **Conduct "Thinking" Analysis**
+   - Generate exactly **5 different solution approaches**
+   - For each approach, analyze:
+     - **Pros**: Advantages and benefits
+     - **Cons**: Disadvantages and risks  
+     - **Complexity**: Implementation difficulty (Low/Medium/High)
+     - **Impact**: Effect on existing system (Minimal/Moderate/High)
+     - **Compatibility**: Alignment with current architecture
+     - **Maintenance**: Long-term maintainability implications
+
+3. **Comparative Analysis**
+   - Compare all 5 solutions considering:
+     - Project constraints and requirements
+     - Existing codebase patterns and standards
+     - Performance implications
+     - Security considerations
+     - Development time and effort
+     - Risk of introducing bugs or breaking changes
+
+4. **Final Solution Selection**
+   - Present the chosen solution with format: **"Solution X (Y% Success Probability)"**
+   - Justify why this solution was selected over others
+   - Provide specific reasoning based on the comparative analysis
+   - Include fallback plan if primary solution fails
+
+### Solution Presentation Format
+```
+## 🎯 Chosen Solution: [Solution Name] (X% Success Probability)
+
+### Logic Behind Choice:
+[Detailed explanation of why this solution was selected]
+
+### Implementation Approach:
+[High-level steps for implementation]
+
+### Risk Mitigation:
+[How identified risks will be addressed]
+```
+
+### Workflow Integration
+- This analysis MUST be completed BEFORE moving any task to "IN PROGRESS"
+- User can request revision of analysis if not satisfied with reasoning
+- Implementation can only begin after User approves the selected solution
+- If solution fails during implementation, return to analysis phase with lessons learned
+
+### Quality Requirements
+- Success probability must be realistically calculated based on:
+  - Complexity of implementation
+  - Compatibility with existing system
+  - Available testing capabilities
+  - Developer experience with similar solutions
+  - Historical success rate of similar changes
+
+## Lure-Specific Implementation Rules
+
+### Authentication Changes
+- **ALWAYS** test with both authenticated and anonymous users
+- **VERIFY** JWT token validation still works correctly
+- **CHECK** that public routes remain accessible
+- **CONFIRM** rate limiting still functions properly
+
+### Database Modifications
+- **CREATE** migration scripts for schema changes
+- **TEST** migrations on copy of production data
+- **VERIFY** backward compatibility where required
+- **DOCUMENT** any breaking changes
+
+### Frontend State Management
+- **MAINTAIN** consistency between localStorage and backend
+- **PRESERVE** cart state across authentication changes
+- **ENSURE** context providers remain stable
+- **TEST** error boundaries and fallback states
+
+### API Endpoint Changes
+- **FOLLOW** established CRUD patterns
+- **MAINTAIN** consistent error response format
+- **PRESERVE** existing endpoint behavior unless explicitly changing
+- **UPDATE** API documentation if endpoints change
+
+## Quality Gates
+
+### Before Starting Implementation
+- [ ] Task has all required content sections filled
+- [ ] Acceptance criteria are specific and testable
+- [ ] File modification list is complete and justified
+- [ ] Dependencies have been identified and resolved
+- [ ] User has approved task for IN PROGRESS
+
+### Before Requesting Review
+- [ ] All acceptance criteria have been met
+- [ ] All specified tests have been implemented and pass
+- [ ] No files outside the scope have been modified
+- [ ] Code follows established patterns in the codebase
+- [ ] Error handling is consistent with project standards
+
+### Before Marking DONE
+- [ ] User has manually verified all acceptance criteria
+- [ ] All tests pass in clean environment
+- [ ] No regressions in existing functionality
+- [ ] Performance impact is within acceptable bounds
+- [ ] Security implications have been considered
+
+## Emergency Protocols
+
+### If Critical Issues Arise During Implementation
+1. **STOP** current work immediately
+2. **DOCUMENT** the issue encountered with full context
+3. **ASSESS** impact on system stability and user experience
+4. **REQUEST** guidance before proceeding with any fixes
+5. **NEVER** make assumptions about solutions to critical issues
+
+### If Scope Needs to Change Mid-Task
+1. **PAUSE** implementation
+2. **DOCUMENT** why scope change is necessary
+3. **GET** explicit approval from User for scope modification
+4. **UPDATE** task documentation to reflect new scope
+5. **RESTART** quality gates with new requirements
+
+## Communication Protocols
+
+### Progress Reporting
+- Report completion of major milestones within task
+- Immediately flag any blockers or unexpected issues
+- Request clarification if acceptance criteria are ambiguous
+- Confirm understanding before making significant architectural decisions
+
+### Code Review Requests
+- Provide clear summary of changes made
+- Highlight any deviations from original plan
+- Include test results and verification steps
+- Document any technical decisions made during implementation
+
+---
+
+**Note**: These rules transform Cursor from an "enthusiastic but chaotic" assistant into a "disciplined and focused" software engineer. Adherence to these protocols ensures consistent, high-quality output that meets professional software development standards.

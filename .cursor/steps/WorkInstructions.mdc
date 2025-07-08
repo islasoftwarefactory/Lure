@@ -1,0 +1,88 @@
+Ah perfect! You want a **generic, reusable prompt** for working with ANY MDC file in your project. Here's a comprehensive template you can use with any future MDC file:
+
+---
+
+# 🤖 **GENERAL MDC EXECUTION PROMPT**
+
+## **DOCUMENT OVERVIEW**
+You are receiving a `.mdc` (Markdown with Cursor) file that contains structured implementation instructions for the **Lure e-commerce platform**. This document follows our disciplined engineering rules and PBI (Product Backlog Item) workflow.
+
+## **WHAT MDC FILES CONTAIN**
+Our `.mdc` files are **implementation prompts** that provide:
+- ✅ **Detailed task specifications** with clear acceptance criteria
+- ✅ **Technical requirements** and architectural constraints  
+- ✅ **Business context** and project-specific considerations
+- ✅ **Code modification guidelines** following our established patterns
+- ✅ **Verification checklists** and success criteria
+- ✅ **Quality gates** and testing requirements
+
+## **EXECUTION PROTOCOL**
+
+### **1. COMPLETE DOCUMENT REVIEW**
+- **READ ENTIRELY** before making any changes
+- Understand the business context and problem being solved
+- Note all technical requirements and constraints
+- Review file modification scope and dependencies
+
+### **2. FOLLOW LURE ARCHITECTURE RULES**
+Our platform has specific patterns you MUST follow:
+- **Backend**: Flask + SQLAlchemy + JWT authentication + DDOS protection
+- **Frontend**: React + TypeScript + Context API + Tailwind CSS
+- **API Communication**: REST JSON only, proper error handling
+- **Security**: Use `@token_required` decorators, validate all inputs
+- **Code Patterns**: Follow established CRUD patterns and naming conventions
+
+### **3. IMPLEMENT AS SPECIFIED**
+- **Scope Adherence**: Only modify files listed in the document
+- **Acceptance Criteria**: Meet ALL specified requirements exactly
+- **Quality Standards**: Follow established code patterns and error handling
+- **Testing**: Implement any tests specified in the document
+- **Documentation**: Update relevant documentation if specified
+
+### **4. MAINTAIN PROJECT STANDARDS**
+- **Authentication**: Preserve JWT token validation and public route definitions
+- **Frontend State**: Maintain Context API patterns and localStorage sync
+- **Database**: Use proper migrations for schema changes
+- **Error Handling**: Follow consistent error response formats
+- **Performance**: Consider impact on existing system performance
+
+### **5. VERIFICATION PROCESS**
+Use the document's verification checklists to validate:
+- **Functional Requirements**: All acceptance criteria met
+- **Technical Requirements**: Code follows project patterns
+- **Business Requirements**: Solution addresses stated problem
+- **Quality Requirements**: No regressions, proper testing
+- **Security Requirements**: No security vulnerabilities introduced
+
+## **PROJECT CONTEXT**
+- **Tech Stack**: Flask backend, React frontend, MySQL database, Docker deployment
+- **Authentication**: JWT-based with Google OAuth integration
+- **Payment Processing**: Stripe integration with webhooks
+- **Shipping Model**: Cross-docking logistics from Brazil to US
+- **User Base**: B2C e-commerce customers with guest and authenticated flows
+
+## **QUALITY GATES**
+Before marking complete, ensure:
+- [ ] All acceptance criteria met
+- [ ] No files outside scope modified
+- [ ] Existing functionality unchanged (unless specified)
+- [ ] Proper error handling implemented
+- [ ] Security considerations addressed
+- [ ] Performance impact acceptable
+
+## **WORKFLOW INTEGRATION**
+This follows our **BACKLOG → IN PROGRESS → IN REVIEW → DONE** workflow:
+- Document represents approved task ready for implementation
+- Follow all specified requirements without scope creep
+- Request clarification if acceptance criteria are ambiguous
+- Report completion when all verification criteria met
+
+---
+
+**🎯 EXECUTION INSTRUCTION**: Read the attached MDC file completely, understand the context and requirements, then implement the solution following ALL specifications, technical requirements, and quality standards outlined in the document.
+
+**📋 DELIVERABLE**: Working implementation that meets every acceptance criterion and passes all verification checklists specified in the MDC document.
+
+---
+
+This generic prompt can be used with ANY MDC file you create for future tasks! It explains your workflow, architecture rules, and execution expectations without being tied to any specific task. Perfect for reuse! 🚀

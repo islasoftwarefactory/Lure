@@ -25,6 +25,11 @@ import { LockProvider } from './context/LockContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { SalesDashboard } from './components/SalesDashboard';
 import { WaitlistDashboard } from './components/WaitlistDashboard';
+// Footer Pages
+import { PrivacyPolicyPage } from './components/PrivacyPolicyPage';
+import { TermsOfServicePage } from './components/TermsOfServicePage';
+import { ShippingPolicyPage } from './components/ShippingPolicyPage';
+import { AboutUsPage } from './components/AboutUsPage';
 
 // Importe diretamente o AuthProvider do seu arquivo existente
 // import { AuthProvider } from './context/AuthContext'; 
@@ -93,6 +98,13 @@ export default function App() {
                 <Routes>
                   <Route path="/locked" element={<Home />} />
                   <Route path="/login" element={<LoginComponent />} />
+                  
+                  {/* Public Footer Pages - No authentication required */}
+                  <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                  <Route path="/shipping-policy" element={<ShippingPolicyPage />} />
+                  <Route path="/about-us" element={<AboutUsPage />} />
+                  
                   <Route element={<ProtectedRoute />}>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/product/:id" element={<ProductPage />} />

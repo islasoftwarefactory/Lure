@@ -23,9 +23,9 @@ export function Footer() {
               <h3 className="font-semibold mb-4">Support</h3>
               <ul className="space-y-3">
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
+                <li><a href="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns & Exchanges</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
+                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
               </ul>
             </div>
 
@@ -33,9 +33,9 @@ export function Footer() {
             <div className="w-48 ml-32">  
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact</a></li>
+                <li><a href="/about-us" className="text-gray-600 hover:text-gray-900 font-semibold">About Us</a></li>
+                <li><a href="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
+                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Customer Service</a></li>
               </ul>
             </div>
@@ -44,9 +44,9 @@ export function Footer() {
             <div className="w-48 ml-32">
               <h3 className="font-semibold mb-4">Legal & Policies</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
+                <li><a href="/terms-of-service" className="text-gray-600 hover:text-gray-900 font-semibold">Terms of Service</a></li>
+                <li><a href="/privacy-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Privacy Policy</a></li>
+                <li><a href="/shipping-policy" className="text-gray-600 hover:text-gray-900 font-semibold">Shipping Policy</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Returns Policy</a></li>
               </ul>
             </div>
@@ -55,7 +55,7 @@ export function Footer() {
             <div className="w-48 ml-32">
               <h3 className="font-semibold mb-4">Help & Support</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
+                <li><a href="/contact" className="text-gray-600 hover:text-gray-900 font-semibold">Contact Us</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Help Center</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">Order Tracking</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-gray-900 font-semibold">FAQs</a></li>
@@ -97,13 +97,13 @@ export function Footer() {
           <div className="absolute top-4 right-0 space-x-4 text-[#79808a] font-semibold text-sm">
             <a href="#" className="hover:text-gray-900">Manage Cookies</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Privacy Policy</a>
+            <a href="/privacy-policy" className="hover:text-gray-900">Privacy Policy</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Terms of Service</a>
+            <a href="/terms-of-service" className="hover:text-gray-900">Terms of Service</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-900">Payment Methods</a>
             <span>|</span>
-            <a href="#" className="hover:text-gray-900">Shipping Policy</a>
+            <a href="/shipping-policy" className="hover:text-gray-900">Shipping Policy</a>
             <span>|</span>
             <a href="#" className="hover:text-gray-900">Accessibility</a>
           </div>

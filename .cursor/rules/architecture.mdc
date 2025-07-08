@@ -1,0 +1,173 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rules - Lure E-commerce Platform Project
+
+## General Architecture and Structure
+
+### Technology Stack
+- **Backend**: Flask + SQLAlchemy + MySQL + Redis + JWT + Docker
+- **Frontend**: React + TypeScript + Next.js + Tailwind CSS + Radix UI
+- **Deploy**: Docker Compose + Nginx + Gunicorn
+- **Integrations**: Stripe (payments), Google OAuth, GA4 Analytics
+
+### Separation of Responsibilities
+- **API (`/api`)**: Business logic, authentication, data persistence
+- **Frontend (`/app`)**: User interface, client state, API calls
+- **Communication**: Exclusively via REST JSON API between frontend and backend
+
+## Authentication and Security Rules
+
+### JWT System
+- **Mandatory decorators**: Use `@token_required` for protected routes, `@optional_token_required` for routes that work with/without authentication
+- **Anonymous token**: System supports anonymous tokens for non-logged users via `/user/anonymous-token`
+- **Validation**: Tokens always validated via `verify_token()` in `api/utils/security/jwt/jwt_utils.py`
+- **Headers**: Token must be sent as `Authorization: Bearer <token>`
+
+### Public Routes
+- **Defined list**: Public routes are in `PUBLIC_ROUTES` in decorator and `public_endpoints/public_paths` in `app.py`
+- **Contact**: `/contact/create` is always public
+- **Scraping**: Scraping routes are public for automation
+- **Webhooks**: Stripe webhooks are public by necessity
+
+### DDOS Protection
+- **Rate Limiting**: System implemented in `api/utils/security/DDOS/rate_limiter.py`
+- **Cookie Management**: Cookie management for tracking in `cookie_manager.py`
+- **Trust Score**: Trust scoring system based on behavior
+
+## Backend Rules (Flask)
+
+### Blueprint Structure
+- **Mandatory pattern**: Each module must have `model.py` (SQLAlchemy) and `routes.py` (Flask Blueprint)
+- **Registration**: All blueprints must be registered in `api/blueprints.py`
+- **Naming**: Blueprint names must be consistent with module name
+- **URL Prefix**: Always define url_prefix in blueprint registration
+
+### Route Patterns
+- **Standard CRUD**: 
+  - `POST /create` - Creation
+  - `GET /read/<id>` - Individual read  
+  - `GET /read/all` - Multiple read
+  - `PUT /update/<id>` - Update
+  - `DELETE /delete/<id>` - Deletion
+- **Validation**: Always validate required fields before processing
+- **Error Handling**: Return structured errors with appropriate status codes
+- **Logging**: Use `current_app.logger` for important logs
+
+### SQLAlchemy Models
+- **Serialization**: All models must have `serialize()` method for JSON conversion
+- **Relationships**: Use appropriate lazy loading for performance
+- **Validation**: Implement validations at model level when possible
+- **Migrations**: Use Alembic for schema changes via `api/migrations/`
+
+### Error Handling
+- **Standard structure**: `{"error": "message", "message": "details"}` for errors
+- **Success structure**: `{"data": object, "message": "success"}` for success
+- **Status Codes**: 
+  - 200/201 for success
+  - 400 for invalid data
+  - 401 for unauthenticated
+  - 403 for unauthorized
+  - 404 for not found
+  - 500 for internal errors
+
+## Frontend Rules (React)
+
+### Component Structure
+- **Organization**: Components in `src/components/`, pages in `src/app/`
+- **TypeScript**: Always use TypeScript with well-defined interfaces
+- **Reusability**: Common components in `src/components/ui/`
+- **Custom hooks**: In `src/hooks/` for reusable logic
+
+### State Management
+- **Context API**: Use for global state (AuthContext, CartContext, LockContext)
+- **Provider Pattern**: All contexts must follow Provider/Consumer pattern
+- **LocalStorage**: Sync critical state with localStorage when appropriate
+- **Error Boundaries**: Implement for error catching in components
+
+### API Communication
+- **Centralized service**: All calls via `src/services/api.ts`
+- **Interceptors**: Configured to add tokens automatically
+- **Error Handling**: Handle network and HTTP errors consistently
+- **Loading States**: Always implement loading states
+
+### Frontend Authentication
+- **AuthContext**: Manage authentication state globally
+- **Token Storage**: Store tokens in localStorage with key `authToken`
+- **Protected Routes**: Use `ProtectedRoute` component for routes requiring login
+- **Google OAuth**: Integration via GoogleSignInButton component
+
+## Data and API Rules
+
+### Shopping Cart
+- **Persistence**: Cart synchronized between localStorage and backend
+- **Context**: CartContext manages global cart state
+- **API Sync**: Cart operations always synchronized with `/cart/*` endpoints
+- **Guest Users**: Cart support for anonymous users
+
+### Products and Favorites
+- **Lazy Loading**: Load products as needed
+- **Favorites**: User favorites system via `/favorites/*`
+- **Categories**: Categorization system with images
+- **Sizes**: Size system with validation
+
+### Transactions and Payments
+- **Stripe Integration**: Payments processed via Stripe with webhooks
+- **Status Tracking**: Status system for orders and payments
+- **Transaction History**: Complete transaction history per user
+
+## Development Rules
+
+### Code Patterns
+- **Logging**: Use appropriate logging for debug and monitoring
+- **Comments**: Comments in Portuguese for complex code
+- **Error Messages**: Error messages in Portuguese for users
+- **Validation**: Validation on both frontend and backend
+
+### Testing
+- **Unit Tests**: Tests for critical business functions
+- **Integration Tests**: Tests for API endpoints
+- **Manual Testing**: Manual verification for critical flows
+
+### Performance
+- **Database**: Use appropriate indexes and optimized queries
+- **Caching**: Redis for session cache and frequent data
+- **Frontend**: Lazy loading and code splitting when appropriate
+- **Images**: Image optimization for web
+
+## Deploy and Infrastructure Rules
+
+### Docker
+- **Containerization**: Fully containerized application
+- **Development**: Use `docker-compose` for local development
+- **Environment**: Environment variables for sensitive configurations
+
+### Nginx and Proxy
+- **Reverse Proxy**: Nginx as reverse proxy for Flask application
+- **Static Files**: Serve static files via Nginx
+- **SSL/TLS**: HTTPS configuration in production
+
+## Restrictions and Limitations
+
+### Not Allowed
+- **Direct Database Access**: Frontend never accesses database directly
+- **Hardcoded Secrets**: Never commit keys or passwords in code
+- **Mixed Authentication**: Don't mix different authentication systems
+- **Bypass Security**: Never circumvent security decorators
+
+### Restricted Scopes
+- **Admin Functions**: Some routes are admin-only
+- **User Data**: Users can only access their own data
+- **Anonymous Limitations**: Anonymous users have limited functionality
+
+### Critical Dependencies
+- **JWT Secret**: System fails without JWT_SECRET_KEY configured
+- **Database**: MySQL must be available for operation
+- **Redis**: Required for sessions and cache
+- **Stripe Keys**: Mandatory for payment processing
+
+---
+
+**Note**: These rules must be followed rigorously during development and debugging of the Lure project to maintain consistency, security, and platform functionality.
