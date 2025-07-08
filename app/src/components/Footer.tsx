@@ -103,12 +103,16 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Divider Line with Lure text */}
-        <div className="relative w-full md:w-[calc(100%+400px)] md:ml-[-200px] mt-auto pt-8">
-          <span className="absolute -top-14 left-0 text-[#231f20] font-semibold text-4xl">
+        {/* Divider Line with Lure text - Separated for correct layout flow */}
+        <div className="relative w-full md:w-[calc(100%+400px)] md:ml-[-200px] mt-auto pt-20">
+          <span className="absolute top-0 left-0 text-[#231f20] font-semibold text-4xl">
             𝐋𝐔𝐑𝐄
           </span>
           <div className="border-t-2 border-gray-300 w-full"></div>
+        </div>
+
+        {/* Copyright and Bottom Links */}
+        <div className="w-full md:w-[calc(100%+400px)] md:ml-[-200px]">
           <div className="flex flex-col md:flex-row justify-between items-center mt-4">
             <span className="text-[#79808a] font-semibold text-sm text-center md:text-left mb-2 md:mb-0">
               2025 Lure® All rights reserved.
