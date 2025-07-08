@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import backgroundImage from '../assets/icons/home/footer.svg';
+import { ChevronDown } from 'lucide-react';
 
 interface FooterLink {
   to: string;
@@ -18,14 +19,15 @@ const FooterSection = ({ title, links }: FooterSectionProps) => {
 
   return (
     <div className="w-full md:w-48">
-      <h3 
-        className="font-semibold mb-4 text-lg cursor-pointer"
+      <h3
+        className="font-semibold mb-4 text-lg cursor-pointer flex justify-between items-center"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {title}
+        <span>{title}</span>
+        <ChevronDown className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
       </h3>
-      {isOpen && (
-        <ul className="space-y-3">
+      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'}`}>
+        <ul className="space-y-3 pt-2">
           {links.map((link, index) => (
             <li key={index}>
               <Link to={link.to} className="text-gray-600 hover:text-gray-900 font-semibold">
@@ -34,7 +36,7 @@ const FooterSection = ({ title, links }: FooterSectionProps) => {
             </li>
           ))}
         </ul>
-      )}
+      </div>
     </div>
   );
 };
@@ -83,24 +85,26 @@ export function Footer() {
         backgroundPosition: 'center bottom',
         backgroundSize: 'cover',
       }} 
-      className="bg-[#ffffff] w-full min-h-[600px] md:min-h-[600px]"
+      className="bg-[#ffffff] w-full min-h-[600px] md:min-h-[600px] flex flex-col"
     >
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-start md:mr-[-400px]" style={{ 
-          maxWidth: '1800px',
-        }}>
-          {/* Grupo das 4 primeiras colunas */}
-          <div className="flex flex-col md:flex-row space-y-10 md:space-y-0 md:space-x-16 lg:space-x-32 md:ml-[-100px]">
-            {sections.map((section, index) => (
-              <FooterSection key={index} title={section.title} links={section.links} />
-            ))}
-          </div>
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 w-full flex flex-col flex-1">
+        <div className="flex-grow">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start md:mr-[-400px]" style={{ 
+            maxWidth: '1800px',
+          }}>
+            {/* Grupo das 4 primeiras colunas */}
+            <div className="flex flex-col md:flex-row space-y-10 md:space-y-0 md:space-x-16 lg:space-x-32 md:ml-[-100px]">
+              {sections.map((section, index) => (
+                <FooterSection key={index} title={section.title} links={section.links} />
+              ))}
+            </div>
 
-          {/* Newsletter Column - Temporariamente comentado */}
+            {/* Newsletter Column - Temporariamente comentado */}
+          </div>
         </div>
 
         {/* Divider Line with Lure text */}
-        <div className="relative w-full md:w-[calc(100%+400px)] md:ml-[-200px] mt-24 md:mt-[150px] mb-12">
+        <div className="relative w-full md:w-[calc(100%+400px)] md:ml-[-200px] mt-auto pt-8">
           <span className="absolute -top-14 left-0 text-[#231f20] font-semibold text-4xl">
             𝐋𝐔𝐑𝐄
           </span>
