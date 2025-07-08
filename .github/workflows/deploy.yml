@@ -81,10 +81,10 @@ jobs:
           VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
           EOF
 
-      # Restart leve - MANTÉM VOLUMES, DADOS E IMAGENS
-      - name: Lightweight container restart
+      # Restart simples - MANTÉM VOLUMES E DADOS
+      - name: Simple restart without data loss
         run: |
-          echo "=== Restart leve de containers mantendo dados ==="
+          echo "=== Restart simples mantendo dados ==="
           
           # Verificar se .env existe
           if [ -f ".env" ]; then
@@ -94,21 +94,21 @@ jobs:
             exit 1
           fi
           
-          # Para os serviços mas MANTÉM volumes e imagens
+          # Para os serviços mas MANTÉM volumes
           echo "Parando serviços..."
           docker-compose down
           
-          # Inicia os serviços novamente SEM rebuild das imagens
-          echo "Iniciando serviços sem rebuild..."
-          docker-compose up -d
+          # Inicia os serviços novamente, forçando rebuild das imagens
+          echo "Iniciando serviços com rebuild..."
+          docker-compose up -d --build
           
-          echo "✅ Restart leve concluído - dados e imagens preservados"
+          echo "✅ Restart concluído - dados preservados e imagens reconstruídas"
 
       # Verify backend health after deployment
       - name: Verify backend deployment
         run: |     
           echo "Waiting for services to start..."
-          sleep 30
+          sleep 45
           
           # Check if all containers are running
           echo "=== Container Status ==="
