@@ -101,7 +101,7 @@ export function TermsOfServicePage() {
 
                             <h2 className="text-2xl font-bold mb-4">6. Shipping and Delivery</h2>
                             <div className="mb-6">
-                                <p className="mb-4">Shipping and delivery terms are detailed in our separate <strong>Shipping Policy</strong>, which is incorporated into these Terms by reference. Please review our <a href="#" className="text-blue-600 hover:text-blue-800">Shipping Policy</a> for information on shipping methods, costs, delivery estimates, and international shipping.</p>
+                                <p className="mb-4">Shipping and delivery terms are detailed in our separate <strong>Shipping Policy</strong>, which is incorporated into these Terms by reference. Please review our <a href="/shipping-policy" className="text-blue-600 hover:text-blue-800">Shipping Policy</a> for information on shipping methods, costs, delivery estimates, and international shipping.</p>
                             </div>
 
                             <h2 className="text-2xl font-bold mb-4">7. Returns, Refunds, and Exchanges</h2>
@@ -169,7 +169,7 @@ export function TermsOfServicePage() {
                                 <h3 className="text-lg font-semibold mb-3">Contact Us</h3>
                                 <p className="mb-2">If you have any questions about these Terms, please contact us:</p>
                                 <p className="mb-2"><strong>Email:</strong> contact@lureclo.com</p>
-                                <p><strong>Contact Page:</strong> <a href="#" className="text-blue-600 hover:text-blue-800">Contact Us</a></p>
+                                <p><strong>Contact Page:</strong> <a href="/contact" className="text-blue-600 hover:text-blue-800">Contact Us</a></p>
                             </div>
                         </div>
                     </div>
