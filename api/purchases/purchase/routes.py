@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy.exc import SQLAlchemyError
 from api.utils.db.connection import db
 from api.utils.security.jwt.decorators import token_required, optional_token_required
+from api.utils.security.jwt.jwt_utils import generate_token
 from api.user.model import User
 from api.user.ghost_utils import create_ghost_user
 from api.address.model import Address # Para buscar o endereço de entrega
@@ -43,6 +44,7 @@ def handle_create_purchase(current_user_id):
         return jsonify({"error": "Request body must be JSON"}), 400
 
     # Handle ghost user creation if no current_user_id or anonymous user
+    ghost_user_created = False
     if current_user_id is None or current_user_id == 'anonymous':
         ghost_user_data = data.get('ghost_user')
         if not ghost_user_data or not ghost_user_data.get('email') or not ghost_user_data.get('name'):
@@ -52,6 +54,7 @@ def handle_create_purchase(current_user_id):
         try:
             ghost_user = create_ghost_user(ghost_user_data['email'], ghost_user_data['name'])
             current_user_id = ghost_user.id
+            ghost_user_created = True
             current_app.logger.info(f"Ghost user created with ID: {current_user_id}")
         except Exception as e:
             current_app.logger.error(f"Failed to create ghost user: {str(e)}")
@@ -262,7 +265,7 @@ def handle_create_purchase(current_user_id):
         session.commit()
         current_app.logger.info(f"Commit da Purchase ID {new_purchase.id} e entidades relacionadas realizado com sucesso.")
 
-        return jsonify({
+        response_data = {
             "message": "Purchase intent created successfully. Please confirm payment.",
             "purchase_id": str(new_purchase.id),
             "client_secret": payment_intent.client_secret,
@@ -270,7 +273,19 @@ def handle_create_purchase(current_user_id):
             "currency": currency_code_for_stripe.upper(),
             "shipping_cost": float(new_purchase.shipping_cost),
             "taxes": float(new_purchase.taxes)
-        }), 201
+        }
+        
+        # Include JWT token if ghost user was created
+        if ghost_user_created:
+            try:
+                ghost_token = generate_token(current_user_id)
+                response_data["token"] = ghost_token
+                current_app.logger.info(f"JWT token generated for ghost user: {current_user_id}")
+            except Exception as token_error:
+                current_app.logger.error(f"Failed to generate token for ghost user: {str(token_error)}")
+                # Don't fail the purchase, just log the error
+        
+        return jsonify(response_data), 201
 
     except ValueError as ve: # Erros de validação de dados
         current_app.logger.error(f"<<< ERRO de Validação (ValueError) durante criação da compra: {str(ve)} \n{traceback.format_exc()}")
