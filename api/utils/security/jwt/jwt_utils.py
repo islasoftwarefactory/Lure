@@ -56,6 +56,9 @@ def verify_token(token):
         )
         # Return user_id directly upon success, consistent with decorator usage
         user_id_from_token = payload['sub']
+        # Handle anonymous tokens - return as string, not int
+        if user_id_from_token == 'anonymous':
+            return 'anonymous'
         return int(user_id_from_token)
     except jwt.ExpiredSignatureError:
         current_app.logger.warning("Token verification failed: ExpiredSignatureError")
@@ -76,7 +79,11 @@ def decode_token(token):
             JWT_SECRET_KEY,
             algorithms=['HS256']
         )
-        return payload['sub']
+        user_id = payload['sub']
+        # Handle anonymous tokens - return as string, not int
+        if user_id == 'anonymous':
+            return 'anonymous'
+        return user_id
     except jwt.ExpiredSignatureError:
         raise Exception('Token expired') # Keep raising exceptions as before
     except jwt.InvalidTokenError:

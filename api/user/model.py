@@ -101,8 +101,11 @@ def create_user(user_data: Dict) -> User:
         current_app.logger.error(f"Erro ao criar usuário {user_data.get('email')} via {auth_provider.name}: {str(e)}")
         raise
 
-def get_user(user_id: int) -> Optional[User]:
+def get_user(user_id) -> Optional[User]:
     """Recupera um usuário pelo ID interno do sistema."""
+    # Anonymous users don't exist in the database
+    if user_id == 'anonymous':
+        return None
     return User.query.get(user_id)
 
 def update_user(user_id: int, user_data: Dict) -> Optional[User]:
@@ -153,8 +156,11 @@ def delete_user(user_id: int) -> bool:
     current_app.logger.warning(f"Tentativa de deletar usuário inexistente: ID {user_id}")
     return False
 
-def is_admin(user_id: int) -> bool:
+def is_admin(user_id) -> bool:
     """Verifica se um usuário é admin."""
+    # Anonymous users are never admin
+    if user_id == 'anonymous':
+        return False
     user = get_user(user_id)
     return user.admin if user else False
 
