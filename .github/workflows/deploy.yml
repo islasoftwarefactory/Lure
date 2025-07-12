@@ -185,11 +185,14 @@ jobs:
             fi
           "
           
-          # Create migration for current models if needed
-          echo "Creating migration for current models..."
+          # Reset migration history and create fresh migration
+          echo "Resetting migration history for clean deployment..."
           docker-compose exec -T api bash -c "
             cd /api
-            flask db migrate -m 'Auto-migration from deploy' || echo 'No new migrations needed'
+            # Mark current database state as up-to-date
+            flask db stamp head || echo 'No existing migrations to stamp'
+            # Create new migration if there are model changes
+            flask db migrate -m 'Deploy migration' || echo 'No new migrations needed'
           "
           
           # Run migrations
