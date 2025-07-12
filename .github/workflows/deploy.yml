@@ -70,6 +70,66 @@ jobs:
           STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
           EOF
 
+      # Ensure Flask-Migrate is properly configured in container
+      - name: Setup Flask-Migrate configuration
+        run: |
+          echo "=== Setting up Flask-Migrate configuration ==="
+          
+          # Create alembic.ini if it doesn't exist
+          cat > api/migrations/alembic.ini << 'EOF'
+          # A generic, single database configuration.
+
+          [alembic]
+          # template used to generate migration files
+          # file_template = %%(rev)s_%%(slug)s
+
+          # set to 'true' to run the environment during
+          # the 'revision' command, regardless of autogenerate
+          # revision_environment = false
+
+          # Logging configuration
+          [loggers]
+          keys = root,sqlalchemy,alembic,flask_migrate
+
+          [handlers]
+          keys = console
+
+          [formatters]
+          keys = generic
+
+          [logger_root]
+          level = WARN
+          handlers = console
+          qualname =
+
+          [logger_sqlalchemy]
+          level = WARN
+          handlers =
+          qualname = sqlalchemy.engine
+
+          [logger_alembic]
+          level = INFO
+          handlers =
+          qualname = alembic
+
+          [logger_flask_migrate]
+          level = INFO
+          handlers =
+          qualname = flask_migrate
+
+          [handler_console]
+          class = StreamHandler
+          args = (sys.stderr,)
+          level = NOTSET
+          formatter = generic
+
+          [formatter_generic]
+          format = %(levelname)-5.5s [%(name)s] %(message)s
+          datefmt = %H:%M:%S
+          EOF
+          
+          echo "✅ Flask-Migrate configuration created"
+
       # Create .env file for frontend
       - name: Create frontend environment file
         run: |
@@ -104,18 +164,37 @@ jobs:
           
           echo "✅ Restart concluído - dados preservados e imagens reconstruídas"
 
-      # Run Flask migrations after containers are up
-      - name: Run Flask database migrations
+      # Initialize Flask-Migrate and run migrations
+      - name: Initialize and run Flask database migrations
         run: |
-          echo "=== Running Flask Database Migrations ==="
+          echo "=== Initializing Flask-Migrate and Running Migrations ==="
           
           # Wait for database to be ready
           echo "Waiting for database to be ready..."
           sleep 30
           
-          # Run migrations inside the API container
+          # Check if migrations directory exists and initialize if needed
+          echo "Checking migrations setup..."
+          docker-compose exec -T api bash -c "
+            cd /api
+            if [ ! -d 'migrations' ]; then
+              echo 'Initializing Flask-Migrate...'
+              flask db init
+            else
+              echo 'Migrations directory exists'
+            fi
+          "
+          
+          # Create migration for current models if needed
+          echo "Creating migration for current models..."
+          docker-compose exec -T api bash -c "
+            cd /api
+            flask db migrate -m 'Auto-migration from deploy' || echo 'No new migrations needed'
+          "
+          
+          # Run migrations
           echo "Running Flask migrations..."
-          docker-compose exec -T api flask db upgrade
+          docker-compose exec -T api bash -c "cd /api && flask db upgrade"
           
           # Check migration status
           if [ $? -eq 0 ]; then
