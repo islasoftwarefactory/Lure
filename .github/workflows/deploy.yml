@@ -4,11 +4,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "feat/footer-layout" branch
+  # Triggers the workflow on push or pull request events but only for the "feat/ghost-checkout" branch
   push:
-    branches: [ "feat/footer-layout" ]
+    branches: [ "feat/ghost-checkout" ]
   pull_request:
-    branches: [ "feat/footer-layout" ]
+    branches: [ "feat/ghost-checkout" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
