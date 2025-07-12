@@ -385,12 +385,19 @@ export function CheckoutComponent() {
 
         console.log("Attempting to create purchase...");
         const response = await api.post('/purchase/create', purchasePayload);
-        const { purchase_id, client_secret, shipping_cost, taxes } = response.data;
+        const { purchase_id, client_secret, shipping_cost, taxes, token } = response.data;
         const shippingCostResp = Number(shipping_cost);
         const taxesResp = Number(taxes);
         setShippingCost(shippingCostResp);
         setTaxesValue(taxesResp);
         console.log('Purchase created:', purchase_id, client_secret);
+        
+        // Update token if ghost user was created
+        if (token) {
+          localStorage.setItem('authToken', token);
+          console.log('Ghost user token updated in localStorage');
+        }
+        
         if (!purchase_id || !client_secret) {
           throw new Error('Invalid server response: missing purchase_id or client_secret.');
         }
