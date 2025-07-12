@@ -162,7 +162,7 @@ jobs:
           echo "Iniciando serviços com rebuild..."
           docker-compose up -d --build
           
-          echo "✅ Restart concluído - dados preservados e imagens reconstruídas"
+          echo "✅ Restart -  concluído - dados preservados e imagens reconstruídas"
 
       # Initialize Flask-Migrate and run migrations
       - name: Initialize and run Flask database migrations
