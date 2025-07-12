@@ -1,12 +1,13 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.address.model import Address, create_address, get_address, update_address, delete_address
-from api.utils.security.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required, optional_token_required
+from api.user.ghost_utils import create_ghost_user
 
 blueprint = Blueprint('address', __name__)
 
 # Create
 @blueprint.route("/create", methods=["POST"])
-@token_required
+@optional_token_required
 def create(current_user_id):
     data = request.get_json()
 
@@ -14,6 +15,21 @@ def create(current_user_id):
     if not data or not all(field in data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in data]
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+
+    # Handle ghost user creation for anonymous users during checkout
+    if current_user_id is None or current_user_id == 'anonymous':
+        ghost_user_data = data.get('ghost_user')
+        if not ghost_user_data or not ghost_user_data.get('email') or not ghost_user_data.get('name'):
+            current_app.logger.warning("Ghost user data missing for address creation")
+            return jsonify({"error": "User information required (email, name) for guest checkout"}), 400
+        
+        try:
+            ghost_user = create_ghost_user(ghost_user_data['email'], ghost_user_data['name'])
+            current_user_id = ghost_user.id
+            current_app.logger.info(f"Ghost user created for address: {current_user_id}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to create ghost user for address: {str(e)}")
+            return jsonify({"error": f"Failed to create user for address: {str(e)}"}), 500
 
     try:
         address = create_address(data, current_user_id)

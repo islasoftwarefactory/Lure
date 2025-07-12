@@ -41,9 +41,14 @@ class Address(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
-def create_address(address_data: Dict, current_user_id: int) -> Optional[Address]:
+def create_address(address_data: Dict, current_user_id) -> Optional[Address]:
     """Creates a new address"""
     print(f"Starting address creation for user: {current_user_id}")
+    
+    # Handle anonymous users - they cannot create addresses
+    if current_user_id == 'anonymous':
+        raise ValueError("Anonymous users cannot create addresses. Please provide user information for guest checkout.")
+    
     try:
         required_fields = ["street", "number", "city", "state", "zip_code", "country"]
         if not all(field in address_data for field in required_fields):
