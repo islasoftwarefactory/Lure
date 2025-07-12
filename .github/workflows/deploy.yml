@@ -235,6 +235,17 @@ jobs:
               PREPARE stmt FROM @sql;
               EXECUTE stmt;
               DEALLOCATE PREPARE stmt;
+              
+              -- Remove old auth_provider column if it still exists
+              SET @old_col_exists = (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS 
+                WHERE TABLE_SCHEMA = 'Lure' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'auth_provider');
+              
+              SET @sql = IF(@old_col_exists > 0, 
+                'ALTER TABLE users DROP COLUMN auth_provider', 
+                'SELECT \\\"Old auth_provider column does not exist\\\" as message');
+              PREPARE stmt FROM @sql;
+              EXECUTE stmt;
+              DEALLOCATE PREPARE stmt;
             \"
             
             echo 'Stamping database to mark as up-to-date...'
