@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, current_app
 from sqlalchemy.exc import SQLAlchemyError
 from api.utils.db.connection import db
-from api.utils.security.jwt.decorators import token_required
+from api.utils.security.jwt.decorators import token_required, optional_token_required
 from api.user.model import User
+from api.user.ghost_utils import create_ghost_user
 from api.address.model import Address # Para buscar o endereço de entrega
 from api.product.model import Product # Para buscar o produto e sua moeda/preço
 from api.currency.model import Currency # Para buscar a moeda
@@ -31,7 +32,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 purchase_bp = Blueprint('purchase', __name__,) # [ Original: purchase_bp ]
 
 @purchase_bp.route('/create', methods=['POST']) # [ Original: /create ]
-@token_required
+@optional_token_required
 def handle_create_purchase(current_user_id):
     current_app.logger.info(f"--- Rota /purchase/create INICIADA para user_id: {current_user_id} ---")
     data = request.get_json()
@@ -40,6 +41,21 @@ def handle_create_purchase(current_user_id):
     if not data:
         current_app.logger.warning("<<< FALHA: JSON não fornecido ou inválido.")
         return jsonify({"error": "Request body must be JSON"}), 400
+
+    # Handle ghost user creation if no current_user_id
+    if current_user_id is None:
+        ghost_user_data = data.get('ghost_user')
+        if not ghost_user_data or not ghost_user_data.get('email') or not ghost_user_data.get('name'):
+            current_app.logger.warning("<<< FALHA: Ghost user data missing (email, name required).")
+            return jsonify({"error": "Ghost user data required (email, name) for guest checkout"}), 400
+        
+        try:
+            ghost_user = create_ghost_user(ghost_user_data['email'], ghost_user_data['name'])
+            current_user_id = ghost_user.id
+            current_app.logger.info(f"Ghost user created with ID: {current_user_id}")
+        except Exception as e:
+            current_app.logger.error(f"Failed to create ghost user: {str(e)}")
+            return jsonify({"error": f"Failed to create ghost user: {str(e)}"}), 500
 
     items_data = data.get('items')
     shipping_address_id = data.get('shipping_address_id')
