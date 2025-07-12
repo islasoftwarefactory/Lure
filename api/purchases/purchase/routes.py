@@ -42,8 +42,8 @@ def handle_create_purchase(current_user_id):
         current_app.logger.warning("<<< FALHA: JSON não fornecido ou inválido.")
         return jsonify({"error": "Request body must be JSON"}), 400
 
-    # Handle ghost user creation if no current_user_id
-    if current_user_id is None:
+    # Handle ghost user creation if no current_user_id or anonymous user
+    if current_user_id is None or current_user_id == 'anonymous':
         ghost_user_data = data.get('ghost_user')
         if not ghost_user_data or not ghost_user_data.get('email') or not ghost_user_data.get('name'):
             current_app.logger.warning("<<< FALHA: Ghost user data missing (email, name required).")
