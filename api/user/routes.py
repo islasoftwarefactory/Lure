@@ -1,5 +1,7 @@
 from flask import request, jsonify, Blueprint, current_app
 from api.user.model import User, create_user, get_user, update_user, delete_user, get_all_admins, promote_to_admin, demote_from_admin
+from api.auth_providers.model import get_auth_provider_by_name
+from api.user.ghost_utils import create_ghost_user
 from api.utils.security.jwt.decorators import token_required, admin_required
 from api.utils.security.jwt.jwt_utils import generate_token, verify_token
 import traceback
@@ -21,14 +23,14 @@ def create_or_login_oauth():
         return jsonify({"error": "Request body must be JSON"}), 400
 
     email = data.get('email')
-    provider = data.get('auth_provider')
+    provider_name = data.get('auth_provider')
     provider_id = data.get('provider_id')
 
     # --- LOG: Dados Extraídos ---
-    current_app.logger.debug(f"Dados extraídos: email={email}, provider={provider}, provider_id={provider_id}")
+    current_app.logger.debug(f"Dados extraídos: email={email}, provider={provider_name}, provider_id={provider_id}")
     # --- FIM LOG ---
 
-    if not email or not provider or not provider_id:
+    if not email or not provider_name or not provider_id:
          current_app.logger.error(f"Dados OAuth incompletos recebidos: {data}")
          current_app.logger.info("<<< Rota /user/create (OAuth) FALHA: Dados OAuth incompletos.")
          return jsonify({"error": "Incomplete OAuth data received (email, auth_provider, provider_id required)."}), 400
@@ -36,9 +38,15 @@ def create_or_login_oauth():
     user = None
 
     try:
+        # Buscar provedor de autenticação
+        auth_provider = get_auth_provider_by_name(provider_name)
+        if not auth_provider:
+            current_app.logger.error(f"Provedor de autenticação inválido: {provider_name}")
+            return jsonify({"error": f"Invalid auth provider: {provider_name}"}), 400
+
         # --- Passo 1: Tentar Encontrar Usuário Existente ---
-        current_app.logger.debug(f"Passo 1: Tentando encontrar usuário por provider={provider}, provider_id={provider_id}")
-        existing_user = User.query.filter_by(auth_provider=provider, provider_id=provider_id).first()
+        current_app.logger.debug(f"Passo 1: Tentando encontrar usuário por provider_id={auth_provider.id}, provider_id={provider_id}")
+        existing_user = User.query.filter_by(auth_provider_id=auth_provider.id, provider_id=provider_id).first()
         current_app.logger.debug(f"Resultado da busca por usuário existente: {'Encontrado (ID: ' + str(existing_user.id) + ')' if existing_user else 'Não Encontrado'}")
 
         if existing_user:
@@ -65,7 +73,14 @@ def create_or_login_oauth():
             # --- Passo 2: Criar Novo Usuário (se não encontrado) ---
             current_app.logger.info(f"Passo 2: Nenhum usuário encontrado. Tentando criar novo usuário usando create_user.")
             try:
-                 user = create_user(data)
+                 user_data = {
+                     'name': data.get('name'),
+                     'email': email,
+                     'photo': data.get('photo'),
+                     'auth_provider_id': auth_provider.id,
+                     'provider_id': provider_id
+                 }
+                 user = create_user(user_data)
                  current_app.logger.info(f"Novo usuário criado com sucesso: ID {user.id}, Email {user.email}")
             except ValueError as create_val_err: # Captura especificamente erro de validação do create_user
                  current_app.logger.error(f"Erro de validação ao tentar criar usuário: {create_val_err}")
@@ -333,4 +348,47 @@ def get_anonymous_token():
     except Exception as e:
         return jsonify({
             'error': f'Erro ao gerar token anônimo: {str(e)}'
+        }), 500
+
+@blueprint.route("/create-ghost", methods=["POST"])
+def create_ghost_user_route():
+    """
+    Cria um usuário ghost para checkout sem login.
+    Espera: {"email": "user@example.com", "name": "User Name"}
+    """
+    current_app.logger.info(">>> Rota /user/create-ghost INICIADA")
+    
+    data = request.get_json()
+    if not data:
+        current_app.logger.warning("<<< Rota /user/create-ghost FALHA: Request body não é JSON ou vazio.")
+        return jsonify({"error": "Request body must be JSON"}), 400
+    
+    email = data.get('email')
+    name = data.get('name')
+    
+    if not email or not name:
+        current_app.logger.error(f"Dados incompletos para usuário ghost: {data}")
+        return jsonify({"error": "Email and name are required for ghost user"}), 400
+    
+    try:
+        ghost_user = create_ghost_user(email, name)
+        
+        # Gerar token para o usuário ghost
+        token = generate_token(ghost_user.id)
+        
+        current_app.logger.info(f"Usuário ghost criado/encontrado com sucesso: ID {ghost_user.id}")
+        
+        return jsonify({
+            "message": "Ghost user created/found successfully",
+            "data": {
+                "user": ghost_user.serialize(),
+                "token": token
+            }
+        }), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"Erro ao criar usuário ghost: {str(e)}")
+        return jsonify({
+            "error": "Failed to create ghost user",
+            "message": str(e)
         }), 500

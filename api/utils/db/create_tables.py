@@ -7,6 +7,7 @@ from api.image_category.model import ImageCategory
 from api.product.model import Product
 from api.size.model import Size
 from api.user.model import User
+from api.auth_providers.model import AuthProvider
 from api.scraping.model import Scraping
 from api.scraping.type.model import ContactType
 from api.purchases.history.model import PurchaseHistory
@@ -55,6 +56,20 @@ def create_tables():
                 if not PaymentStatus.query.filter_by(name=status_name).first():
                     payment_status = PaymentStatus(name=status_name)
                     db.session.add(payment_status)
+            
+            # Criar provedores de autenticação padrão
+            auth_providers = [
+                {'name': 'Google', 'description': 'Google OAuth authentication'},
+                {'name': 'Ghost', 'description': 'Guest user without authentication'}
+            ]
+            
+            for provider_data in auth_providers:
+                if not AuthProvider.query.filter_by(name=provider_data['name']).first():
+                    auth_provider = AuthProvider(
+                        name=provider_data['name'],
+                        description=provider_data['description']
+                    )
+                    db.session.add(auth_provider)
         
         # Commit da transação principal
         db.session.commit()

@@ -3,24 +3,19 @@ from datetime import datetime
 import pytz
 from typing import Dict, Optional, List
 from flask import current_app
-from sqlalchemy import UniqueConstraint, Enum as SQLAlchemyEnum
-import enum
-
-class AuthProviderEnum(enum.Enum):
-    GOOGLE = 'Google'  # Usuário via Google SSO
-    APPLE = 'Apple'    # Usuário via Apple SSO
+from sqlalchemy import UniqueConstraint, ForeignKey
 
 class User(db.Model):
     __tablename__ = "users"
-    __table_args__ = (UniqueConstraint('auth_provider', 'provider_id', name='uq_provider_identity'),)
+    __table_args__ = (UniqueConstraint('auth_provider_id', 'provider_id', name='uq_provider_identity'),)
 
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(256), unique=True, nullable=False)
+    email = db.Column(db.String(256), nullable=False)
     name = db.Column(db.String(40), nullable=False)
     photo = db.Column(db.String(256), nullable=True)
     admin = db.Column(db.Boolean, nullable=False, default=False)
-    auth_provider = db.Column(SQLAlchemyEnum(AuthProviderEnum, name='auth_provider_enum'), nullable=False)
-    provider_id = db.Column(db.String(255), nullable=False)
+    auth_provider_id = db.Column(db.Integer, ForeignKey('auth_providers.id'), nullable=False)
+    provider_id = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
     updated_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')), onupdate=lambda: datetime.now(pytz.timezone('America/Sao_Paulo')))
 
@@ -28,9 +23,11 @@ class User(db.Model):
     addresses = db.relationship('Address', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
     transactions = db.relationship('Transaction', back_populates='user_rel', lazy='dynamic')
     favorites = db.relationship('Favorite', back_populates='user_rel', lazy='dynamic', cascade="all, delete-orphan")
+    auth_provider_rel = db.relationship('AuthProvider', back_populates='users', lazy='select')
 
     def __repr__(self):
-        return f"<User id={self.id} email='{self.email}' provider='{self.auth_provider.value}' provider_id='{self.provider_id}' admin={self.admin}>"
+        provider_name = self.auth_provider_rel.name if self.auth_provider_rel else 'Unknown'
+        return f"<User id={self.id} email='{self.email}' provider='{provider_name}' provider_id='{self.provider_id}' admin={self.admin}>"
 
     def serialize(self):
         return {
@@ -39,15 +36,15 @@ class User(db.Model):
             "email": self.email,
             "photo": self.photo,
             "admin": self.admin,
-            "auth_provider": self.auth_provider.value,
+            "auth_provider": self.auth_provider_rel.name if self.auth_provider_rel else None,
             "provider_id": self.provider_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
-def find_user_by_provider(auth_provider: AuthProviderEnum, provider_id: str) -> Optional[User]:
+def find_user_by_provider(auth_provider_id: int, provider_id: str) -> Optional[User]:
     """Busca um usuário pelo provedor e ID específico daquele provedor."""
-    return User.query.filter_by(auth_provider=auth_provider, provider_id=provider_id).first()
+    return User.query.filter_by(auth_provider_id=auth_provider_id, provider_id=provider_id).first()
 
 def find_user_by_email(email: str) -> Optional[User]:
     """Busca um usuário pelo email."""
@@ -55,24 +52,36 @@ def find_user_by_email(email: str) -> Optional[User]:
 
 def create_user(user_data: Dict) -> User:
     """
-    Cria um novo usuário a partir dos dados recebidos do provedor SSO.
-    Espera-se que user_data contenha pelo menos: name, email, auth_provider, provider_id.
+    Cria um novo usuário a partir dos dados recebidos.
+    Para usuários SSO: name, email, auth_provider_id, provider_id
+    Para usuários ghost: name, email, auth_provider_id (Ghost), provider_id=None
     """
-    current_app.logger.info(f"Iniciando criação de usuário via {user_data.get('auth_provider')}")
+    from api.auth_providers.model import get_auth_provider_by_id
+    
+    auth_provider_id = user_data.get('auth_provider_id')
+    if not auth_provider_id:
+        raise ValueError("auth_provider_id é obrigatório")
+    
+    auth_provider = get_auth_provider_by_id(auth_provider_id)
+    if not auth_provider:
+        raise ValueError(f"Provedor de autenticação inválido: {auth_provider_id}")
+    
+    current_app.logger.info(f"Iniciando criação de usuário via {auth_provider.name}")
 
-    required_fields = ['name', 'email', 'auth_provider', 'provider_id']
+    required_fields = ['name', 'email', 'auth_provider_id']
     if not all(field in user_data for field in required_fields):
         raise ValueError(f"Dados incompletos para criar usuário. Campos necessários: {required_fields}")
 
-    try:
-        auth_provider_enum = AuthProviderEnum(user_data['auth_provider'])
-    except ValueError:
-        raise ValueError(f"Provedor de autenticação inválido: {user_data['auth_provider']}. Válidos: {[e.value for e in AuthProviderEnum]}")
+    # Para provedores não-Ghost, provider_id é obrigatório
+    if auth_provider.name != 'Ghost' and not user_data.get('provider_id'):
+        raise ValueError(f"provider_id é obrigatório para provedor {auth_provider.name}")
 
-    existing_user = find_user_by_provider(auth_provider_enum, user_data['provider_id'])
-    if existing_user:
-        current_app.logger.warning(f"Tentativa de criar usuário duplicado: {auth_provider_enum.value} - {user_data['provider_id']}")
-        return existing_user
+    # Verificar se usuário já existe
+    if user_data.get('provider_id'):
+        existing_user = find_user_by_provider(auth_provider_id, user_data['provider_id'])
+        if existing_user:
+            current_app.logger.warning(f"Tentativa de criar usuário duplicado: {auth_provider.name} - {user_data['provider_id']}")
+            return existing_user
 
     try:
         user = User(
@@ -80,16 +89,16 @@ def create_user(user_data: Dict) -> User:
             email=user_data["email"],
             photo=user_data.get("photo"),
             admin=user_data.get("admin", False),
-            auth_provider=auth_provider_enum,
-            provider_id=user_data["provider_id"]
+            auth_provider_id=auth_provider_id,
+            provider_id=user_data.get("provider_id")
         )
         db.session.add(user)
         db.session.commit()
-        current_app.logger.info(f"Usuário criado com sucesso: {user.email} via {user.auth_provider.value}")
+        current_app.logger.info(f"Usuário criado com sucesso: {user.email} via {auth_provider.name}")
         return user
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Erro ao criar usuário {user_data.get('email')} via {user_data.get('auth_provider')}: {str(e)}")
+        current_app.logger.error(f"Erro ao criar usuário {user_data.get('email')} via {auth_provider.name}: {str(e)}")
         raise
 
 def get_user(user_id: int) -> Optional[User]:
@@ -112,7 +121,7 @@ def update_user(user_id: int, user_data: Dict) -> Optional[User]:
                 if getattr(user, key) != value:
                     setattr(user, key, value)
                     updated = True
-            elif key in ['email', 'auth_provider', 'provider_id']:
+            elif key in ['email', 'auth_provider_id', 'provider_id']:
                 current_app.logger.warning(f"Tentativa de modificar campo não permitido ('{key}') para usuário ID {user_id}")
             # Ignora outros campos não permitidos
 

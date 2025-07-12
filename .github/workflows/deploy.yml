@@ -104,11 +104,34 @@ jobs:
           
           echo "✅ Restart concluído - dados preservados e imagens reconstruídas"
 
+      # Run Flask migrations after containers are up
+      - name: Run Flask database migrations
+        run: |
+          echo "=== Running Flask Database Migrations ==="
+          
+          # Wait for database to be ready
+          echo "Waiting for database to be ready..."
+          sleep 30
+          
+          # Run migrations inside the API container
+          echo "Running Flask migrations..."
+          docker-compose exec -T api flask db upgrade
+          
+          # Check migration status
+          if [ $? -eq 0 ]; then
+            echo "✅ Database migrations completed successfully"
+          else
+            echo "❌ Database migrations failed"
+            echo "=== API Container Logs ==="
+            docker-compose logs api
+            exit 1
+          fi
+
       # Verify backend health after deployment
       - name: Verify backend deployment
         run: |     
           echo "Waiting for services to start..."
-          sleep 45
+          sleep 60
           
           # Check if all containers are running
           echo "=== Container Status ==="
