@@ -338,7 +338,12 @@ export function CheckoutComponent() {
         state: selectedStateAbbr,
         zip_code: postalCode,
         country: selectedCountry,
-        complement: apartment || null
+        complement: apartment || null,
+        // Include ghost user data for anonymous checkout
+        ghost_user: {
+            email: email,
+            name: `${firstName} ${lastName}`.trim()
+        }
     };
 
     let newAddressId: number | null = null;
@@ -357,10 +362,15 @@ export function CheckoutComponent() {
             shipping_address_id: newAddressId,
             shipping_cost: 0.0,
             taxes: 0.0,
+            // Include ghost user data for anonymous checkout
+            ghost_user: {
+                email: email,
+                name: `${firstName} ${lastName}`.trim()
+            },
             items: cartItems.map(item => {
-                console.log('--- CHECKOUT: Mapeando item do carrinho (Ap√≥s corre√ß√£o):', JSON.stringify(item, null, 2));
+                console.log('--- CHECKOUT: Mapeando item do carrinho (Após correção):', JSON.stringify(item, null, 2));
                 if (item.productId === undefined || item.sizeId === undefined) {
-                     console.error("Item inv√°lido recebido no checkout:", item);
+                     console.error("Item inválido recebido no checkout:", item);
                      throw new Error(`Invalid item data received in checkout: Missing productId or sizeId.`);
                 }
                 return {
