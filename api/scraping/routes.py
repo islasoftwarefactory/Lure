@@ -9,6 +9,7 @@ from datetime import datetime
 import pytz
 from flask_bcrypt import Bcrypt
 from api.utils.security.jwt.decorators import token_required, admin_required
+from api.utils.security.jwt.jwt_utils import generate_token
 
 blueprint = Blueprint('scraping', __name__)
 bcrypt = Bcrypt()
@@ -292,12 +293,24 @@ def login():
             }), 401
             
         current_app.logger.info(f"Login successful for contact: {data.get('contact_value')}")
+        
+        # Generate JWT token for the authenticated user
+        try:
+            token = generate_token(scraping.id)
+            current_app.logger.info(f"JWT token generated successfully for scraping user ID: {scraping.id}")
+        except Exception as token_error:
+            current_app.logger.error(f"Failed to generate JWT token for scraping user ID {scraping.id}: {str(token_error)}")
+            return jsonify({
+                "error": "Authentication successful but failed to generate session token",
+                "message": "Please try logging in again"
+            }), 500
+        
         return jsonify({
             "success": True,
             "message": "Login successful",
             "data": {
-                # Supondo que scraping.serialize() exista
                 "user": scraping.serialize(), 
+                "token": token,
                 "timestamp": datetime.now().isoformat()
             }
         }), 200
